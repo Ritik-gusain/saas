@@ -1,30 +1,112 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { messages, systemPrompt } = await req.json();
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user } } = await supabase.auth.getUser();
 
-    // Call the Python FastAPI Backend which uses Bytez SDK
-    const pythonBackendUrl = process.env.PYTHON_BACKEND_URL || 'http://127.0.0.1:8000/api/chat';
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { conversationId, message, attachments } = await req.json();
+
+    // Save user message
+    const { data: userMsg, error: msgError } = await supabase
+      .from('messages')
+      .insert([
+        {
+          conversation_id: conversationId,
+          user_id: user.id,
+          role: 'user',
+          content: message,
+          attachments: attachments || [],
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
+
+    if (msgError) {
+      return NextResponse.json({ error: msgError.message }, { status: 400 });
+    }
+
+    // Get conversation context
+    const { data: conversation } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('id', conversationId)
+      .single();
+
+    // Get team system prompt
+    const { data: team } = await supabase
+      .from('teams')
+      .select('system_prompt, default_model')
+      .eq('id', conversation.team_id)
+      .single();
+
+    // Get conversation history
+    const { data: messages } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
+
+    // Call FastAPI backend for AI response
+    const pythonBackendUrl = process.env.FASTAPI_URL || 'http://localhost:8000';
     
-    const response = await fetch(pythonBackendUrl, {
+    const aiResponse = await fetch(`${pythonBackendUrl}/api/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ messages, systemPrompt }),
+      body: JSON.stringify({
+        messages: messages || [],
+        systemPrompt: team?.system_prompt || '',
+        model: team?.default_model || 'gpt-4',
+      }),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      return NextResponse.json({ error: errorData.error || 'Error from Python AI Backend' }, { status: response.status });
-    }
+    const mockResponse = 'This is a placeholder response from the AI assistant.';
+    const tokenCount = 100; // Placeholder
 
-    const data = await response.json();
-    return NextResponse.json({ reply: data.reply });
+    // Save AI response
+    const { data: aiMsg } = await supabase
+      .from('messages')
+      .insert([
+        {
+          conversation_id: conversationId,
+          role: 'assistant',
+          content: mockResponse,
+          token_count: tokenCount,
+          model: team?.default_model || 'gpt-4',
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
 
-  } catch (error: any) {
-    console.error("JS Backend Proxy Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // Update conversation token count
+    await supabase
+      .from('conversations')
+      .update({
+        token_count: (conversation?.token_count || 0) + tokenCount,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', conversationId);
+
+    return NextResponse.json({
+      userMessage: userMsg,
+      aiMessage: aiMsg,
+      tokenCount: tokenCount,
+    });
+  } catch (error) {
+    console.error('Chat error:', error);
+    return NextResponse.json(
+      { error: 'Failed to send message' },
+      { status: 500 }
+    );
   }
 }

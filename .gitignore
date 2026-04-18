@@ -111,3 +111,11 @@ wheels/
 
 # Docs (excluded as requested)
 docs/
+
+# Backend secrets / API keys - NEVER commit these
+backend/keys/
+*.key
+*.secret
+
+# TypeScript build info (large generated file)
+tsconfig.tsbuildinfo
