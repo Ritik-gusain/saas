@@ -1,48 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { adminAuth, db } from '@/lib/firebase-admin';
 
-export async function POST(
+export async function GET(
   req: NextRequest,
   { params }: { params: { conversationId: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { format } = await req.url.searchParams;
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
 
-    // Get conversation and messages
-    const { data: conversation } = await supabase
-      .from('conversations')
-      .select('*')
-      .eq('id', params.conversationId)
-      .single();
+    const { searchParams } = new URL(req.url);
+    const format = searchParams.get('format') || 'json';
 
-    const { data: messages } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('conversation_id', params.conversationId);
+    const convDoc = await db.collection('conversations').doc(params.conversationId).get();
+    if (!convDoc.exists) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    const conversation = convDoc.data()!;
 
-    if (!conversation) {
-      return NextResponse.json(
-        { error: 'Conversation not found' },
-        { status: 404 }
-      );
-    }
+    const msgSnap = await db.collection('messages').where('conversation_id', '==', params.conversationId).get();
+    const messages = msgSnap.docs.map(d => d.data());
 
-    // Format export based on type
     let content: string;
     const filename = `${conversation.title}_${new Date().toISOString().split('T')[0]}`;
 
     if (format === 'json') {
       content = JSON.stringify({ conversation, messages }, null, 2);
-    } else if (format === 'md') {
+    } else {
       content = `# ${conversation.title}\n\n`;
-      messages?.forEach((msg) => {
+      messages?.forEach((msg: any) => {
         content += `## ${msg.role}\n${msg.content}\n\n`;
       });
-    } else {
-      // PDF would require additional library
-      content = JSON.stringify({ conversation, messages }, null, 2);
     }
 
     return new NextResponse(content, {
@@ -51,10 +38,7 @@ export async function POST(
         'Content-Disposition': `attachment; filename="${filename}.${format}"`,
       },
     });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to export conversation' },
-      { status: 500 }
-    );
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Failed to export' }, { status: 500 });
   }
 }

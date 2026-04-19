@@ -1,26 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 
+/**
+ * Auth is handled client-side via Firebase SDK.
+ * This route is kept as a stub for compatibility.
+ * Firebase sign-in happens in: app/(auth)/login/page.tsx
+ */
 export async function POST(req: NextRequest) {
-  try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { email, password } = await req.json();
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 401 });
-    }
-
-    return NextResponse.json({ user: data.user, session: data.session });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'An error occurred during login' },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(
+    { message: 'Auth is handled client-side via Firebase.' },
+    { status: 200 }
+  );
 }

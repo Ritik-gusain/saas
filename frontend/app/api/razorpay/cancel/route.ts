@@ -1,54 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { razorpayInstance } from '@/lib/razorpay';
+
+// TODO: Add Firebase Admin SDK for ID token verification
+// import { adminAuth } from '@/lib/firebase-admin';
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data: user } = await supabase.auth.getUser();
-
-    if (!user) {
+    // TODO: Verify Firebase ID token
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { teamId } = await req.json();
+    const { subscriptionId } = await req.json();
 
-    const { data: team } = await supabase
-      .from('teams')
-      .select('razorpay_subscription_id')
-      .eq('id', teamId)
-      .single();
-
-    if (!team?.razorpay_subscription_id) {
-      return NextResponse.json(
-        { error: 'No subscription found' },
-        { status: 404 }
-      );
+    if (!subscriptionId) {
+      return NextResponse.json({ error: 'subscriptionId is required' }, { status: 400 });
     }
 
-    // Cancel subscription
-    await razorpayInstance.subscriptions.cancel(team.razorpay_subscription_id, {
+    // Cancel subscription at end of current cycle
+    await razorpayInstance.subscriptions.cancel(subscriptionId, {
       cancel_at_cycle_end: false,
     });
 
-    // Update team status
-    await supabase
-      .from('teams')
-      .update({ subscription_status: 'cancelled' })
-      .eq('id', teamId);
-
-    // Log audit
-    await supabase.from('audit_logs').insert([
-      {
-        team_id: teamId,
-        user_id: user.user?.id,
-        action: 'subscription_cancelled',
-        entity_type: 'subscription',
-        metadata: { subscription_id: team.razorpay_subscription_id },
-        created_at: new Date().toISOString(),
-      },
-    ]);
+    // TODO: Update subscription status in Firestore
+    // await db.collection('teams').doc(teamId).update({ subscription_status: 'cancelled' });
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -1,22 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 
+/**
+ * Auth is handled client-side via Firebase SDK.
+ * This route is kept as a stub for compatibility.
+ * Firebase sign-out happens in: components/layout/ or dashboard via auth.signOut()
+ */
 export async function POST(req: NextRequest) {
-  try {
-    const supabase = createRouteHandlerClient({ cookies });
-
-    const { error } = await supabase.auth.signOut();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    return NextResponse.json({ message: 'Signed out successfully' });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'An error occurred during logout' },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(
+    { message: 'Auth sign-out is handled client-side via Firebase.' },
+    { status: 200 }
+  );
 }

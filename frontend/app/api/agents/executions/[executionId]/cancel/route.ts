@@ -1,33 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { adminAuth, db } from '@/lib/firebase-admin';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { executionId: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
 
-    const { data, error } = await supabase
-      .from('agent_executions')
-      .update({
-        status: 'cancelled',
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', params.executionId)
-      .select()
-      .single();
+    // Call Python agent backend
+    const pythonBackendUrl = process.env.FASTAPI_URL || 'http://localhost:8000';
+    const response = await fetch(`${pythonBackendUrl}/api/agents/executions/${params.executionId}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    });
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    return NextResponse.json(data);
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to cancel execution' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Failed to cancel' }, { status: 500 });
   }
 }

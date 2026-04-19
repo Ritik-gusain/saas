@@ -1,3 +1,4 @@
+import { authFetch } from '../lib/api-client';
 import { create } from 'zustand';
 
 export interface Message {
@@ -71,7 +72,7 @@ export const useChatStore = create<ChatState>((set) => ({
   fetchConversations: async (teamId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/conversations?teamId=${teamId}`);
+      const res = await authFetch(`/api/conversations?teamId=${teamId}`);
       if (!res.ok) throw new Error('Failed to fetch conversations');
       const conversations = await res.json();
       set({ conversations, isLoading: false });
@@ -83,7 +84,7 @@ export const useChatStore = create<ChatState>((set) => ({
   createConversation: async (teamId: string, title?: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch('/api/conversations', {
+      const res = await authFetch('/api/conversations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ team_id: teamId, title: title || 'New Conversation' }),
@@ -106,7 +107,7 @@ export const useChatStore = create<ChatState>((set) => ({
   loadConversation: async (conversationId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/conversations/${conversationId}`);
+      const res = await authFetch(`/api/conversations/${conversationId}`);
       if (!res.ok) throw new Error('Failed to load conversation');
       const data = await res.json();
       set({
@@ -130,7 +131,7 @@ export const useChatStore = create<ChatState>((set) => ({
         attachments.forEach((file) => formData.append('attachments', file));
       }
 
-      const res = await fetch('/api/chat', {
+      const res = await authFetch('/api/chat', {
         method: 'POST',
         body: formData,
       });
@@ -191,7 +192,7 @@ export const useChatStore = create<ChatState>((set) => ({
 
   pinConversation: async (conversationId: string) => {
     try {
-      const res = await fetch(`/api/conversations/${conversationId}/pin`, {
+      const res = await authFetch(`/api/conversations/${conversationId}/pin`, {
         method: 'POST',
       });
       if (!res.ok) throw new Error('Failed to pin conversation');
@@ -210,7 +211,7 @@ export const useChatStore = create<ChatState>((set) => ({
 
   unpinConversation: async (conversationId: string) => {
     try {
-      const res = await fetch(`/api/conversations/${conversationId}/pin`, {
+      const res = await authFetch(`/api/conversations/${conversationId}/pin`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to unpin conversation');
@@ -229,7 +230,7 @@ export const useChatStore = create<ChatState>((set) => ({
 
   archiveConversation: async (conversationId: string) => {
     try {
-      const res = await fetch(`/api/conversations/${conversationId}/archive`, {
+      const res = await authFetch(`/api/conversations/${conversationId}/archive`, {
         method: 'POST',
       });
       if (!res.ok) throw new Error('Failed to archive conversation');
@@ -243,7 +244,7 @@ export const useChatStore = create<ChatState>((set) => ({
 
   deleteConversation: async (conversationId: string) => {
     try {
-      const res = await fetch(`/api/conversations/${conversationId}`, {
+      const res = await authFetch(`/api/conversations/${conversationId}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to delete conversation');
@@ -257,7 +258,7 @@ export const useChatStore = create<ChatState>((set) => ({
 
   shareToProject: async (conversationId: string, projectId: string) => {
     try {
-      const res = await fetch(`/api/conversations/${conversationId}/share`, {
+      const res = await authFetch(`/api/conversations/${conversationId}/share`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ projectId }),
@@ -270,7 +271,7 @@ export const useChatStore = create<ChatState>((set) => ({
 
   exportConversation: async (conversationId: string, format: 'pdf' | 'md' | 'json') => {
     try {
-      const res = await fetch(`/api/conversations/${conversationId}/export?format=${format}`);
+      const res = await authFetch(`/api/conversations/${conversationId}/export?format=${format}`);
       if (!res.ok) throw new Error('Failed to export conversation');
       
       const blob = await res.blob();

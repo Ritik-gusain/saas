@@ -1,65 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { adminAuth, db } from '@/lib/firebase-admin';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { agentType: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data: { user } } = await supabase.auth.getUser();
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { projectId, prompt } = await req.json();
 
-    const { teamId, goal } = await req.json();
+    // Call Python agent backend
+    const pythonBackendUrl = process.env.FASTAPI_URL || 'http://localhost:8000';
+    const response = await fetch(`${pythonBackendUrl}/api/agents/${params.agentType}/plan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId, prompt })
+    });
+    
+    if(!response.ok) throw new Error("Agent failed");
+    const data = await response.json();
 
-    // Create execution record with status "pending" for plan approval
-    const { data: execution, error } = await supabase
-      .from('agent_executions')
-      .insert([
-        {
-          team_id: teamId,
-          user_id: user.id,
-          agent_type: params.agentType,
-          status: 'pending',
-          goal,
-          plan: {}, // Plan will be generated
-          created_at: new Date().toISOString(),
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    // TODO: Call Python backend to generate execution plan
-    const mockPlan = {
-      steps: [
-        { step: 1, action: 'Search for information', description: 'Query relevant sources' },
-        { step: 2, action: 'Analyze data', description: 'Process and synthesize results' },
-        { step: 3, action: 'Generate report', description: 'Create formatted output' },
-      ],
-    };
-
-    // Update with plan
-    const { data: updated } = await supabase
-      .from('agent_executions')
-      .update({ plan: mockPlan })
-      .eq('id', execution.id)
-      .select()
-      .single();
-
-    return NextResponse.json(updated, { status: 201 });
-  } catch (error) {
-    console.error('Agent plan error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create execution plan' },
-      { status: 500 }
-    );
+    return NextResponse.json(data);
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Failed to generate plan' }, { status: 500 });
   }
 }

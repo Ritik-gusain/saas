@@ -1,3 +1,4 @@
+import { authFetch } from '../lib/api-client';
 import { create } from 'zustand';
 
 export interface Team {
@@ -71,7 +72,7 @@ export const useTeamStore = create<TeamState>((set) => ({
   fetchTeams: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch('/api/teams');
+      const res = await authFetch('/api/teams');
       if (!res.ok) throw new Error('Failed to fetch teams');
       const teams = await res.json();
       set({ teams, isLoading: false });
@@ -83,7 +84,7 @@ export const useTeamStore = create<TeamState>((set) => ({
   fetchMembers: async (teamId: string) => {
     set({ isLoading: true });
     try {
-      const res = await fetch(`/api/teams/${teamId}/members`);
+      const res = await authFetch(`/api/teams/${teamId}/members`);
       if (!res.ok) throw new Error('Failed to fetch members');
       const members = await res.json();
       set({ members, isLoading: false });
@@ -95,7 +96,7 @@ export const useTeamStore = create<TeamState>((set) => ({
   inviteMember: async (teamId: string, email: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/teams/${teamId}/invite`, {
+      const res = await authFetch(`/api/teams/${teamId}/invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -114,7 +115,7 @@ export const useTeamStore = create<TeamState>((set) => ({
   removeMember: async (teamId: string, userId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/teams/${teamId}/members/${userId}`, {
+      const res = await authFetch(`/api/teams/${teamId}/members/${userId}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to remove member');
@@ -130,7 +131,7 @@ export const useTeamStore = create<TeamState>((set) => ({
   updateTeamSettings: async (teamId: string, settings: Partial<Team>) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/teams/${teamId}`, {
+      const res = await authFetch(`/api/teams/${teamId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings),
@@ -149,7 +150,7 @@ export const useTeamStore = create<TeamState>((set) => ({
 
   fetchSubscription: async (teamId: string) => {
     try {
-      const res = await fetch(`/api/razorpay/subscription?teamId=${teamId}`);
+      const res = await authFetch(`/api/razorpay/subscription?teamId=${teamId}`);
       if (!res.ok) throw new Error('Failed to fetch subscription');
       const subscription = await res.json();
       set({ subscription });
@@ -161,7 +162,7 @@ export const useTeamStore = create<TeamState>((set) => ({
   updateSubscription: async (teamId: string, planId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/razorpay/upgrade`, {
+      const res = await authFetch(`/api/razorpay/upgrade`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ teamId, planId }),
@@ -177,7 +178,7 @@ export const useTeamStore = create<TeamState>((set) => ({
   cancelSubscription: async (teamId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/razorpay/cancel`, {
+      const res = await authFetch(`/api/razorpay/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ teamId }),

@@ -1,3 +1,4 @@
+import { authFetch } from '../lib/api-client';
 import { create } from 'zustand';
 
 export interface ExecutionLog {
@@ -54,7 +55,7 @@ export const useAgentStore = create<AgentState>((set) => ({
   startExecution: async (teamId: string, agentType: string, goal: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/agents/${agentType}/plan`, {
+      const res = await authFetch(`/api/agents/${agentType}/plan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ teamId, goal }),
@@ -75,7 +76,7 @@ export const useAgentStore = create<AgentState>((set) => ({
 
   fetchPlan: async (agentType: string, goal: string) => {
     try {
-      const res = await fetch(`/api/agents/${agentType}/plan`, {
+      const res = await authFetch(`/api/agents/${agentType}/plan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ goal }),
@@ -92,7 +93,7 @@ export const useAgentStore = create<AgentState>((set) => ({
   approvePlan: async (executionId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/agents/executions/${executionId}/approve`, {
+      const res = await authFetch(`/api/agents/executions/${executionId}/approve`, {
         method: 'POST',
       });
       if (!res.ok) throw new Error('Failed to approve plan');
@@ -112,7 +113,7 @@ export const useAgentStore = create<AgentState>((set) => ({
   rejectPlan: async (executionId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/agents/executions/${executionId}`, {
+      const res = await authFetch(`/api/agents/executions/${executionId}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to reject plan');
@@ -129,7 +130,7 @@ export const useAgentStore = create<AgentState>((set) => ({
   cancelExecution: async (executionId: string) => {
     set({ isLoading: true });
     try {
-      const res = await fetch(`/api/agents/executions/${executionId}/cancel`, {
+      const res = await authFetch(`/api/agents/executions/${executionId}/cancel`, {
         method: 'POST',
       });
       if (!res.ok) throw new Error('Failed to cancel execution');
@@ -146,7 +147,7 @@ export const useAgentStore = create<AgentState>((set) => ({
 
   streamExecution: async (executionId: string) => {
     try {
-      const res = await fetch(`/api/agents/executions/${executionId}/stream`);
+      const res = await authFetch(`/api/agents/executions/${executionId}/stream`);
       if (!res.ok) throw new Error('Failed to stream execution');
 
       if (res.body) {
@@ -182,7 +183,7 @@ export const useAgentStore = create<AgentState>((set) => ({
   getExecution: async (executionId: string) => {
     set({ isLoading: true });
     try {
-      const res = await fetch(`/api/agents/executions/${executionId}`);
+      const res = await authFetch(`/api/agents/executions/${executionId}`);
       if (!res.ok) throw new Error('Failed to fetch execution');
       const execution = await res.json();
       set({ currentExecution: execution, isLoading: false });

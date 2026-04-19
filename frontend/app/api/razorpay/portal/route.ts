@@ -1,33 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { razorpayInstance } from '@/lib/razorpay';
+
+// TODO: Add Firebase Admin SDK for ID token verification
+// import { adminAuth } from '@/lib/firebase-admin';
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data: user } = await supabase.auth.getUser();
-
-    if (!user) {
+    // TODO: Verify Firebase ID token
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user's team subscription
-    const { data: team } = await supabase
-      .from('teams')
-      .select('razorpay_customer_id')
-      .eq('owner_id', user.user?.id)
-      .single();
+    const { customerId } = await req.json();
 
-    if (!team?.razorpay_customer_id) {
-      return NextResponse.json(
-        { error: 'No subscription found' },
-        { status: 404 }
-      );
+    if (!customerId) {
+      return NextResponse.json({ error: 'customerId is required' }, { status: 400 });
     }
 
-    // Generate customer portal URL
-    const portalUrl = `https://customer.razorpay.com/${team.razorpay_customer_id}`;
+    // Generate Razorpay customer portal URL
+    const portalUrl = `https://customer.razorpay.com/${customerId}`;
 
     return NextResponse.json({ portalUrl });
   } catch (error) {

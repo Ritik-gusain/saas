@@ -1,51 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { adminAuth, db } from '@/lib/firebase-admin';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { conversationId: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get conversation
-    const { data: conversation, error: convError } = await supabase
-      .from('conversations')
-      .select('*')
-      .eq('id', params.conversationId)
-      .single();
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
 
-    if (convError || !conversation) {
+    const { conversationId } = params;
+
+    // Get conversation
+    const convRef = db.collection('conversations').doc(conversationId);
+    const convDoc = await convRef.get();
+
+    if (!convDoc.exists) {
       return NextResponse.json(
         { error: 'Conversation not found' },
         { status: 404 }
       );
     }
 
-    // Get messages
-    const { data: messages, error: msgError } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('conversation_id', params.conversationId)
-      .order('created_at', { ascending: true });
+    // Optional: check if user_id == uid or team_id has uid access
 
-    if (msgError) {
-      return NextResponse.json({ error: msgError.message }, { status: 400 });
-    }
+    // Get messages
+    const messagesSnapshot = await db.collection('messages')
+      .where('conversation_id', '==', conversationId)
+      .orderBy('created_at', 'asc')
+      .get();
+
+    const messages = messagesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     return NextResponse.json({
-      conversation,
+      conversation: { id: convDoc.id, ...convDoc.data() },
       messages,
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Conversation GET error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch conversation' },
+      { error: 'Failed to fetch conversation', details: error.message },
       { status: 500 }
     );
   }
@@ -56,34 +56,30 @@ export async function PATCH(
   { params }: { params: { conversationId: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
+
     const updates = await req.json();
 
-    const { data: conversation, error } = await supabase
-      .from('conversations')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', params.conversationId)
-      .eq('user_id', user.id)
-      .select()
-      .single();
+    const convRef = db.collection('conversations').doc(params.conversationId);
+    await convRef.update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    });
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
+    const updatedDoc = await convRef.get();
 
-    return NextResponse.json(conversation);
-  } catch (error) {
+    return NextResponse.json({ id: updatedDoc.id, ...updatedDoc.data() });
+  } catch (error: any) {
+    console.error('Conversation PATCH error:', error);
     return NextResponse.json(
-      { error: 'Failed to update conversation' },
+      { error: 'Failed to update conversation', details: error.message },
       { status: 500 }
     );
   }
@@ -94,33 +90,37 @@ export async function DELETE(
   { params }: { params: { conversationId: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Delete conversation and messages
-    await supabase
-      .from('messages')
-      .delete()
-      .eq('conversation_id', params.conversationId);
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
 
-    const { error } = await supabase
-      .from('conversations')
-      .delete()
-      .eq('id', params.conversationId)
-      .eq('user_id', user.id);
+    // Delete messages first
+    const messagesSnapshot = await db.collection('messages')
+      .where('conversation_id', '==', params.conversationId)
+      .get();
+      
+    // Create a batch
+    const batch = db.batch();
+    messagesSnapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    // Delete conversation
+    const convRef = db.collection('conversations').doc(params.conversationId);
+    batch.delete(convRef);
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
+    await batch.commit();
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Conversation DELETE error:', error);
     return NextResponse.json(
-      { error: 'Failed to delete conversation' },
+      { error: 'Failed to delete conversation', details: error.message },
       { status: 500 }
     );
   }

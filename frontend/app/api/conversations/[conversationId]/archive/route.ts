@@ -1,29 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { adminAuth, db } from '@/lib/firebase-admin';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { conversationId: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
 
-    // Archive conversation
-    const { error } = await supabase
-      .from('conversations')
-      .update({ is_archived: true, updated_at: new Date().toISOString() })
-      .eq('id', params.conversationId);
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
+    await db.collection('conversations').doc(params.conversationId).update({
+      is_archived: true,
+      updated_at: new Date().toISOString()
+    });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to archive conversation' },
-      { status: 500 }
-    );
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Failed to archive' }, { status: 500 });
   }
 }

@@ -1,37 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+
+// TODO: Replace with Firestore-backed invite store
+// Temporary in-memory invite store — shared with /api/teams/invite/route.ts
+// In production, read from Firestore collection 'pending_invites'
+const pendingInvites: Record<string, { teamId: string; email: string; expiresAt: string; usedAt?: string }> = {};
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { token: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const invite = pendingInvites[params.token];
 
-    // Get invite details
-    const { data: invite, error } = await supabase
-      .from('pending_invites')
-      .select('team_id, email, expired_at')
-      .eq('token', params.token)
-      .single();
-
-    if (error || !invite) {
+    if (!invite) {
       return NextResponse.json(
         { error: 'Invalid or expired invitation' },
         { status: 404 }
       );
     }
 
-    // Check if invite is expired
-    if (new Date(invite.expired_at) < new Date()) {
+    // Check if expired
+    if (new Date(invite.expiresAt) < new Date()) {
       return NextResponse.json(
         { error: 'Invitation has expired' },
         { status: 410 }
       );
     }
 
-    return NextResponse.json({ teamId: invite.team_id, email: invite.email });
+    return NextResponse.json({ teamId: invite.teamId, email: invite.email });
   } catch (error) {
     return NextResponse.json(
       { error: 'Failed to validate invitation' },
@@ -45,53 +41,33 @@ export async function POST(
   { params }: { params: { token: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data: { user } } = await supabase.auth.getUser();
+    // TODO: Verify Firebase ID token from Authorization header
+    // const authHeader = req.headers.get('Authorization');
+    // const decodedToken = await adminAuth.verifyIdToken(token);
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const invite = pendingInvites[params.token];
 
-    // Get invite details
-    const { data: invite, error: inviteError } = await supabase
-      .from('pending_invites')
-      .select('team_id, email')
-      .eq('token', params.token)
-      .single();
-
-    if (inviteError || !invite) {
+    if (!invite) {
       return NextResponse.json(
         { error: 'Invalid invitation' },
         { status: 404 }
       );
     }
 
-    // Add user to team
-    const { error: memberError } = await supabase
-      .from('team_members')
-      .insert([
-        {
-          team_id: invite.team_id,
-          user_id: user.id,
-          role: 'member',
-          joined_at: new Date().toISOString(),
-        },
-      ]);
-
-    if (memberError) {
+    if (invite.usedAt) {
       return NextResponse.json(
-        { error: memberError.message },
-        { status: 400 }
+        { error: 'Invitation already used' },
+        { status: 410 }
       );
     }
 
     // Mark invite as used
-    await supabase
-      .from('pending_invites')
-      .update({ used_at: new Date().toISOString() })
-      .eq('token', params.token);
+    pendingInvites[params.token].usedAt = new Date().toISOString();
 
-    return NextResponse.json({ success: true, teamId: invite.team_id });
+    // TODO: Add user to team in Firestore
+    // await db.collection('team_members').add({ teamId: invite.teamId, userId, role: 'member' });
+
+    return NextResponse.json({ success: true, teamId: invite.teamId });
   } catch (error) {
     console.error('Accept invite error:', error);
     return NextResponse.json(

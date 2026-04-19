@@ -1,27 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+
+// TODO: Replace with Firestore queries when DB is set up
+// import { db } from '@/lib/firebase-admin';
+
+// Temporary in-memory project store
+const projectsStore: any[] = [];
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    // TODO: Verify Firebase ID token
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all projects for user's teams
-    const { data: projects, error } = await supabase
-      .from('projects')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    return NextResponse.json(projects);
+    // Stub: return in-memory projects (replace with Firestore)
+    return NextResponse.json(projectsStore);
   } catch (error) {
     return NextResponse.json(
       { error: 'Failed to fetch projects' },
@@ -32,35 +26,27 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    // TODO: Verify Firebase ID token
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { team_id, name, description } = await req.json();
 
-    const { data: project, error } = await supabase
-      .from('projects')
-      .insert([
-        {
-          team_id,
-          name,
-          description,
-          created_by: user.id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      ])
-      .select()
-      .single();
+    const newProject = {
+      id: crypto.randomUUID(),
+      team_id,
+      name,
+      description,
+      created_by: 'firebase-uid-pending',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
+    projectsStore.push(newProject);
 
-    return NextResponse.json(project, { status: 201 });
+    return NextResponse.json(newProject, { status: 201 });
   } catch (error) {
     return NextResponse.json(
       { error: 'Failed to create project' },

@@ -1,31 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { adminAuth, db } from '@/lib/firebase-admin';
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all conversations for user
-    const { data: conversations, error } = await supabase
-      .from('conversations')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('updated_at', { ascending: false });
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    const { searchParams } = new URL(req.url);
+    const teamId = searchParams.get('teamId');
+
+    if (!teamId) {
+      return NextResponse.json({ error: 'Team ID is required' }, { status: 400 });
     }
 
+    // Optional: Verify user has access to teamId
+    
+    // Query conversations by team ID
+    const convSnapshot = await db.collection('conversations')
+      .where('team_id', '==', teamId)
+      .orderBy('updated_at', 'desc')
+      .get();
+
+    const conversations = convSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
     return NextResponse.json(conversations);
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Conversations GET error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch conversations' },
+      { error: 'Failed to fetch conversations', details: error.message },
       { status: 500 }
     );
   }
@@ -33,39 +41,43 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
+
     const { team_id, title } = await req.json();
 
-    // Create conversation
-    const { data: conversation, error } = await supabase
-      .from('conversations')
-      .insert([
-        {
-          team_id,
-          user_id: user.id,
-          title: title || 'New Conversation',
-          token_count: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    if (!team_id) {
+        return NextResponse.json({ error: 'Team ID is required' }, { status: 400 });
     }
 
-    return NextResponse.json(conversation, { status: 201 });
-  } catch (error) {
+    const newConvRef = db.collection('conversations').doc();
+    const newConv = {
+      id: newConvRef.id,
+      team_id,
+      user_id: uid,
+      title: title || 'New Conversation',
+      is_shared: false,
+      is_pinned: false,
+      is_archived: false,
+      token_count: 0,
+      model_used: 'gpt-4',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    await newConvRef.set(newConv);
+
+    return NextResponse.json(newConv, { status: 201 });
+  } catch (error: any) {
+    console.error('Conversations POST error:', error);
     return NextResponse.json(
-      { error: 'Failed to create conversation' },
+      { error: 'Failed to create conversation', details: error.message },
       { status: 500 }
     );
   }

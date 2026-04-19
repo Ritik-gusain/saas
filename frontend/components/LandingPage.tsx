@@ -612,6 +612,21 @@ function AgentsSection() {
 ───────────────────────────────────────────── */
 const plans = [
   {
+    name: "Personal",
+    seats: 1,
+    priceINR: "Free",
+    priceUSD: "$0",
+    perUser: "Forever",
+    highlight: false,
+    features: [
+      "1 personal workspace",
+      "Basic AI models via Bytez",
+      "Standard chat history",
+      "Community support",
+    ],
+    noFeatures: ["Team system prompt", "AI Agents", "Usage analytics", "Audit logs"],
+  },
+  {
     name: "Starter Team",
     seats: 3,
     priceINR: "₹2,400",
@@ -691,7 +706,7 @@ function PricingSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 items-start">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
           {plans.map((plan) => (
             <div
               key={plan.name}

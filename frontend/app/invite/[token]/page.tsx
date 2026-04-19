@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSupabase } from '@/components/providers/SupabaseProvider';
 
 interface InviteData {
   teamId: string;
@@ -15,7 +14,6 @@ export default function InvitePage({
   params: { token: string };
 }) {
   const router = useRouter();
-  const supabase = useSupabase();
   const [invite, setInvite] = useState<InviteData | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -67,16 +65,16 @@ export default function InvitePage({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Loading invitation...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#080a14]">
+        <p className="text-slate-400">Loading invitation...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
+      <div className="min-h-screen flex items-center justify-center bg-[#080a14]">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-4 rounded-lg">
           <p className="font-semibold">{error}</p>
           <button
             onClick={() => router.push('/')}
@@ -90,28 +88,28 @@ export default function InvitePage({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-6 text-gray-900">Join Team</h1>
+    <div className="min-h-screen bg-[#080a14] flex items-center justify-center">
+      <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl shadow-2xl p-8 w-full max-w-md">
+        <h1 className="text-3xl font-bold text-center mb-6 text-white">Join Team</h1>
 
         {invite && (
           <div className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-2">Invited email:</p>
-              <p className="text-lg font-semibold text-gray-900">{invite.email}</p>
+            <div className="bg-violet-500/10 border border-violet-500/20 rounded-lg p-4">
+              <p className="text-sm text-slate-400 mb-2">Invited email:</p>
+              <p className="text-lg font-semibold text-white">{invite.email}</p>
             </div>
 
             <button
               onClick={handleAcceptInvite}
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-2 rounded-lg hover:opacity-90 disabled:opacity-50 transition"
+              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold py-2.5 rounded-xl shadow-lg shadow-violet-500/25 transition-all disabled:opacity-50"
             >
               {loading ? 'Accepting...' : 'Accept Invitation'}
             </button>
 
-            <p className="text-center text-sm text-gray-600">
+            <p className="text-center text-sm text-slate-500">
               or{' '}
-              <a href="/auth/login" className="text-blue-600 hover:underline">
+              <a href="/login" className="text-violet-400 hover:text-violet-300">
                 sign in to continue
               </a>
             </p>

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { verifyWebhookSignature, RazorpayWebhookPayload } from '@/lib/razorpay';
+
+// TODO: Replace console logs with Firestore writes when DB is set up
+// import { db } from '@/lib/firebase-admin';
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,87 +31,39 @@ export async function POST(req: NextRequest) {
     }
 
     const payload: RazorpayWebhookPayload = JSON.parse(body);
-    const supabase = createRouteHandlerClient({ cookies });
 
     switch (payload.event) {
       case 'subscription.activated': {
         const subscription = payload.payload.subscription?.entity;
         if (!subscription) break;
 
-        // Get user by email from notes
-        const userEmail = subscription.notes?.user_email;
+        const firebaseUid = subscription.notes?.firebase_uid;
         const planTier = subscription.notes?.plan_tier;
+        const userEmail = subscription.notes?.user_email;
 
-        if (userEmail && planTier) {
-          const { data: user } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('email', userEmail)
-            .single();
+        console.log('[Webhook] subscription.activated', {
+          firebaseUid,
+          planTier,
+          subscriptionId: subscription.id,
+        });
 
-          if (user) {
-            // Create or update team
-            const { data: team } = await supabase
-              .from('teams')
-              .select('id')
-              .eq('owner_id', user.id)
-              .single();
-
-            const teamData = {
-              owner_id: user.id,
-              plan_tier: planTier,
-              razorpay_subscription_id: subscription.id,
-              razorpay_customer_id: subscription.customer_id,
-              subscription_status: 'active',
-              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-              updated_at: new Date().toISOString(),
-            };
-
-            if (team) {
-              await supabase
-                .from('teams')
-                .update(teamData)
-                .eq('id', team.id);
-            } else {
-              await supabase
-                .from('teams')
-                .insert([
-                  {
-                    name: `${user.id}'s Team`,
-                    ...teamData,
-                    created_at: new Date().toISOString(),
-                  },
-                ]);
-            }
-
-            // Log audit
-            await supabase.from('audit_logs').insert([
-              {
-                team_id: team?.id,
-                user_id: user.id,
-                action: 'subscription_activated',
-                entity_type: 'subscription',
-                metadata: { subscription_id: subscription.id },
-                created_at: new Date().toISOString(),
-              },
-            ]);
-          }
-        }
+        // TODO: Write to Firestore
+        // await db.collection('teams').add({
+        //   owner_id: firebaseUid,
+        //   plan_tier: planTier,
+        //   razorpay_subscription_id: subscription.id,
+        //   razorpay_customer_id: subscription.customer_id,
+        //   subscription_status: 'active',
+        //   created_at: new Date().toISOString(),
+        // });
         break;
       }
 
       case 'subscription.charged': {
         const subscription = payload.payload.subscription?.entity;
         if (subscription) {
-          // Update subscription status
-          await supabase
-            .from('teams')
-            .update({
-              subscription_status: 'active',
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            })
-            .eq('razorpay_subscription_id', subscription.id);
+          console.log('[Webhook] subscription.charged', { subscriptionId: subscription.id });
+          // TODO: Update Firestore team subscription status
         }
         break;
       }
@@ -118,11 +71,8 @@ export async function POST(req: NextRequest) {
       case 'subscription.cancelled': {
         const subscription = payload.payload.subscription?.entity;
         if (subscription) {
-          // Update subscription status
-          await supabase
-            .from('teams')
-            .update({ subscription_status: 'cancelled' })
-            .eq('razorpay_subscription_id', subscription.id);
+          console.log('[Webhook] subscription.cancelled', { subscriptionId: subscription.id });
+          // TODO: Update Firestore team subscription_status to 'cancelled'
         }
         break;
       }
@@ -130,19 +80,12 @@ export async function POST(req: NextRequest) {
       case 'payment.failed': {
         const payment = payload.payload.payment?.entity;
         if (payment) {
-          // Log failed payment
-          await supabase.from('audit_logs').insert([
-            {
-              action: 'payment_failed',
-              entity_type: 'payment',
-              metadata: {
-                payment_id: payment.id,
-                subscription_id: payment.subscription_id,
-                error_code: payment.error_code,
-              },
-              created_at: new Date().toISOString(),
-            },
-          ]);
+          console.log('[Webhook] payment.failed', {
+            paymentId: payment.id,
+            subscriptionId: payment.subscription_id,
+            errorCode: payment.error_code,
+          });
+          // TODO: Log to Firestore audit_logs collection
         }
         break;
       }

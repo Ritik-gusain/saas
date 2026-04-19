@@ -1,39 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { razorpayInstance, RAZORPAY_PLANS, PLAN_CONFIG } from '@/lib/razorpay';
+
+// TODO: Import Firebase Admin SDK to verify ID token server-side
+// import { adminAuth } from '@/lib/firebase-admin';
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    const { planType } = await req.json();
-
-    // Get current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // TODO: Verify Firebase ID token from Authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    // const token = authHeader.replace('Bearer ', '');
+    // const decodedToken = await adminAuth.verifyIdToken(token);
+    // const uid = decodedToken.uid;
+    // const userEmail = decodedToken.email;
 
-    // Get or create Razorpay customer
-    const { data: existingCustomer } = await supabase
-      .from('teams')
-      .select('razorpay_customer_id')
-      .eq('owner_id', user.id)
-      .single();
+    const { planType, userEmail, userId } = await req.json();
 
-    let customerId = existingCustomer?.razorpay_customer_id;
-
-    if (!customerId) {
-      const customer = await razorpayInstance.customers.create({
-        email: user.email,
-        contact: user.phone || undefined,
-        gstin: undefined,
-      });
-      customerId = customer.id;
+    if (!planType) {
+      return NextResponse.json({ error: 'planType is required' }, { status: 400 });
     }
 
     const planId = RAZORPAY_PLANS[planType as keyof typeof RAZORPAY_PLANS];
@@ -43,24 +29,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid plan type' }, { status: 400 });
     }
 
-    // Create subscription checkout
+    // Create Razorpay customer
+    const customer = await razorpayInstance.customers.create({
+      email: userEmail,
+      gstin: undefined,
+    });
+
+    // Create subscription
     const subscription = await razorpayInstance.subscriptions.create({
       plan_id: planId,
       customer_notify: 1,
       quantity: 1,
-      total_count: 12, // 12 months
+      total_count: 12,
       start_at: Math.floor(Date.now() / 1000),
       notes: {
-        user_email: user.email,
-        plan_tier: planConfig.seats,
+        user_email: userEmail,
+        plan_tier: planConfig?.seats,
+        firebase_uid: userId,
       },
-      customer_id: customerId,
+      customer_id: customer.id,
     });
 
     return NextResponse.json({
       subscriptionId: subscription.id,
       shortUrl: subscription.short_url,
-      customerId,
+      customerId: customer.id,
     });
   } catch (error) {
     console.error('Razorpay checkout error:', error);

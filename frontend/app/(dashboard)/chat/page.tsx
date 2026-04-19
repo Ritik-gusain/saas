@@ -1,38 +1,39 @@
 'use client';
 
-import { useSupabase } from '@/components/providers/SupabaseProvider';
 import { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import MessageInput from '@/components/chat/MessageInput';
 import MessageThread from '@/components/chat/MessageThread';
 import { useChatStore } from '@/stores/chatStore';
 
 export default function ChatPage() {
-  const supabase = useSupabase();
   const [teamId, setTeamId] = useState<string | null>(null);
   const { currentConversation, messages, isStreaming, sendMessage, createConversation } = useChatStore();
 
   useEffect(() => {
-    // Get current team
-    const fetchTeam = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const { data: teams } = await supabase
-          .from('teams')
-          .select('id')
-          .eq('owner_id', user.id)
-          .single();
-
-        if (teams) {
-          setTeamId(teams.id);
+        // Fetch teams via API route (auth header with Firebase token)
+        try {
+          const token = await user.getIdToken();
+          const res = await fetch('/api/teams', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const teams = await res.json();
+            if (teams && teams.length > 0) {
+              setTeamId(teams[0].id);
+            }
+          }
+        } catch (err) {
+          console.error('Failed to fetch team:', err);
         }
       }
-    };
+    });
 
-    fetchTeam();
-  }, [supabase]);
+    return () => unsubscribe();
+  }, []);
 
   const handleSendMessage = async (message: string) => {
     if (!currentConversation && teamId) {

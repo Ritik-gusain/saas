@@ -2,13 +2,14 @@
 import React from 'react';
 import ChatDashboard from '@/components/ChatDashboard';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export default function DashboardPage() {
   const router = useRouter();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOut(auth);
     router.push('/');
   };
 

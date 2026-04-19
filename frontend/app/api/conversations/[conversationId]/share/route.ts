@@ -1,34 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { adminAuth, db } from '@/lib/firebase-admin';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { conversationId: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
+
     const { projectId } = await req.json();
 
-    // Add conversation to project
-    const { error } = await supabase.from('project_items').insert([
-      {
-        project_id: projectId,
-        item_type: 'conversation',
-        item_id: params.conversationId,
-        pinned_at: new Date().toISOString(),
-      },
-    ]);
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
+    await db.collection('project_items').doc().set({
+      project_id: projectId,
+      item_type: 'conversation',
+      item_id: params.conversationId,
+      pinned_at: new Date().toISOString(),
+    });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to share conversation' },
-      { status: 500 }
-    );
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Failed to share' }, { status: 500 });
   }
 }
