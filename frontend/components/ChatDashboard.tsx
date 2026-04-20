@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bot, MessageSquare, Send, Users, ArrowRight } from 'lucide-react';
+import { Bot, MessageSquare, Send, Users, ArrowRight, Sparkles, Plus, Search, Settings, MoreVertical, Pin, Archive, Download, Trash2, Clock, Zap } from 'lucide-react';
 import { sendMessageToModel } from '@/lib/models';
 import { Logo } from './Logo';
 
@@ -14,6 +14,13 @@ export default function ChatDashboard({ selectedPlan, onSignOut }: ChatDashboard
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeConversation, setActiveConversation] = useState('general');
+
+  const conversations = [
+    { id: 'general', name: 'General AI', icon: MessageSquare, unread: 0, pinned: true },
+    { id: 'research', name: 'Market Research', icon: Search, unread: 3, pinned: false },
+    { id: 'code', name: 'Code Review', icon: Bot, unread: 0, pinned: false },
+  ];
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,101 +45,208 @@ export default function ChatDashboard({ selectedPlan, onSignOut }: ChatDashboard
 
   return (
     <div className="h-full bg-transparent flex overflow-hidden">
-      {/* Sidebar - Inner */}
-      <div className="w-72 bg-[var(--hud)]/10 border-r border-[var(--border)] flex flex-col">
-        <div className="p-4 flex-1 overflow-y-auto">
-          <div className="mb-8">
-            <h4 className="text-[10px] font-bold text-[var(--soft)]/50 uppercase tracking-[0.2em] mb-4">Team Hub</h4>
-            <div className="bg-[var(--cyan)]/5 border border-[var(--cyan)]/20 rounded-xl p-5 shadow-2xl shadow-black/20">
-              <div className="flex items-center gap-3 mb-3">
-                <Users className="w-4 h-4 text-[var(--cyan)]" />
-                <p className="text-xs font-bold text-white uppercase tracking-wider">Active Plan</p>
-              </div>
-              <p className="text-[13px] text-[var(--soft)] leading-relaxed">
-                <span className="text-white font-bold">1</span> / {selectedPlan} members invited.
-              </p>
-              <button className="mt-4 text-[11px] font-bold text-[var(--cyan)] hover:text-[var(--mint)] transition-colors uppercase tracking-widest flex items-center gap-2">
-                Invite Teammate <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
+      {/* Sidebar - Conversations */}
+      <div className="w-80 glass-panel border-r flex flex-col">
+        <div className="p-5 border-b border-[var(--border)]">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Conversations</h3>
+            <button className="p-2 rounded-lg glass-panel hover:bg-[var(--cyan)]/10 hover:border-[var(--cyan)]/30 transition-all group">
+              <Plus className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--cyan)]" />
+            </button>
           </div>
           
-          <nav className="space-y-1">
-            <button className="w-full flex items-center gap-3 px-4 py-3 bg-[var(--cyan)]/10 text-white rounded-xl border border-[var(--cyan)]/20 font-bold text-sm shadow-lg shadow-[var(--cyan)]/5">
-              <MessageSquare className="w-4 h-4 text-[var(--cyan)]" />
-              Main Terminal
-            </button>
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-[var(--soft)] hover:text-white hover:bg-[var(--cyan)]/5 transition-all rounded-xl text-sm font-medium">
-              <Bot className="w-4 h-4 opacity-70" />
-              Custom Agents
-            </button>
-          </nav>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" />
+            <input 
+              type="text"
+              placeholder="Search conversations..."
+              className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--cyan)] focus:ring-0 transition-all outline-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-3 space-y-1">
+          {conversations.map((conv) => {
+            const Icon = conv.icon;
+            return (
+              <button
+                key={conv.id}
+                onClick={() => setActiveConversation(conv.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all group ${
+                  activeConversation === conv.id
+                    ? 'bg-[var(--cyan)]/10 border border-[var(--cyan)]/30 text-white'
+                    : 'text-[var(--muted)] hover:bg-[var(--surface)] hover:text-white'
+                }`}
+              >
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                  activeConversation === conv.id
+                    ? 'bg-gradient-to-br from-[var(--cyan)] to-[var(--mint)]'
+                    : 'bg-[var(--surface)] group-hover:bg-[var(--cyan)]/10'
+                }`}>
+                  <Icon className={`w-4 h-4 ${
+                    activeConversation === conv.id ? 'text-[var(--bg)]' : 'text-[var(--muted)]'
+                  }`} />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold">{conv.name}</span>
+                    {conv.pinned && <Pin className="w-3 h-3 text-[var(--cyan)]" />}
+                  </div>
+                  <div className="text-xs text-[var(--muted)] mt-0.5">2 hours ago</div>
+                </div>
+                {conv.unread > 0 && (
+                  <div className="w-5 h-5 rounded-full bg-[var(--cyan)] text-[var(--bg)] text-[10px] font-bold flex items-center justify-center">
+                    {conv.unread}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="p-5 border-t border-[var(--border)]">
+          <div className="glass-panel rounded-xl p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--cyan)] to-[var(--mint)] flex items-center justify-center">
+                <Users className="w-5 h-5 text-[var(--bg)]" />
+              </div>
+              <div className="flex-1">
+                <div className="text-xs font-bold text-white uppercase tracking-wider">Team Plan</div>
+                <div className="text-xs text-[var(--muted)] mt-0.5">Growth • 7 seats</div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[var(--muted)]">Usage today</span>
+              <span className="text-[var(--mint)] font-bold">89k tokens</span>
+            </div>
+            <div className="mt-2 h-1.5 bg-[var(--surface)] rounded-full overflow-hidden">
+              <div className="h-full w-[67%] bg-gradient-to-r from-[var(--cyan)] to-[var(--mint)] rounded-full" />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col bg-transparent">
-        <header className="h-14 border-b border-[var(--border)] flex items-center px-8">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-[var(--cyan)] shadow-[0_0_8px_var(--cyan)]" />
-            <h2 className="text-sm font-bold text-white uppercase tracking-widest">Channel: General_AI</h2>
+        {/* Header */}
+        <header className="h-16 border-b border-[var(--border)] flex items-center justify-between px-8 glass-panel">
+          <div className="flex items-center gap-4">
+            <div className="w-2.5 h-2.5 rounded-full bg-[var(--mint)] shadow-[0_0_12px_var(--mint)] animate-pulse" />
+            <div>
+              <h2 className="text-sm font-bold text-white">General AI</h2>
+              <p className="text-xs text-[var(--muted)]">Team workspace • 7 members active</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="p-2.5 rounded-lg glass-panel hover:bg-[var(--cyan)]/10 hover:border-[var(--cyan)]/30 transition-all group">
+              <Pin className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--cyan)]" />
+            </button>
+            <button className="p-2.5 rounded-lg glass-panel hover:bg-[var(--cyan)]/10 hover:border-[var(--cyan)]/30 transition-all group">
+              <Archive className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--cyan)]" />
+            </button>
+            <button className="p-2.5 rounded-lg glass-panel hover:bg-[var(--cyan)]/10 hover:border-[var(--cyan)]/30 transition-all group">
+              <MoreVertical className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--cyan)]" />
+            </button>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-8 space-y-8">
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-grid-subtle">
           {messages.filter(m => m.role !== 'system').map((msg, idx) => (
-            <div key={idx} className={`flex gap-5 max-w-4xl ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''} animate-fade-in-up`}>
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border ${
+            <div key={idx} className={`flex gap-5 max-w-4xl animate-fade-in-up ${
+              msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''
+            }`}>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                 msg.role === 'user' 
-                  ? 'bg-gradient-to-br from-[var(--cyan)] to-[var(--mint)] text-[var(--bg)] border-transparent' 
-                  : 'bg-[var(--hud)]/40 border-[var(--border)]'
+                  ? 'bg-gradient-to-br from-[var(--cyan)] to-[var(--mint)]' 
+                  : 'glass-panel'
               }`}>
-                {msg.role === 'user' ? <span className="text-[10px] font-black tracking-tighter text-[var(--bg)]">ME</span> : <Logo size={18} animated={false} />}
+                {msg.role === 'user' 
+                  ? <span className="text-xs font-black text-[var(--bg)]">ME</span> 
+                  : <Logo size={20} animated={false} />
+                }
               </div>
-              <div className={`relative rounded-2xl px-6 py-4 text-[14px] leading-relaxed shadow-2xl border ${
-                msg.role === 'user' 
-                  ? 'bg-[var(--cyan)]/10 text-white border-[var(--cyan)]/30 rounded-tr-none' 
-                  : 'bg-[var(--hud)]/20 text-[var(--soft)] border-[var(--border)] rounded-tl-none'
-              }`}>
-                {msg.content}
+              <div className="flex-1">
+                <div className={`relative rounded-2xl px-6 py-4 text-sm leading-relaxed shadow-xl ${
+                  msg.role === 'user' 
+                    ? 'glass-panel border-[var(--cyan)]/30 text-white rounded-tr-sm' 
+                    : 'glass-panel text-[var(--soft)] rounded-tl-sm'
+                }`}>
+                  {msg.content}
+                </div>
+                <div className="flex items-center gap-3 mt-2 px-2">
+                  <span className="text-xs text-[var(--muted)] flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    Just now
+                  </span>
+                  {msg.role === 'assistant' && (
+                    <>
+                      <button className="text-xs text-[var(--muted)] hover:text-[var(--cyan)] transition-colors">Copy</button>
+                      <button className="text-xs text-[var(--muted)] hover:text-[var(--cyan)] transition-colors">Regenerate</button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           ))}
           {loading && (
             <div className="flex gap-5 max-w-4xl animate-pulse">
-              <div className="w-9 h-9 rounded-xl bg-[var(--hud)]/40 border border-[var(--border)] flex items-center justify-center">
-                <Logo size={18} animated={false} />
+              <div className="w-10 h-10 rounded-xl glass-panel flex items-center justify-center">
+                <Logo size={20} animated={false} />
               </div>
-              <div className="bg-[var(--hud)]/20 border border-[var(--border)] rounded-2xl rounded-tl-none px-6 py-4 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-[var(--cyan)] rounded-full animate-bounce" />
-                <div className="w-1.5 h-1.5 bg-[var(--cyan)] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <div className="w-1.5 h-1.5 bg-[var(--cyan)] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              <div className="glass-panel rounded-2xl rounded-tl-sm px-6 py-4 flex items-center gap-2">
+                <div className="w-2 h-2 bg-[var(--cyan)] rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-[var(--cyan)] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-2 h-2 bg-[var(--cyan)] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           )}
         </div>
 
-        <div className="p-6">
-          <form onSubmit={handleSend} className="max-w-4xl mx-auto relative flex items-center group">
-            <div className="absolute inset-0 bg-[var(--cyan)]/5 blur-xl group-focus-within:bg-[var(--cyan)]/10 transition-all rounded-full" />
-            <input 
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Inject command to Bytez AI..."
-              className="w-full relative bg-[var(--hud)]/40 border border-[var(--border)] rounded-2xl pl-6 pr-16 py-4.5 text-[14px] text-white placeholder:text-[var(--soft)]/30 focus:border-[var(--cyan)] focus:ring-0 transition-all outline-none"
-            />
-            <button 
-              type="submit" 
-              disabled={loading || !input.trim()}
-              className="absolute right-3 p-3 bg-gradient-to-br from-[var(--cyan)] to-[var(--mint)] text-[var(--bg)] rounded-xl hover:opacity-90 disabled:opacity-30 transition-all shadow-xl shadow-[var(--cyan)]/20"
-            >
-              <Send className="w-4 h-4" />
-            </button>
+        {/* Input */}
+        <div className="p-6 border-t border-[var(--border)] glass-panel">
+          <form onSubmit={handleSend} className="max-w-4xl mx-auto">
+            <div className="relative flex items-end gap-3 group">
+              <div className="absolute -inset-4 bg-[var(--cyan)]/5 blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity rounded-3xl" />
+              <div className="flex-1 relative">
+                <textarea 
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend(e);
+                    }
+                  }}
+                  placeholder="Ask your team AI anything..."
+                  rows={1}
+                  className="w-full relative glass-panel rounded-2xl pl-6 pr-14 py-4 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--cyan)] focus:ring-0 transition-all outline-none resize-none"
+                />
+                <div className="absolute right-3 bottom-3 flex items-center gap-2">
+                  <button 
+                    type="button"
+                    className="p-2 rounded-lg hover:bg-[var(--surface)] transition-all"
+                  >
+                    <Sparkles className="w-4 h-4 text-[var(--muted)]" />
+                  </button>
+                </div>
+              </div>
+              <button 
+                type="submit" 
+                disabled={loading || !input.trim()}
+                className="p-4 bg-gradient-to-br from-[var(--cyan)] to-[var(--mint)] text-[var(--bg)] rounded-xl hover:opacity-90 disabled:opacity-30 transition-all shadow-xl shadow-[var(--cyan)]/20 hover:shadow-[var(--cyan)]/40 hover:scale-105"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex items-center justify-between mt-4 px-2">
+              <p className="text-xs text-[var(--muted)] flex items-center gap-2">
+                <Zap className="w-3 h-3 text-[var(--mint)]" />
+                Luminescent AI Core v1.4 • Powered by Bytez
+              </p>
+              <p className="text-xs text-[var(--muted)]">Press <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface)] text-[10px]">Enter</kbd> to send</p>
+            </div>
           </form>
-          <p className="text-center text-[10px] text-[var(--soft)]/30 uppercase tracking-[0.2em] mt-5">
-            Luminescent AI Core // Experimental V1.4
-          </p>
         </div>
       </div>
     </div>

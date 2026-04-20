@@ -598,7 +598,7 @@ function Footer() {
 /* ─────────────────────────────────────────────
    ROOT LANDING PAGE
 ───────────────────────────────────────────── */
-export default function LandingPage() {
+export default function LandingPageRedesign() {
   return (
     <div className="relative min-h-screen bg-[var(--bg)] font-['DM_Sans']">
       <Navbar />
