@@ -51,7 +51,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen antialiased bg-[var(--bg)]">{children}</body>
+      <body className="min-h-screen antialiased bg-[var(--bg)] font-['Inter']">{children}</body>
     </html>
   );
 }
