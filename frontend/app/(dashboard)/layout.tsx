@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useRouter, usePathname } from 'next/navigation';
 import AuthGuard from '@/components/AuthGuard';
 import { auth } from '@/lib/firebase';
 import { MessageSquare, FolderKanban, Settings, Users, BarChart3, LogOut, ChevronRight, Sparkles, Zap, ChevronDown, Plus, Hash, Lock } from 'lucide-react';
@@ -11,6 +12,8 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [email, setEmail] = useState<string>('Loading...');
   const [activeRoute, setActiveRoute] = useState('chat');
   const [chatExpanded, setChatExpanded] = useState(true);
@@ -25,12 +28,11 @@ export default function DashboardLayout({
 
   useEffect(() => {
     setEmail(auth.currentUser?.email || 'User');
-    const path = window.location.pathname;
-    if (path.includes('projects')) setActiveRoute('projects');
-    else if (path.includes('settings')) setActiveRoute('settings');
-    else if (path.includes('analytics')) setActiveRoute('analytics');
+    if (pathname.includes('projects')) setActiveRoute('projects');
+    else if (pathname.includes('settings')) setActiveRoute('settings');
+    else if (pathname.includes('analytics')) setActiveRoute('analytics');
     else setActiveRoute('chat');
-  }, []);
+  }, [pathname]);
 
   const navItems = [
     { id: 'chat', label: 'Chat', icon: MessageSquare, href: '/dashboard', expandable: true },
@@ -38,6 +40,14 @@ export default function DashboardLayout({
     { id: 'analytics', label: 'Analytics', icon: BarChart3, href: '/analytics', expandable: false },
     { id: 'settings', label: 'Settings', icon: Settings, href: '/settings', expandable: false },
   ];
+
+  const handleNavigation = (item: typeof navItems[0]) => {
+    if (item.expandable) {
+      setChatExpanded(!chatExpanded);
+    } else {
+      router.push(item.href);
+    }
+  };
 
   return (
     <AuthGuard>
@@ -50,7 +60,7 @@ export default function DashboardLayout({
         <div className="w-72 glass-panel border-r flex flex-col z-10 relative">
           {/* Logo */}
           <div className="p-6 border-b border-[var(--border)]">
-            <div className="flex items-center gap-3 group cursor-pointer">
+            <div className="flex items-center gap-3 group cursor-pointer" onClick={() => router.push('/dashboard')}>
               <div className="relative">
                 <div className="absolute inset-0 bg-[var(--cyan)] blur-lg opacity-0 group-hover:opacity-30 transition-opacity" />
                 <Logo size={36} />
@@ -77,13 +87,7 @@ export default function DashboardLayout({
                         ? 'bg-gradient-to-r from-[var(--cyan)]/10 to-[var(--mint)]/10 border border-[var(--cyan)]/30 text-white shadow-lg shadow-[var(--cyan)]/5'
                         : 'text-[var(--muted)] hover:text-white hover:bg-[var(--surface)]'
                     }`}
-                    onClick={() => {
-                      if (item.expandable) {
-                        setChatExpanded(!chatExpanded);
-                      } else {
-                        window.location.href = item.href;
-                      }
-                    }}
+                    onClick={() => handleNavigation(item)}
                   >
                     {isActive && !item.expandable && (
                       <div className="absolute inset-0 bg-gradient-to-r from-[var(--cyan)]/5 to-[var(--mint)]/5 animate-pulse" />
