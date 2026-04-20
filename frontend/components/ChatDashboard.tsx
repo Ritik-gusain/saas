@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Bot, MessageSquare, Send, Users } from 'lucide-react';
+import { Bot, MessageSquare, Send, Users, ArrowRight } from 'lucide-react';
 import { sendMessageToModel } from '@/lib/models';
+import { Logo } from './Logo';
 
 interface ChatDashboardProps {
   selectedPlan: number | null;
@@ -36,96 +37,101 @@ export default function ChatDashboard({ selectedPlan, onSignOut }: ChatDashboard
   };
 
   return (
-    <div className="h-screen bg-slate-50 flex overflow-hidden">
-      {/* Sidebar */}
-      <div className="w-72 bg-white border-r border-slate-200 flex flex-col">
-        <div className="p-6 border-b border-slate-200 flex items-center gap-3">
-          <Bot className="w-8 h-8 text-blue-600" />
-          <span className="font-bold text-xl">Luminescent</span>
-        </div>
+    <div className="h-full bg-transparent flex overflow-hidden">
+      {/* Sidebar - Inner */}
+      <div className="w-72 bg-[var(--hud)]/10 border-r border-[var(--border)] flex flex-col">
         <div className="p-4 flex-1 overflow-y-auto">
-          <div className="mb-6">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Your Team</h4>
-            <div className="bg-blue-50 text-blue-800 rounded-lg p-4 text-sm flex items-start gap-3">
-              <Users className="w-5 h-5 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold mb-1">Active Plan</p>
-                <p>1 / {selectedPlan} members invited.</p>
-                <button className="mt-2 text-blue-600 font-medium hover:underline text-xs">Invite Teammate</button>
+          <div className="mb-8">
+            <h4 className="text-[10px] font-bold text-[var(--soft)]/50 uppercase tracking-[0.2em] mb-4">Team Hub</h4>
+            <div className="bg-[var(--cyan)]/5 border border-[var(--cyan)]/20 rounded-xl p-5 shadow-2xl shadow-black/20">
+              <div className="flex items-center gap-3 mb-3">
+                <Users className="w-4 h-4 text-[var(--cyan)]" />
+                <p className="text-xs font-bold text-white uppercase tracking-wider">Active Plan</p>
               </div>
+              <p className="text-[13px] text-[var(--soft)] leading-relaxed">
+                <span className="text-white font-bold">1</span> / {selectedPlan} members invited.
+              </p>
+              <button className="mt-4 text-[11px] font-bold text-[var(--cyan)] hover:text-[var(--mint)] transition-colors uppercase tracking-widest flex items-center gap-2">
+                Invite Teammate <ArrowRight className="w-3 h-3" />
+              </button>
             </div>
           </div>
+          
           <nav className="space-y-1">
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 bg-slate-100 text-slate-900 rounded-lg font-medium">
-              <MessageSquare className="w-5 h-5" />
-              Team Chat
+            <button className="w-full flex items-center gap-3 px-4 py-3 bg-[var(--cyan)]/10 text-white rounded-xl border border-[var(--cyan)]/20 font-bold text-sm shadow-lg shadow-[var(--cyan)]/5">
+              <MessageSquare className="w-4 h-4 text-[var(--cyan)]" />
+              Main Terminal
+            </button>
+            <button className="w-full flex items-center gap-3 px-4 py-3 text-[var(--soft)] hover:text-white hover:bg-[var(--cyan)]/5 transition-all rounded-xl text-sm font-medium">
+              <Bot className="w-4 h-4 opacity-70" />
+              Custom Agents
             </button>
           </nav>
-        </div>
-        <div className="p-4 border-t border-slate-200">
-          <button 
-            onClick={onSignOut}
-            className="text-sm text-slate-500 hover:text-slate-900 font-medium"
-          >
-            Sign Out
-          </button>
         </div>
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-white">
-        <header className="h-16 border-b border-slate-200 flex items-center px-6 bg-white">
-          <h2 className="text-lg font-semibold text-slate-800">Team Chat - General</h2>
+      <div className="flex-1 flex flex-col bg-transparent">
+        <header className="h-14 border-b border-[var(--border)] flex items-center px-8">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-[var(--cyan)] shadow-[0_0_8px_var(--cyan)]" />
+            <h2 className="text-sm font-bold text-white uppercase tracking-widest">Channel: General_AI</h2>
+          </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-8 space-y-8">
           {messages.filter(m => m.role !== 'system').map((msg, idx) => (
-            <div key={idx} className={`flex gap-4 max-w-3xl ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-slate-200 text-slate-600' : 'bg-blue-600 text-white'}`}>
-                {msg.role === 'user' ? <Users className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-              </div>
-              <div className={`rounded-2xl px-5 py-3.5 shadow-sm text-[15px] leading-relaxed ${
+            <div key={idx} className={`flex gap-5 max-w-4xl ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''} animate-fade-in-up`}>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border ${
                 msg.role === 'user' 
-                  ? 'bg-blue-600 text-white rounded-tr-sm' 
-                  : 'bg-slate-100 text-slate-800 rounded-tl-sm'
+                  ? 'bg-gradient-to-br from-[var(--cyan)] to-[var(--mint)] text-[var(--bg)] border-transparent' 
+                  : 'bg-[var(--hud)]/40 border-[var(--border)]'
+              }`}>
+                {msg.role === 'user' ? <span className="text-[10px] font-black tracking-tighter text-[var(--bg)]">ME</span> : <Logo size={18} animated={false} />}
+              </div>
+              <div className={`relative rounded-2xl px-6 py-4 text-[14px] leading-relaxed shadow-2xl border ${
+                msg.role === 'user' 
+                  ? 'bg-[var(--cyan)]/10 text-white border-[var(--cyan)]/30 rounded-tr-none' 
+                  : 'bg-[var(--hud)]/20 text-[var(--soft)] border-[var(--border)] rounded-tl-none'
               }`}>
                 {msg.content}
               </div>
             </div>
           ))}
           {loading && (
-            <div className="flex gap-4 max-w-3xl">
-              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                <Bot className="w-4 h-4" />
+            <div className="flex gap-5 max-w-4xl animate-pulse">
+              <div className="w-9 h-9 rounded-xl bg-[var(--hud)]/40 border border-[var(--border)] flex items-center justify-center">
+                <Logo size={18} animated={false} />
               </div>
-              <div className="bg-slate-100 text-slate-800 rounded-2xl rounded-tl-sm px-5 py-3.5 flex items-center gap-2">
-                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
-                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              <div className="bg-[var(--hud)]/20 border border-[var(--border)] rounded-2xl rounded-tl-none px-6 py-4 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-[var(--cyan)] rounded-full animate-bounce" />
+                <div className="w-1.5 h-1.5 bg-[var(--cyan)] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-1.5 h-1.5 bg-[var(--cyan)] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           )}
         </div>
 
-        <div className="p-4 bg-white border-t border-slate-200">
-          <form onSubmit={handleSend} className="max-w-4xl mx-auto relative flex items-center">
+        <div className="p-6">
+          <form onSubmit={handleSend} className="max-w-4xl mx-auto relative flex items-center group">
+            <div className="absolute inset-0 bg-[var(--cyan)]/5 blur-xl group-focus-within:bg-[var(--cyan)]/10 transition-all rounded-full" />
             <input 
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask the Bytez AI..."
-              className="w-full bg-slate-100 border-0 rounded-full pl-6 pr-14 py-4 text-[15px] focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all outline-none"
+              placeholder="Inject command to Bytez AI..."
+              className="w-full relative bg-[var(--hud)]/40 border border-[var(--border)] rounded-2xl pl-6 pr-16 py-4.5 text-[14px] text-white placeholder:text-[var(--soft)]/30 focus:border-[var(--cyan)] focus:ring-0 transition-all outline-none"
             />
             <button 
               type="submit" 
               disabled={loading || !input.trim()}
-              className="absolute right-2 p-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors"
+              className="absolute right-3 p-3 bg-gradient-to-br from-[var(--cyan)] to-[var(--mint)] text-[var(--bg)] rounded-xl hover:opacity-90 disabled:opacity-30 transition-all shadow-xl shadow-[var(--cyan)]/20"
             >
               <Send className="w-4 h-4" />
             </button>
           </form>
-          <p className="text-center text-xs text-slate-400 mt-3">
-            AI models can make mistakes. Verify important information.
+          <p className="text-center text-[10px] text-[var(--soft)]/30 uppercase tracking-[0.2em] mt-5">
+            Luminescent AI Core // Experimental V1.4
           </p>
         </div>
       </div>

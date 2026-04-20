@@ -1,12 +1,13 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Bot } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   return (
     <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center">
       <Link href="/" className="flex items-center gap-2 font-bold text-xl text-slate-900">
-        <Bot className="w-6 h-6 text-blue-600" />
+        <Image src="/logo.png" alt="Luminescent Logo" width={32} height={19} />
         Luminescent
       </Link>
       <div className="space-x-4">
