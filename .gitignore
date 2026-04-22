@@ -214,6 +214,7 @@ skills/
 skills-lock.json
 .agents/
 .adal/
+.amazonq/
 .augment/
 .bob/
 .claude/
