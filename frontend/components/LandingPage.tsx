@@ -267,16 +267,14 @@ function HeroSection() {
           </div>
 
           <h1 ref={titleRef} className="text-[clamp(44px,5.5vw,72px)] font-black text-white leading-[1.08] tracking-[-0.04em] font-[Syne]">
-            One AI subscription.<br />
+            Free for individuals.<br />
             <span className="bg-gradient-to-r from-[var(--cyan)] to-[var(--mint)] bg-clip-text text-transparent">
-              Your whole team.
+              Powerful for teams.
             </span>
           </h1>
 
           <p ref={subtitleRef} className="text-[17px] text-[var(--soft)] leading-relaxed max-w-lg font-light">
-            Stop paying ₹1,600/month per employee for individual ChatGPT Plus
-            seats. Luminescent gives your entire team unified AI for half the
-            cost — with shared history, custom prompts, and AI agents.
+            Free forever for solo developers with your own API keys. For teams, upgrade for a unified workspace with shared history, custom prompts, and AI agents without the per-seat markup.
           </p>
 
           <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4">
@@ -434,6 +432,18 @@ function FeaturesSection() {
 ───────────────────────────────────────────── */
 const plans = [
   {
+    name: "Individual",
+    price: "Free",
+    desc: "Bring Your Own Key (BYOK). Unrestricted personal access.",
+    features: [
+      "Bring your own API key",
+      "No subscription required",
+      "All AI models supported",
+      "Basic chat & local history",
+    ],
+    highlight: false,
+  },
+  {
     name: "Starter",
     price: "₹999",
     desc: "For small teams getting started with AI collaboration.",
@@ -512,7 +522,7 @@ function PricingSection() {
           </p>
         </div>
 
-        <div ref={containerRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div ref={containerRef} className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {plans.map((plan) => (
             <div
               key={plan.name}

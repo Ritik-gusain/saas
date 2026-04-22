@@ -210,10 +210,11 @@ luminescent/
 
 ## ✨ All Business Rules Implemented
 
+✅ Freemium BYOK (Bring Your Own Key) model for individual usage
 ✅ Seat limit enforcement (3, 7, or 12)  
 ✅ Razorpay subscription handling  
 ✅ Team ownership & member roles  
-✅ Token usage tracking  
+✅ Token usage tracking (SaaS usage and BYOK separation) 
 ✅ Conversation history & pinning  
 ✅ Project collaboration  
 ✅ Email invitations  

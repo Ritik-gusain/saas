@@ -9,6 +9,19 @@ interface PricingPlansProps {
 
 const plans = [
   {
+    id: 'individual',
+    name: 'Solo Developer',
+    price: 'Free',
+    currency: '',
+    seats: 1,
+    features: [
+      'Bring Your Own Key (BYOK)',
+      'No subscription required',
+      'All AI models supported',
+      'Basic chat & local history',
+    ],
+  },
+  {
     id: 'starter',
     name: 'Starter Team',
     price: 2400,
@@ -77,7 +90,7 @@ export default function PricingPlans({ onSelectPlan }: PricingPlansProps) {
           One flat fee for your entire team. Stop paying for individual ChatGPT subscriptions.
         </p>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {plans.map((plan) => (
             <div
               key={plan.id}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Settings, User, Bell, Shield, CreditCard, Users, Mail, Key, Globe } from 'lucide-react';
+import ApiKeysForm from '@/components/settings/ApiKeysForm';
 
 export default function SettingsPage() {
   const settingsSections = [
@@ -37,6 +38,9 @@ export default function SettingsPage() {
             );
           })}
         </div>
+
+        {/* BYOK Settings Form */}
+        <ApiKeysForm />
 
         <div className="mt-12 glass-panel rounded-2xl p-8">
           <h2 className="text-xl font-bold text-white font-[Syne] mb-6">Quick Actions</h2>

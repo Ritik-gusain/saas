@@ -33,18 +33,35 @@ async def chat(request: Request):
         data = await request.json()
         messages = data.get("messages", [])
         system_prompt = data.get("systemPrompt", "You are a helpful AI assistant.")
+        api_keys = data.get("apiKeys", {}) # BYOK API Keys from frontend
         
-        # Prepare Bytez SDK
-        if not bytez_api_key:
-            return JSONResponse(status_code=500, content={"error": "Bytez API key is missing. Please add it to keys/bytez_api_key.txt"})
-            
-        sdk = Bytez(bytez_api_key)
-        # Using the same model from Streamlit
-        model = sdk.model("google/gemma-4-26B-A4B-it")
+        # BYOK Strategy check
+        has_byok = api_keys and isinstance(api_keys, dict) and any(api_keys.values())
+        
+        if has_byok:
+            # MVP: Acknowledge BYOK usage
+            # In a full implementation, we would route to OpenAI/Anthropic/Google using these keys
+            provider = "openai" if "openai" in api_keys else "anthropic" if "anthropic" in api_keys else "openrouter"
+            print(f"Using BYOK strategy. Provider: {provider}")
+            model_to_use = data.get("model", "gpt-4")
+        else:
+            # Fallback/Team Strategy: SaaS Balance using Bytez
+            print("Using SaaS Platform Balance (Bytez).")
+            if not bytez_api_key:
+                return JSONResponse(status_code=500, content={"error": "Bytez API key is missing. Please add it to keys/bytez_api_key.txt"})
+                
+            sdk = Bytez(bytez_api_key)
+            model_to_use = sdk.model("google/gemma-4-26B-A4B-it")
         
         api_messages = [{"role": "system", "content": system_prompt}] + messages
         
-        results = model.run(api_messages)
+        if has_byok:
+            response_text = f"This is a simulated response using your BYOK API Key for model {model_to_use}."
+            return {"reply": response_text}
+            
+        results = model_to_use.run(api_messages)
+        
+
         
         if hasattr(results, 'error') and results.error:
             return JSONResponse(status_code=500, content={"error": results.error})

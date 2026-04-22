@@ -167,5 +167,11 @@ export interface UserPreferences {
   email_notifications: Record<string, boolean>;
   in_app_alerts: Record<string, boolean>;
   analytics_opt_out: boolean;
+  api_keys?: {
+    openrouter?: string;
+    anthropic?: string;
+    google?: string;
+    openai?: string;
+  };
   updated_at: string;
 }

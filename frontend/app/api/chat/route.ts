@@ -47,14 +47,38 @@ export async function POST(req: NextRequest) {
 
     let default_model = 'gpt-4';
     let system_prompt = '';
+    let api_keys_to_use = {};
     
     // 3. Get team options if it exists
     if (team_id) {
        const teamDoc = await db.collection('teams').doc(team_id).get();
        if (teamDoc.exists) {
-          default_model = teamDoc.data()?.default_model || 'gpt-4';
-          system_prompt = teamDoc.data()?.system_prompt || '';
+          const teamData = teamDoc.data();
+          if (teamData?.subscription_status !== 'active') {
+             return NextResponse.json({ error: 'Team subscription is not active. Please upgrade or use your personal account with your own API key.' }, { status: 402 });
+          }
+          default_model = teamData?.default_model || 'gpt-4';
+          system_prompt = teamData?.system_prompt || '';
+       } else {
+         return NextResponse.json({ error: 'Team not found' }, { status: 404 });
        }
+    } else {
+      // Individual User - BRING YOUR OWN KEY (BYOK)
+      const userPrefsRef = db.collection('user_preferences').doc(uid);
+      const userPrefsDoc = await userPrefsRef.get();
+      if (!userPrefsDoc.exists) {
+         return NextResponse.json({ error: 'User preferences not found. Please configure your API keys.' }, { status: 400 });
+      }
+      const userPrefs = userPrefsDoc.data();
+      const api_keys = userPrefs?.api_keys;
+      
+      if (!api_keys || Object.values(api_keys).every(key => !key)) {
+         return NextResponse.json({ error: 'No API keys configured. Please add your own API key in Settings.' }, { status: 402 });
+      }
+      
+      api_keys_to_use = api_keys;
+      default_model = userPrefs?.default_model || 'gpt-4';
+      system_prompt = userPrefs?.personal_system_prompt || '';
     }
 
     // 4. Retrieve historic messages
@@ -78,6 +102,7 @@ export async function POST(req: NextRequest) {
           messages: messageHistory,
           systemPrompt: system_prompt,
           model: default_model,
+          apiKeys: api_keys_to_use, // Pass BYOK to backend
         }),
       });
       if (aiResponse.ok) {
