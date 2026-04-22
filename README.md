@@ -18,9 +18,9 @@ Luminescent.io is a hybrid **Freemium (BYOK) + Team AI Chatbot SaaS**.
 | Plan         | Seats    | Monthly Price        | Per-User Cost |
 |--------------|----------|----------------------|---------------|
 | **Solo (BYOK)** | 1       | **Free**             | BYOK cost     |
-| Starter Team | Up to 3  | ₹2,400 (~$29)        | ₹800/user     |
-| Growth Team  | Up to 7  | ₹4,900 (~$59)        | ₹700/user     |
-| Pro Team     | Up to 12 | ₹8,200 (~$99)        | ₹683/user     |
+| Starter Team | Up to 3  | ₹3,900 (~$46)        | ₹1,300/user   |
+| Growth Team  | Up to 7  | ₹8,900 (~$105)       | ₹1,271/user   |
+| Pro Team     | Up to 12 | ₹14,900 (~$177)      | ₹1,241/user   |
 
 > **Business model:** Frictionless onboarding for individuals via BYOK, while monetizing team collaboration and shared workspaces through fixed subscription revenue.
 
@@ -213,9 +213,9 @@ uvicorn server:app --reload --port 8000
 
 1. Create a [Razorpay](https://razorpay.com) account (use **Test mode** for development)
 2. Create 3 Plans in the Razorpay Dashboard:
-   - **Starter:** ₹2,400/month
-   - **Growth:** ₹4,900/month
-   - **Pro:** ₹8,200/month
+   - **Starter:** ₹3,900/month
+   - **Growth:** ₹8,900/month
+   - **Pro:** ₹14,900/month
 3. Configure Webhook URL: `https://your-domain.com/api/razorpay/webhook`
 4. Subscribe to events: `subscription.activated`, `subscription.charged`, `subscription.cancelled`, `payment.failed`
 

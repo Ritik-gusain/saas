@@ -24,7 +24,7 @@ const plans = [
   {
     id: 'starter',
     name: 'Starter Team',
-    price: 2400,
+    price: 3900,
     currency: '₹',
     seats: 3,
     features: [
@@ -37,7 +37,7 @@ const plans = [
   {
     id: 'growth',
     name: 'Growth Team',
-    price: 4900,
+    price: 8900,
     currency: '₹',
     seats: 7,
     popular: true,
@@ -53,7 +53,7 @@ const plans = [
   {
     id: 'pro',
     name: 'Pro Team',
-    price: 8200,
+    price: 14900,
     currency: '₹',
     seats: 12,
     features: [
