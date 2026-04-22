@@ -24,10 +24,11 @@ const plans = [
   {
     id: 'starter',
     name: 'Starter Team',
-    price: 3900,
+    price: 999,
     currency: '₹',
     seats: 3,
     features: [
+      'Bring Your Own Key (BYOK)',
       'Up to 3 team members',
       'Shared AI chatbot',
       'Basic chat features',
@@ -37,11 +38,12 @@ const plans = [
   {
     id: 'growth',
     name: 'Growth Team',
-    price: 8900,
+    price: 2499,
     currency: '₹',
     seats: 7,
     popular: true,
     features: [
+      'Bring Your Own Key (BYOK)',
       'Up to 7 team members',
       'All Starter features',
       'Projects & collaboration',
@@ -53,10 +55,11 @@ const plans = [
   {
     id: 'pro',
     name: 'Pro Team',
-    price: 14900,
+    price: 3999,
     currency: '₹',
     seats: 12,
     features: [
+      'Bring Your Own Key (BYOK)',
       'Up to 12 team members',
       'All Growth features',
       'Custom agents',

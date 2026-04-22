@@ -6,11 +6,14 @@ import { NextRequest, NextResponse } from 'next/server';
 const pendingInvites: Record<string, { teamId: string; email: string; expiresAt: string; usedAt?: string }> = {};
 
 export async function GET(
-  req: NextRequest,
-  { params }: { params: { token: string } }
+  req: NextRequest
 ) {
+  const token = req.nextUrl.searchParams.get('token');
+  if (!token) {
+    return NextResponse.json({ error: 'Token is required' }, { status: 400 });
+  }
   try {
-    const invite = pendingInvites[params.token];
+    const invite = pendingInvites[token];
 
     if (!invite) {
       return NextResponse.json(
@@ -37,15 +40,18 @@ export async function GET(
 }
 
 export async function POST(
-  req: NextRequest,
-  { params }: { params: { token: string } }
+  req: NextRequest
 ) {
+  const { token } = await req.json();
+  if (!token) {
+    return NextResponse.json({ error: 'Token is required' }, { status: 400 });
+  }
   try {
     // TODO: Verify Firebase ID token from Authorization header
     // const authHeader = req.headers.get('Authorization');
     // const decodedToken = await adminAuth.verifyIdToken(token);
 
-    const invite = pendingInvites[params.token];
+    const invite = pendingInvites[token];
 
     if (!invite) {
       return NextResponse.json(
@@ -62,7 +68,7 @@ export async function POST(
     }
 
     // Mark invite as used
-    pendingInvites[params.token].usedAt = new Date().toISOString();
+    pendingInvites[token].usedAt = new Date().toISOString();
 
     // TODO: Add user to team in Firestore
     // await db.collection('team_members').add({ teamId: invite.teamId, userId, role: 'member' });

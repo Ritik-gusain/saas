@@ -3,14 +3,15 @@ import { adminAuth, db } from '@/lib/firebase-admin';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
+  const { conversationId } = await params;
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
 
-    await db.collection('conversations').doc(params.conversationId).update({
+    await db.collection('conversations').doc(conversationId).update({
       is_archived: true,
       updated_at: new Date().toISOString()
     });

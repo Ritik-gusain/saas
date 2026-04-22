@@ -45,40 +45,35 @@ export async function POST(req: NextRequest) {
       token_count = convData?.token_count || 0;
     }
 
-    let default_model = 'gpt-4';
-    let system_prompt = '';
-    let api_keys_to_use = {};
+    // 3. Get user preferences for BYOK API Keys (required for EVERYONE)
+    const userPrefsRef = db.collection('user_preferences').doc(uid);
+    const userPrefsDoc = await userPrefsRef.get();
+    if (!userPrefsDoc.exists) {
+       return NextResponse.json({ error: 'User preferences not found. Please configure your API keys.' }, { status: 400 });
+    }
+    const userPrefs = userPrefsDoc.data();
+    const api_keys_to_use = userPrefs?.api_keys;
     
-    // 3. Get team options if it exists
+    if (!api_keys_to_use || Object.values(api_keys_to_use).every(key => !key)) {
+       return NextResponse.json({ error: 'No API keys configured! You must bring your own API key to use the platform.' }, { status: 402 });
+    }
+
+    let default_model = userPrefs?.default_model || 'gpt-4';
+    let system_prompt = userPrefs?.personal_system_prompt || '';
+    
+    // 4. Get team options if the conversation is in a team context
     if (team_id) {
        const teamDoc = await db.collection('teams').doc(team_id).get();
        if (teamDoc.exists) {
           const teamData = teamDoc.data();
           if (teamData?.subscription_status !== 'active') {
-             return NextResponse.json({ error: 'Team subscription is not active. Please upgrade or use your personal account with your own API key.' }, { status: 402 });
+             return NextResponse.json({ error: 'Team subscription is not active. Please upgrade to use team collaboration features.' }, { status: 402 });
           }
-          default_model = teamData?.default_model || 'gpt-4';
-          system_prompt = teamData?.system_prompt || '';
+          default_model = teamData?.default_model || default_model;
+          system_prompt = teamData?.system_prompt || system_prompt;
        } else {
          return NextResponse.json({ error: 'Team not found' }, { status: 404 });
        }
-    } else {
-      // Individual User - BRING YOUR OWN KEY (BYOK)
-      const userPrefsRef = db.collection('user_preferences').doc(uid);
-      const userPrefsDoc = await userPrefsRef.get();
-      if (!userPrefsDoc.exists) {
-         return NextResponse.json({ error: 'User preferences not found. Please configure your API keys.' }, { status: 400 });
-      }
-      const userPrefs = userPrefsDoc.data();
-      const api_keys = userPrefs?.api_keys;
-      
-      if (!api_keys || Object.values(api_keys).every(key => !key)) {
-         return NextResponse.json({ error: 'No API keys configured. Please add your own API key in Settings.' }, { status: 402 });
-      }
-      
-      api_keys_to_use = api_keys;
-      default_model = userPrefs?.default_model || 'gpt-4';
-      system_prompt = userPrefs?.personal_system_prompt || '';
     }
 
     // 4. Retrieve historic messages

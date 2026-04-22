@@ -15,14 +15,14 @@ Luminescent.io is a hybrid **Freemium (BYOK) + Team AI Chatbot SaaS**.
 
 ### Pricing Tiers
 
-| Plan         | Seats    | Monthly Price        | Per-User Cost |
-|--------------|----------|----------------------|---------------|
-| **Solo (BYOK)** | 1       | **Free**             | BYOK cost     |
-| Starter Team | Up to 3  | ₹3,900 (~$46)        | ₹1,300/user   |
-| Growth Team  | Up to 7  | ₹8,900 (~$105)       | ₹1,271/user   |
-| Pro Team     | Up to 12 | ₹14,900 (~$177)      | ₹1,241/user   |
+| Plan         | Seats    | Monthly Price        | API Model        |
+|--------------|----------|----------------------|------------------|
+| **Solo**     | 1       | **Free**             | BYOK (Required)  |
+| Starter Team | Up to 3  | ₹999                 | BYOK (Required)  |
+| Growth Team  | Up to 7  | ₹2,499               | BYOK (Required)  |
+| Pro Team     | Up to 12 | ₹3,999               | BYOK (Required)  |
 
-> **Business model:** Frictionless onboarding for individuals via BYOK, while monetizing team collaboration and shared workspaces through fixed subscription revenue.
+> **Business model:** The platform functions as an interface shell. High friction server-based inference costs are eliminated entirely by mandating a Bring Your Own Key (BYOK) model for all tiers. We monetize the team collaboration software (shared workspaces, team instructions) through fixed subscription revenue.
 
 ---
 

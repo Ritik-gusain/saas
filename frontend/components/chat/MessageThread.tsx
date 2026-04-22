@@ -3,7 +3,7 @@
 interface MessageThreadProps {
   messages: Array<{
     id: string;
-    role: 'user' | 'assistant';
+    role: 'user' | 'assistant' | 'system';
     content: string;
     created_at: string;
     model?: string;

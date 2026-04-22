@@ -17,14 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load Bytez API key
-KEY_FILE = os.path.join("keys", "bytez_api_key.txt")
-bytez_api_key = ""
-if os.path.exists(KEY_FILE):
-    with open(KEY_FILE, "r") as f:
-        file_key = f.read().strip()
-        if file_key and not file_key.startswith("#"):
-            bytez_api_key = file_key
+# Removed Bytez API key fallback logic since platform is fully BYOK
 
 # Define the /api/chat endpoint
 @app.post("/api/chat")
@@ -37,48 +30,22 @@ async def chat(request: Request):
         
         # BYOK Strategy check
         has_byok = api_keys and isinstance(api_keys, dict) and any(api_keys.values())
-        
-        if has_byok:
-            # MVP: Acknowledge BYOK usage
-            # In a full implementation, we would route to OpenAI/Anthropic/Google using these keys
-            provider = "openai" if "openai" in api_keys else "anthropic" if "anthropic" in api_keys else "openrouter"
-            print(f"Using BYOK strategy. Provider: {provider}")
-            model_to_use = data.get("model", "gpt-4")
-        else:
-            # Fallback/Team Strategy: SaaS Balance using Bytez
-            print("Using SaaS Platform Balance (Bytez).")
-            if not bytez_api_key:
-                return JSONResponse(status_code=500, content={"error": "Bytez API key is missing. Please add it to keys/bytez_api_key.txt"})
-                
-            sdk = Bytez(bytez_api_key)
-            model_to_use = sdk.model("google/gemma-4-26B-A4B-it")
+        if not has_byok:
+            return JSONResponse(status_code=402, content={"error": "No API keys provided. You must bring your own API key to use the platform."})
+            
+        # MVP: Acknowledge BYOK usage
+        # In a full implementation, we would route to OpenAI/Anthropic/Google using these keys
+        provider = "openai" if "openai" in api_keys else "anthropic" if "anthropic" in api_keys else "openrouter"
+        print(f"Using BYOK strategy. Provider: {provider}")
+        model_to_use = data.get("model", "gpt-4")
+
         
         api_messages = [{"role": "system", "content": system_prompt}] + messages
         
-        if has_byok:
-            response_text = f"This is a simulated response using your BYOK API Key for model {model_to_use}."
-            return {"reply": response_text}
-            
-        results = model_to_use.run(api_messages)
+        # In a real implementation, you would use the SDK of the `provider` here.
+        # For MVP showcase, we return a simulated response if BYOK is validated.
+        response_text = f"This is a simulated response using your BYOK API Key for model {model_to_use}."
         
-
-        
-        if hasattr(results, 'error') and results.error:
-            return JSONResponse(status_code=500, content={"error": results.error})
-            
-        # Parse the output correctly
-        response_data = results.output if hasattr(results, 'output') else results
-        response_text = ""
-        
-        if isinstance(response_data, dict) and "content" in response_data:
-            response_text = response_data["content"]
-        elif isinstance(response_data, str):
-            response_text = response_data
-        elif hasattr(results, 'text'):
-            response_text = results.text
-        else:
-            response_text = str(response_data)
-            
         return {"reply": response_text}
         
     except Exception as e:

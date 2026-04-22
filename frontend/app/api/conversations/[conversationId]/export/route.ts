@@ -3,8 +3,9 @@ import { adminAuth, db } from '@/lib/firebase-admin';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
+  const { conversationId } = await params;
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -13,11 +14,11 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const format = searchParams.get('format') || 'json';
 
-    const convDoc = await db.collection('conversations').doc(params.conversationId).get();
+    const convDoc = await db.collection('conversations').doc(conversationId).get();
     if (!convDoc.exists) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     const conversation = convDoc.data()!;
 
-    const msgSnap = await db.collection('messages').where('conversation_id', '==', params.conversationId).get();
+    const msgSnap = await db.collection('messages').where('conversation_id', '==', conversationId).get();
     const messages = msgSnap.docs.map(d => d.data());
 
     let content: string;

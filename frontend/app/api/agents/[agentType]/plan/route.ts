@@ -3,9 +3,10 @@ import { adminAuth, db } from '@/lib/firebase-admin';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { agentType: string } }
+  { params }: { params: Promise<{ agentType: string }> }
 ) {
   try {
+    const { agentType } = await params;
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     await adminAuth.verifyIdToken(authHeader.split('Bearer ')[1]);
@@ -14,7 +15,7 @@ export async function POST(
 
     // Call Python agent backend
     const pythonBackendUrl = process.env.FASTAPI_URL || 'http://localhost:8000';
-    const response = await fetch(`${pythonBackendUrl}/api/agents/${params.agentType}/plan`, {
+    const response = await fetch(`${pythonBackendUrl}/api/agents/${agentType}/plan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ projectId, prompt })

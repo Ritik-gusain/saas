@@ -3,8 +3,9 @@ import { adminAuth, db } from '@/lib/firebase-admin';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
+  const { conversationId } = await params;
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -15,7 +16,7 @@ export async function POST(
     await db.collection('project_items').doc().set({
       project_id: projectId,
       item_type: 'conversation',
-      item_id: params.conversationId,
+      item_id: conversationId,
       pinned_at: new Date().toISOString(),
     });
 

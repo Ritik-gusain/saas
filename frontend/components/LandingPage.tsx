@@ -38,8 +38,8 @@ function Navbar() {
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
-    
-    gsap.fromTo(navRef.current, 
+
+    gsap.fromTo(navRef.current,
       { y: -100, opacity: 0 },
       { y: 0, opacity: 1, duration: 1, ease: "power4.out", delay: 0.5 }
     );
@@ -50,11 +50,10 @@ function Navbar() {
   return (
     <nav
       ref={navRef}
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled
+      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled
           ? "bg-[#0B0E14]/80 backdrop-blur-xl border-b border-[var(--border)] shadow-2xl shadow-black/30"
           : "bg-transparent"
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5 group">
@@ -188,23 +187,20 @@ function ChatMockup() {
           {chatMessages.slice(0, visibleCount).map((msg, i) => (
             <div
               key={i}
-              className={`flex gap-3 ${
-                msg.role === "user" ? "flex-row-reverse" : "flex-row"
-              } animate-fade-in-up`}
+              className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"
+                } animate-fade-in-up`}
             >
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                msg.role === 'ai' 
-                  ? 'bg-transparent border border-[var(--cyan)]/20' 
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'ai'
+                  ? 'bg-transparent border border-[var(--cyan)]/20'
                   : 'bg-gradient-to-br from-[var(--cyan)] to-[var(--mint)] text-[var(--bg)] font-bold text-[10px]'
-              }`}>
+                }`}>
                 {msg.role === "ai" ? <Logo size={18} animated={false} /> : "RG"}
               </div>
               <div
-                className={`max-w-[75%] text-[13px] leading-relaxed px-4 py-2.5 rounded-xl ${
-                  msg.role === "user"
+                className={`max-w-[75%] text-[13px] leading-relaxed px-4 py-2.5 rounded-xl ${msg.role === "user"
                     ? "bg-gradient-to-br from-[var(--cyan)]/20 to-[var(--mint)]/20 border border-[var(--cyan)]/30 text-white rounded-tr-sm"
                     : "bg-[var(--hud)]/40 border border-[var(--cyan)]/15 text-[#e8f4f8] rounded-tl-sm"
-                }`}
+                  }`}
               >
                 {msg.text}
               </div>
@@ -214,7 +210,7 @@ function ChatMockup() {
 
         <div className="px-4 pb-4">
           <div className="flex items-center gap-2 bg-[var(--hud)]/30 border border-[var(--border)] rounded-xl px-3 py-2">
-            <input 
+            <input
               readOnly
               placeholder="Ask your team AI anything..."
               className="bg-transparent border-none text-[13px] text-[var(--soft)] flex-1 outline-none"
@@ -358,11 +354,11 @@ function FeaturesSection() {
   const cardsRef = useRef([]);
 
   useEffect(() => {
-    gsap.fromTo(sectionRef.current, 
+    gsap.fromTo(sectionRef.current,
       { opacity: 0, y: 50 },
-      { 
-        opacity: 1, 
-        y: 0, 
+      {
+        opacity: 1,
+        y: 0,
         duration: 1,
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -445,9 +441,10 @@ const plans = [
   },
   {
     name: "Starter Team",
-    price: "₹3,900",
+    price: "₹999",
     desc: "For small startups getting started with AI collaboration.",
     features: [
+      "Bring your own API key",
       "Up to 3 team members",
       "Shared AI chatbot",
       "Basic chat features",
@@ -458,9 +455,10 @@ const plans = [
   },
   {
     name: "Growth Team",
-    price: "₹8,900",
+    price: "₹2,499",
     desc: "The sweet spot for mid-sized teams scaling fast.",
     features: [
+      "Bring your own API key",
       "Up to 7 team members",
       "Projects & collaboration",
       "Team system prompts",
@@ -471,9 +469,10 @@ const plans = [
   },
   {
     name: "Pro Team",
-    price: "₹14,900",
+    price: "₹3,999",
     desc: "For larger departments needing advanced capability.",
     features: [
+      "Bring your own API key",
       "Up to 12 team members",
       "Custom AI agents",
       "API access",
@@ -524,11 +523,10 @@ function PricingSection() {
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`relative rounded-3xl border p-10 flex flex-col space-y-8 transition-all duration-300 hover:-translate-y-1 ${
-                plan.highlight
+              className={`relative rounded-3xl border p-10 flex flex-col space-y-8 transition-all duration-300 hover:-translate-y-1 ${plan.highlight
                   ? "border-[var(--cyan)] bg-[#2A4B54]/30 shadow-2xl shadow-[var(--cyan)]/10"
                   : "border-[var(--border)] bg-[var(--surface)]"
-              }`}
+                }`}
             >
               {plan.highlight && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[var(--cyan)] to-[var(--mint)] text-[var(--bg)] text-[10px] font-bold px-4 py-1 rounded-full tracking-widest uppercase">
@@ -557,11 +555,10 @@ function PricingSection() {
               </ul>
 
               <button
-                className={`w-full py-4 rounded-xl font-bold text-sm transition-all ${
-                  plan.highlight
+                className={`w-full py-4 rounded-xl font-bold text-sm transition-all ${plan.highlight
                     ? "bg-gradient-to-br from-[var(--cyan)] to-[var(--mint)] text-[var(--bg)] shadow-lg shadow-[var(--cyan)]/25"
                     : "border border-[var(--border-strong)] text-[var(--soft)] hover:border-[var(--cyan)] hover:text-[var(--cyan)] hover:bg-[var(--cyan)]/5"
-                }`}
+                  }`}
               >
                 {plan.price === "Custom" ? "Talk to Sales" : "Get Started"}
               </button>
@@ -586,7 +583,7 @@ function Footer() {
             Luminescent.io
           </span>
         </div>
-        
+
         <div className="text-[13px] text-[var(--soft)] opacity-40">
           © 2026 Luminescent.io. All rights reserved.
         </div>

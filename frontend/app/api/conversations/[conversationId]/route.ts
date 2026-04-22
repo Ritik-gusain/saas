@@ -3,8 +3,9 @@ import { adminAuth, db } from '@/lib/firebase-admin';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
+  const { conversationId } = await params;
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
@@ -15,7 +16,7 @@ export async function GET(
     const decodedToken = await adminAuth.verifyIdToken(token);
     const uid = decodedToken.uid;
 
-    const { conversationId } = params;
+
 
     // Get conversation
     const convRef = db.collection('conversations').doc(conversationId);
@@ -53,8 +54,9 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
+  const { conversationId } = await params;
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
@@ -67,7 +69,7 @@ export async function PATCH(
 
     const updates = await req.json();
 
-    const convRef = db.collection('conversations').doc(params.conversationId);
+    const convRef = db.collection('conversations').doc(conversationId);
     await convRef.update({
       ...updates,
       updated_at: new Date().toISOString(),
@@ -87,8 +89,9 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
+  const { conversationId } = await params;
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
@@ -101,7 +104,7 @@ export async function DELETE(
 
     // Delete messages first
     const messagesSnapshot = await db.collection('messages')
-      .where('conversation_id', '==', params.conversationId)
+      .where('conversation_id', '==', conversationId)
       .get();
       
     // Create a batch
@@ -111,7 +114,7 @@ export async function DELETE(
     });
     
     // Delete conversation
-    const convRef = db.collection('conversations').doc(params.conversationId);
+    const convRef = db.collection('conversations').doc(conversationId);
     batch.delete(convRef);
 
     await batch.commit();
