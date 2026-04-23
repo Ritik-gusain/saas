@@ -4,7 +4,6 @@
 >
 > *"Stop paying for individual ChatGPT seats. Unify your team's AI for half the cost."*
 
-**Live:** [https://chatbot-nine-psi-46.vercel.app/](https://chatbot-nine-psi-46.vercel.app/)
 
 ---
 
@@ -15,12 +14,12 @@ Luminescent.io is a hybrid **Freemium (BYOK) + Team AI Chatbot SaaS**.
 
 ### Pricing Tiers
 
-| Plan         | Seats    | Monthly Price        | Per-User Cost |
-|--------------|----------|----------------------|---------------|
-| **Solo (BYOK)** | 1       | **Free**             | BYOK cost     |
-| Starter Team | Up to 3  | ₹3,900 (~$46)        | ₹1,300/user   |
-| Growth Team  | Up to 7  | ₹8,900 (~$105)       | ₹1,271/user   |
-| Pro Team     | Up to 12 | ₹14,900 (~$177)      | ₹1,241/user   |
+| Plan         | Seats    | Monthly Price | Per-User Cost |
+|--------------|----------|----------------------|--------------|
+| **Solo (BYOK)** | 1     | **Free**      | BYOK cost           |
+| Starter Team | Up to 3  | ₹999          | ₹1,300/user + BYOK  |
+| Growth Team  | Up to 7  | ₹2,999        | ₹1,271/user + BYOK  |
+| Pro Team     | Up to 12 | ₹3,900        | ₹1,241/user + BYOK  |
 
 > **Business model:** Frictionless onboarding for individuals via BYOK, while monetizing team collaboration and shared workspaces through fixed subscription revenue.
 
