@@ -31,11 +31,11 @@ Luminescent.io is a hybrid **Freemium (BYOK) + Team AI Chatbot SaaS**.
 |------------------|-----------------------------------------------------|
 | **Frontend**     | Next.js 16 (React 19, App Router), TypeScript, Tailwind CSS |
 | **State**        | Zustand stores (team, chat, agent)                  |
-| **Auth & DB**    | Supabase (PostgreSQL + Auth + RLS)                  |
+| **Auth & DB**    | Firebase                   |
 | **Payments**     | Razorpay (Subscriptions + Webhooks + Customer Portal) |
-| **AI Backend**   | Python FastAPI + Bytez API inference engine         |
-| **Email**        | Supabase Magic Links                                |
-| **Deployment**   | Vercel (frontend) + FastAPI server (separate host)  |
+| **AI Backend**   | Python FastAPI +                                    |
+
+
 
 ### Architecture
 
