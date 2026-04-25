@@ -10,7 +10,7 @@
 Luminescent.io is a hybrid **Freemium (BYOK) + Team AI Chatbot SaaS**. 
 
 - **Individuals (Free/BYOK):** Solo users can use the platform for free by bringing their own API keys (OpenAI, Anthropic, OpenRouter, etc.). Usage is billed directly to their own API accounts.
-- **Teams (Subscription):** Companies replace fragmented individual AI subscriptions with a single team-wide plan. Teams get shared workspaces, collaboration features, and usage is covered by the platform's API allowance (via Bytez).
+- **Teams (Subscription+ BYOK):** Companies replace fragmented individual AI subscriptions with a single team-wide plan. Teams get shared workspaces, collaboration features, and usage is covered by the platform's API allowance (via Bytez).
 
 ### Pricing Tiers
 
