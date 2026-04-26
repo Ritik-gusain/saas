@@ -3,6 +3,12 @@
 import { useEffect, useRef } from "react";
 import { Globe, Users, Brain, TrendingUp, ChevronRight } from "lucide-react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
 
 const STEPS = [
   { num: "01", title: "Create Your Workspace", desc: "Sign up free and bring your own API key. No credit card. Your workspace is ready in 30 seconds.", icon: Globe },

@@ -3,6 +3,12 @@
 import { useEffect, useRef } from "react";
 import { MessageSquare, Brain, Zap, Workflow, TrendingUp, Lock } from "lucide-react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
 
 const FEATURES = [
   { icon: MessageSquare, title: "Shared Chat History", accent: "#00FFAA", desc: "Your team's entire AI conversation history in one searchable place. Reference and build on each other's work." },

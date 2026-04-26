@@ -4,6 +4,12 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { Zap, ArrowRight } from "lucide-react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
 
 export function CTABanner() {
   const ref = useRef<HTMLDivElement>(null);

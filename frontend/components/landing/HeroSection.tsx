@@ -25,7 +25,7 @@ export function HeroSection() {
         videoRef.current.play().catch(() => console.log("Video autoplay prevented"));
         gsap.fromTo(videoRef.current, 
           { scale: 1.1, opacity: 0 }, 
-          { scale: 1, opacity: 0.4, duration: 2.5, ease: "power2.out" }
+          { scale: 1, opacity: 0.65, duration: 2.5, ease: "power2.out" }
         );
       }
 
@@ -78,7 +78,7 @@ export function HeroSection() {
             height: "100%",
             objectFit: "cover",
             opacity: 0,
-            filter: "brightness(0.6) saturate(1.2)"
+            filter: "brightness(0.8) saturate(1.2)"
           }}
         >
           <source src="/video1.mp4" type="video/mp4" />
