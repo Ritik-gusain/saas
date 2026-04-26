@@ -64,18 +64,20 @@ export function Navbar() {
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
           <Logo size={34} />
           <span style={{
-            fontFamily: "Montserrat, sans-serif", fontWeight: 800, fontSize: 18,
+            fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 18,
             background: "linear-gradient(135deg, #00FFAA, #00D0FF)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+            letterSpacing: "-0.02em"
           }}>
             Luminescent.io
           </span>
         </Link>
 
         <div className="nav-desktop" style={{ display: "flex", alignItems: "center", gap: 36 }}>
-          {["Features", "Agents", "Pricing", "Docs"].map(item => (
+          {["Features", "Agents", "Pricing"].map(item => (
             <a key={item} href={`#${item.toLowerCase()}`} className="nav-link">{item}</a>
           ))}
+          <Link href="/docs" className="nav-link">Docs</Link>
         </div>
 
         <div className="nav-desktop" style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -108,12 +110,16 @@ export function Navbar() {
             borderBottom: "1px solid rgba(0,255,170,.1)",
             padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16,
           }}>
-            {["Features", "Agents", "Pricing", "Docs"].map(item => (
+            {["Features", "Agents", "Pricing"].map(item => (
               <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setMenuOpen(false)}
                 style={{ fontSize: 14, color: "rgba(248,249,250,.55)", textDecoration: "none", fontWeight: 500 }}>
                 {item}
               </a>
             ))}
+            <Link href="/docs" onClick={() => setMenuOpen(false)}
+              style={{ fontSize: 14, color: "rgba(248,249,250,.55)", textDecoration: "none", fontWeight: 500 }}>
+              Docs
+            </Link>
             <Link href="/register" className="btn-primary" style={{ justifyContent: "center", marginTop: 4 }}>
               Get Started Free
             </Link>
