@@ -95,8 +95,11 @@ export function HeroSection() {
     const container = containerRef.current;
     if (!canvas || !container) return;
 
-    const ctx2d = canvas.getContext("2d", { alpha: false });
+    const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: false });
     if (!ctx2d) return;
+
+    // Always render at full device sharpness
+    const getDpr = () => window.devicePixelRatio || 1;
 
     // Image cache
     const images: (HTMLImageElement | undefined)[] = [];
@@ -104,9 +107,9 @@ export function HeroSection() {
     let targetFrame = 0;
     let renderedFrame = -1;
 
-    // Preload a window of frames around `center`
+    // Preload frames around `center` — load 30 ahead, 8 behind
     const preload = (center: number) => {
-      for (let offset = -5; offset <= 20; offset++) {
+      for (let offset = -8; offset <= 30; offset++) {
         const idx = center + offset;
         if (idx < 0 || idx >= TOTAL_FRAMES || images[idx]) continue;
         const img = new Image();
@@ -116,28 +119,37 @@ export function HeroSection() {
       }
     };
 
-    // Resize canvas to match display size × DPR
+    // Resize canvas to full device-pixel resolution
     const resize = () => {
-      const dpr  = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr  = getDpr();
       const rect = canvas.getBoundingClientRect();
-      canvas.width  = rect.width  * dpr;
-      canvas.height = rect.height * dpr;
-      ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
+      canvas.width  = Math.round(rect.width  * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      // Setting canvas.width resets ALL context state — reapply quality settings
+      ctx2d.imageSmoothingEnabled = true;
+      ctx2d.imageSmoothingQuality = "high";
     };
     resize();
     window.addEventListener("resize", resize);
 
-    // Paint one frame, cover-crop to canvas
+    // Paint one frame — work directly in device pixels (no CSS-pixel transform)
     const paint = (img: HTMLImageElement) => {
-      const rect = canvas.getBoundingClientRect();
-      const s = Math.max(rect.width / img.width, rect.height / img.height);
-      ctx2d.drawImage(
-        img,
-        (rect.width  - img.width  * s) / 2,
-        (rect.height - img.height * s) / 2,
-        img.width  * s,
-        img.height * s
-      );
+      const dpr    = getDpr();
+      const cw     = canvas.width;   // device pixels
+      const ch     = canvas.height;  // device pixels
+      const iw     = img.naturalWidth  || img.width;
+      const ih     = img.naturalHeight || img.height;
+      if (!iw || !ih) return;
+
+      // Cover-crop: fill the canvas, center the image
+      const scale = Math.max(cw / iw, ch / ih);
+      const dw    = iw * scale;
+      const dh    = ih * scale;
+      const dx    = (cw - dw) / 2;
+      const dy    = (ch - dh) / 2;
+
+      ctx2d.clearRect(0, 0, cw, ch);
+      ctx2d.drawImage(img, dx, dy, dw, dh);
     };
 
     // rAF loop — smooth interpolation toward target
