@@ -119,11 +119,11 @@ export function HeroSection() {
         </div>
 
         <h1 style={{
-          fontFamily: "Montserrat, sans-serif",
-          fontWeight: 900,
-          fontSize: "clamp(48px, 8vw, 92px)",
-          lineHeight: 0.95,
-          letterSpacing: "-0.05em",
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontWeight: 800,
+          fontSize: "clamp(42px, 8vw, 84px)",
+          lineHeight: 0.98,
+          letterSpacing: "-0.04em",
           color: "#F8F9FA",
           textShadow: "0 20px 40px rgba(0,0,0,0.5)",
           marginTop: 8
@@ -170,7 +170,7 @@ export function HeroSection() {
             { label: "Uptime", val: "99.99%" }
           ].map(stat => (
             <div key={stat.label} style={{ textAlign: "center" }}>
-              <div style={{ fontFamily: "Montserrat, sans-serif", fontWeight: 800, fontSize: 18, color: "#00FFAA" }}>{stat.val}</div>
+              <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 18, color: "#00FFAA" }}>{stat.val}</div>
               <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "rgba(248,249,250,0.3)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{stat.label}</div>
             </div>
           ))}

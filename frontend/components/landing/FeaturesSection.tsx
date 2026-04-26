@@ -58,12 +58,12 @@ export function FeaturesSection() {
             <Zap size={11} /> Capabilities
           </span>
           <h2 style={{
-            fontFamily: "Montserrat, sans-serif", fontWeight: 900,
-            fontSize: "clamp(34px,4vw,54px)", letterSpacing: "-0.04em", lineHeight: 1.08,
+            fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800,
+            fontSize: "clamp(32px,4vw,48px)", letterSpacing: "-0.03em", lineHeight: 1.1,
             color: "#F8F9FA", marginTop: 16, marginBottom: 14,
           }}>
             Built for teams.<br />
-            <span style={{ color: "rgba(248,249,250,.3)" }}>Not just you.</span>
+            <span style={{ color: "rgba(248,249,250,.25)" }}>Designed for speed.</span>
           </h2>
           <p style={{ fontSize: 15.5, color: "rgba(248,249,250,.42)", maxWidth: 480, margin: "0 auto", lineHeight: 1.7, fontWeight: 300 }}>
             Every feature designed around how teams actually work — together, async, across tools and timezones.
@@ -86,7 +86,7 @@ export function FeaturesSection() {
                 }}>
                   <Icon size={19} color={f.accent} />
                 </div>
-                <h3 style={{ fontFamily: "Montserrat, sans-serif", fontWeight: 700, fontSize: 16.5, color: "#F8F9FA", marginBottom: 10, letterSpacing: "-0.02em" }}>
+                <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 16.5, color: "#F8F9FA", marginBottom: 10, letterSpacing: "-0.01em" }}>
                   {f.title}
                 </h3>
                 <p style={{ fontSize: 13.5, color: "rgba(248,249,250,.42)", lineHeight: 1.72, fontWeight: 300 }}>{f.desc}</p>

@@ -2,7 +2,7 @@
 
 export const LandingStyles = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Lora:wght@500;600&display=swap');
 
     :root {
       --landing-green:   #00FFAA;
@@ -76,7 +76,7 @@ export const LandingStyles = () => (
       padding: 14px 30px;
       background: linear-gradient(135deg, #00FFAA, #00D0FF);
       color: #101418;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 700; font-size: 15px; letter-spacing: .02em;
       border: none; border-radius: 8px; cursor: pointer;
       position: relative; overflow: hidden;
@@ -89,9 +89,9 @@ export const LandingStyles = () => (
       display: inline-flex; align-items: center; gap: 8px;
       padding: 13px 26px;
       background: transparent; color: #F8F9FA;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 500; font-size: 14px; letter-spacing: .02em;
-      border: 1px solid rgba(255,255,255,.12); border-radius: 8px; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; cursor: pointer;
       transition: border-color .25s, color .25s, background .25s;
       text-decoration: none; white-space: nowrap;
     }
@@ -123,8 +123,7 @@ export const LandingStyles = () => (
 
     .logo-ticker-item:hover {
       opacity: 1 !important;
-      filter: drop-shadow(0 0 15px rgba(0,255,170,0.3)) !important;
-      transform: scale(1.08) !important;
+      transform: translateY(-2px) !important;
     }
 
     @media (max-width: 900px) {

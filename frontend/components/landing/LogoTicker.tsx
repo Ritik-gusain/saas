@@ -13,68 +13,83 @@ const OPENROUTER_MODELS = [
   {
     name: "OpenAI",
     logo: "/ai logo/penailogo.svg",
-    model: "GPT-5.4",
+    model: "GPT-4o / o1-preview",
     invert: true,
+    font: "'Plus Jakarta Sans', sans-serif",
+    weight: 600,
+    letterSpacing: "-0.01em",
   },
   {
     name: "Claude",
     logo: "/ai logo/Anthropic.svg",
-    model: "Claude 3.5 Sonnet",
+    model: "3.5 Sonnet / Opus",
     invert: true,
+    font: "'Lora', serif",
+    weight: 500,
+    letterSpacing: "0.01em",
   },
   {
     name: "Gemini",
     logo: "/ai logo/GoogleGemini.svg",
-    model: "Gemini 1.5 Pro",
+    model: "1.5 Pro / Flash",
     invert: false,
+    font: "'Plus Jakarta Sans', sans-serif",
+    weight: 500,
+    letterSpacing: "-0.01em",
   },
   {
     name: "DeepSeek",
     logo: "/ai logo/DeepSeek.png",
-    model: "DeepSeek V3",
+    model: "DeepSeek-V3 / R1",
     invert: true,
+    font: "'Inter', sans-serif",
+    weight: 600,
+    letterSpacing: "-0.02em",
+  },
+  {
+    name: "Mistral AI",
+    logo: "https://cdn.jsdelivr.net/gh/lobehub/lobe-icons@latest/assets/mistral/logo.svg",
+    model: "Mistral Large 2",
+    invert: false,
+    font: "'Plus Jakarta Sans', sans-serif",
+    weight: 600,
+    letterSpacing: "-0.01em",
+  },
+  {
+    name: "Meta",
+    logo: "https://cdn.jsdelivr.net/gh/lobehub/lobe-icons@latest/assets/meta/logo.svg",
+    model: "Llama 3.3 / 405B",
+    invert: false,
+    font: "'Inter', sans-serif",
+    weight: 700,
+    letterSpacing: "-0.02em",
+  },
+  {
+    name: "Perplexity",
+    logo: "/ai logo/Perplexity.svg",
+    model: "Sonar Pro / Llama 3",
+    invert: true,
+    font: "'Plus Jakarta Sans', sans-serif",
+    weight: 500,
+    letterSpacing: "-0.01em",
   },
   {
     name: "Moonshot AI",
     logo: "/ai logo/moonshotai.png",
     model: "Kimi k1.5",
     invert: true,
+    font: "'Inter', sans-serif",
+    weight: 500,
+    letterSpacing: "-0.01em",
   },
   {
     name: "xAI",
     logo: "/ai logo/xai.png",
-    model: "Grok 3",
+    model: "Grok 3 (Beta)",
     invert: true,
-  },
-  {
-    name: "Qwen",
-    logo: "/ai logo/Qwen.png",
-    model: "Qwen 2.5",
-    invert: true,
-  },
-  {
-    name: "Mistral AI",
-    logo: "https://cdn.jsdelivr.net/gh/lobehub/lobe-icons@latest/assets/mistral/logo.svg",
-    model: "Large 2",
-    invert: false,
-  },
-  {
-    name: "Meta",
-    logo: "https://cdn.jsdelivr.net/gh/lobehub/lobe-icons@latest/assets/meta/logo.svg",
-    model: "Llama 3.3",
-    invert: false,
-  },
-  {
-    name: "Perplexity",
-    logo: "/ai logo/Perplexity.svg",
-    model: "Sonar Pro",
-    invert: true,
-  },
-  {
-    name: "NVIDIA",
-    logo: "/ai logo/nvidia.png",
-    model: "Nemotron 3",
-    invert: false,
+    font: "'Plus Jakarta Sans', sans-serif",
+    weight: 700,
+    letterSpacing: "0.05em",
   },
 ];
 
@@ -133,21 +148,22 @@ export function LogoTicker() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 14,
-              padding: "10px 24px",
-              opacity: 0.75,
-              cursor: "pointer",
-              background: "rgba(255,255,255,0.02)",
-              borderRadius: 14,
-              border: "1px solid rgba(255,255,255,0.04)",
-              backdropFilter: "blur(8px)",
+              gap: 16,
+              padding: "8px 0",
+              opacity: 0.6,
+              transition: "all 0.3s ease",
               minWidth: "max-content",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = "1";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = "0.6";
+              e.currentTarget.style.transform = "translateY(0)";
             }}
           >
             <div style={{
-              minWidth: 40,
-              width: "auto",
-              height: 40,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -157,34 +173,35 @@ export function LogoTicker() {
                 src={model.logo} 
                 alt={model.name} 
                 style={{ 
-                  height: model.name === 'OpenAI' ? 18 : 26,
+                  height: model.name === 'OpenAI' ? 14 : 22,
                   width: "auto",
                   objectFit: "contain",
                   filter: model.invert 
-                    ? "invert(1) brightness(1.5) drop-shadow(0 0 8px rgba(0,255,170,0.15))" 
-                    : "brightness(1.5) drop-shadow(0 0 8px rgba(0,255,170,0.15))",
+                    ? "invert(1) brightness(2) contrast(1.2)" 
+                    : "brightness(2) contrast(1.2)",
                 }} 
               />
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
               <span style={{
-                fontFamily: "Montserrat, sans-serif", 
-                fontWeight: 800, 
-                fontSize: 14,
+                fontFamily: model.font || "'Plus Jakarta Sans', sans-serif", 
+                fontWeight: model.weight || 600, 
+                fontSize: 15,
                 color: "#FFFFFF", 
-                letterSpacing: ".03em",
+                letterSpacing: model.letterSpacing || "normal",
                 whiteSpace: "nowrap",
-                lineHeight: 1.2,
+                lineHeight: 1,
               }}>
                 {model.name}
               </span>
               <span style={{
-                fontFamily: "'DM Mono', monospace",
+                fontFamily: "'Inter', sans-serif",
                 fontSize: 9,
-                color: "rgba(0,255,170,0.5)",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
+                fontWeight: 500,
+                color: "rgba(255,255,255,0.35)",
+                letterSpacing: "0.02em",
                 whiteSpace: "nowrap",
+                marginTop: 2,
               }}>
                 {model.model}
               </span>
