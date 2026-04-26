@@ -148,7 +148,7 @@ export function LogoTicker() {
           letterSpacing: "0.2em",
           textTransform: "uppercase",
         }}>
-          Powered by the models you already trust
+          Seamless Integration with Leading Models
         </span>
       </div>
 
