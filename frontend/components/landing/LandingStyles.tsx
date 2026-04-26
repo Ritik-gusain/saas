@@ -28,6 +28,8 @@ export const LandingStyles = () => (
     @keyframes ticker     { from{transform:translateX(0)}          to{transform:translateX(-50%)} }
     @keyframes scanline   { 0%{transform:translateY(-100%)}        100%{transform:translateY(100vh)} }
     @keyframes glowPulse  { 0%,100%{filter:drop-shadow(0 0 6px rgba(0,255,170,.6))} 50%{filter:drop-shadow(0 0 20px rgba(0,255,170,1))} }
+    @keyframes heroFadeIn { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
+    @keyframes heroSlideUp{ from{opacity:0;transform:translateX(-50%) translateY(30px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
 
     .shimmer-text {
       background: linear-gradient(90deg, #F8F9FA 0%, #00FFAA 35%, #00D0FF 55%, #F8F9FA 80%);
