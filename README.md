@@ -4,14 +4,13 @@
 >
 > *"Stop paying for individual ChatGPT seats. Unify your team's AI for half the cost."*
 
-**Live:** [https://chatbot-nine-psi-46.vercel.app/](https://chatbot-nine-psi-46.vercel.app/)
 
 ---
 
 Luminescent.io is a hybrid **Freemium (BYOK) + Team AI Chatbot SaaS**. 
 
 - **Individuals (Free/BYOK):** Solo users can use the platform for free by bringing their own API keys (OpenAI, Anthropic, OpenRouter, etc.). Usage is billed directly to their own API accounts.
-- **Teams (Subscription):** Companies replace fragmented individual AI subscriptions with a single team-wide plan. Teams get shared workspaces, collaboration features, and usage is covered by the platform's API allowance (via Bytez).
+- **Teams (Subscription+ BYOK):** Companies replace fragmented individual AI subscriptions with a single team-wide plan. Teams get shared workspaces, collaboration features, and usage is covered by the platform's API allowance (via Bytez).
 
 ### Pricing Tiers
 
@@ -32,11 +31,11 @@ Luminescent.io is a hybrid **Freemium (BYOK) + Team AI Chatbot SaaS**.
 |------------------|-----------------------------------------------------|
 | **Frontend**     | Next.js 16 (React 19, App Router), TypeScript, Tailwind CSS |
 | **State**        | Zustand stores (team, chat, agent)                  |
-| **Auth & DB**    | Supabase (PostgreSQL + Auth + RLS)                  |
+| **Auth & DB**    | Firebase                   |
 | **Payments**     | Razorpay (Subscriptions + Webhooks + Customer Portal) |
-| **AI Backend**   | Python FastAPI + Bytez API inference engine         |
-| **Email**        | Supabase Magic Links                                |
-| **Deployment**   | Vercel (frontend) + FastAPI server (separate host)  |
+| **AI Backend**   | Python FastAPI +                                    |
+
+
 
 ### Architecture
 
