@@ -1,4 +1,4 @@
-import { authFetch } from '../lib/api-client';
+import { authFetch } from '@/lib/api-client';
 import { create } from 'zustand';
 
 export interface Team {

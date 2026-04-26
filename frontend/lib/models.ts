@@ -1,12 +1,19 @@
 /**
- * lib/models.js
- * Centralized logic for Bytez AI model interaction.
- * In a production SaaS, this would securely communicate with our backend API (which in turn calls Bytez securely).
+ * lib/models.ts
+ * Centralized logic for AI model interaction.
  */
 
-const API_ENDPOINT = '/api/chat'; // Next.js API route proxying to Python backend, or straight to python on :3000
+const API_ENDPOINT = '/api/chat';
 
-export async function sendMessageToModel(messages, systemPrompt = "You are a helpful SaaS AI assistant.") {
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+export async function sendMessageToModel(
+  messages: ChatMessage[], 
+  systemPrompt: string = "You are a helpful SaaS AI assistant."
+): Promise<string> {
   try {
     const res = await fetch(API_ENDPOINT, {
       method: 'POST',
