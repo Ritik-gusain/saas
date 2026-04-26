@@ -13,9 +13,9 @@ export const RAZORPAY_PLANS = {
 };
 
 export const PLAN_CONFIG = {
-  starter: { seats: 3, price: 2400, currency: 'INR' },
-  growth: { seats: 7, price: 4900, currency: 'INR' },
-  pro: { seats: 12, price: 8200, currency: 'INR' },
+  starter: { seats: 3, price: 999, currency: 'INR' },
+  growth: { seats: 7, price: 2499, currency: 'INR' },
+  pro: { seats: 12, price: 3999, currency: 'INR' },
 };
 
 export interface RazorpaySubscription {
@@ -51,6 +51,8 @@ export interface RazorpayWebhookPayload {
         status: string;
         method: string;
         subscription_id: string;
+        error_code?: string;
+        error_description?: string;
       };
     };
   };

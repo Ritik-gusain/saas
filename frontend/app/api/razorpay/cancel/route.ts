@@ -19,9 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Cancel subscription at end of current cycle
-    await razorpayInstance.subscriptions.cancel(subscriptionId, {
-      cancel_at_cycle_end: false,
-    });
+    await razorpayInstance.subscriptions.cancel(subscriptionId, true);
 
     // TODO: Update subscription status in Firestore
     // await db.collection('teams').doc(teamId).update({ subscription_status: 'cancelled' });

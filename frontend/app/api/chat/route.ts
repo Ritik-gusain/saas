@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const conversationId = formData.get('conversationId') as string;
     const message = formData.get('message') as string;
+    const customModel = formData.get('model') as string;
     // Handle attachments if they exist (skipping for brevity in MVP)
 
     if (!conversationId || !message) {
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
        return NextResponse.json({ error: 'No API keys configured! You must bring your own API key to use the platform.' }, { status: 402 });
     }
 
-    let default_model = userPrefs?.default_model || 'gpt-4';
+    let default_model = customModel || userPrefs?.default_model || 'gpt-4';
     let system_prompt = userPrefs?.personal_system_prompt || '';
     
     // 4. Get team options if the conversation is in a team context

@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch subscription from Razorpay
-    const subscription = await razorpayInstance.subscriptions.fetch(subscriptionId);
+    const subscription = await razorpayInstance.subscriptions.fetch(subscriptionId) as any;
 
     return NextResponse.json({
       subscriptionId: subscription.id,

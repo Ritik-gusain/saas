@@ -46,7 +46,7 @@ interface TeamState {
   subscription: RazorpaySubscription | null;
   isLoading: boolean;
   error: string | null;
-  
+
   setCurrentTeam: (team: Team) => void;
   fetchTeams: () => Promise<void>;
   fetchMembers: (teamId: string) => Promise<void>;

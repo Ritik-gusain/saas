@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
         firebase_uid: userId,
       },
       customer_id: customer.id,
-    });
+    } as any);
 
     return NextResponse.json({
       subscriptionId: subscription.id,

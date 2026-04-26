@@ -46,6 +46,7 @@ interface ChatState {
   sendMessage: (
     conversationId: string,
     content: string,
+    model?: string,
     attachments?: File[]
   ) => Promise<void>;
   pinConversation: (conversationId: string) => Promise<void>;
@@ -121,12 +122,13 @@ export const useChatStore = create<ChatState>((set) => ({
     }
   },
 
-  sendMessage: async (conversationId: string, content: string, attachments?: File[]) => {
+  sendMessage: async (conversationId: string, content: string, model?: string, attachments?: File[]) => {
     set({ isStreaming: true, streamingContent: '', error: null });
     try {
       const formData = new FormData();
       formData.append('conversationId', conversationId);
       formData.append('message', content);
+      if (model) formData.append('model', model);
       if (attachments) {
         attachments.forEach((file) => formData.append('attachments', file));
       }
