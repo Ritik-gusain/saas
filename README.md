@@ -1,5 +1,4 @@
 
-
 > **AI-Powered Team Collaboration Platform**
 >
 > *"Stop paying for individual ChatGPT seats. Unify your team's AI for half the cost."*
@@ -31,9 +30,9 @@ Luminescent.io is a hybrid **Freemium (BYOK) + Team AI Chatbot SaaS**.
 |------------------|-----------------------------------------------------|
 | **Frontend**     | Next.js 16 (React 19, App Router), TypeScript, Tailwind CSS |
 | **State**        | Zustand stores (team, chat, agent)                  |
-| **Auth & DB**    | Firebase                   |
+| **Auth & DB**    | Firebase (Auth & Firestore)                         |
 | **Payments**     | Razorpay (Subscriptions + Webhooks + Customer Portal) |
-| **AI Backend**   | Python FastAPI +                                    |
+| **AI Backend**   | Python FastAPI + Bytez API                          |
 
 
 
@@ -42,7 +41,7 @@ Luminescent.io is a hybrid **Freemium (BYOK) + Team AI Chatbot SaaS**.
 ```
 User → Next.js Frontend → Next.js API Routes (Middleware) → FastAPI → Bytez API
               ↓                        ↓                        ↓
-         Supabase Auth            Supabase DB            Token Tracking
+         Firebase Auth          Cloud Firestore          Token Tracking
          Razorpay Webhooks
 ```
 
@@ -51,11 +50,11 @@ User → Next.js Frontend → Next.js API Routes (Middleware) → FastAPI → By
 ## Features
 
 ### 🔐 Authentication
-- Email/password signup & login
+- Firebase-powered email/password signup & login
 - Google OAuth support
-- OTP email verification
+- OTP verification via Firebase Auth
 - Middleware-based JWT verification on all protected routes
-- Session management via Supabase
+- Secure session management
 
 ### 🤖 AI Chat Workspace
 - Real-time streaming AI responses (Bytez API)
@@ -67,7 +66,7 @@ User → Next.js Frontend → Next.js API Routes (Middleware) → FastAPI → By
 
 ### 👥 Team Management
 - Create teams with seat limits (3, 7, or 12)
-- Invite members by email (magic link)
+- Invite members by email (secure magic links)
 - Role-based access: `owner`, `admin`, `member`
 - Seat enforcement — blocks invite when plan limit is reached, prompts upgrade
 - Transfer team ownership
@@ -109,7 +108,7 @@ luminescent/
 ├── frontend/                          # Next.js application
 │   ├── app/
 │   │   ├── (auth)/                    # Login / Register pages
-│   │   ├── (dashboard)/               # Protected routes
+│   │   ├── (dashboard)/               # Protected routes (chat, projects, analytics)
 │   │   │   ├── layout.tsx             # Dashboard layout with sidebar
 │   │   │   └── chat/page.tsx          # Main chat interface
 │   │   ├── api/
@@ -125,33 +124,33 @@ luminescent/
 │   │   ├── auth/callback/             # OAuth callback
 │   │   ├── invite/[token]/            # Team invitation acceptance
 │   │   ├── layout.tsx                 # Root layout
-│   │   └── layout-providers.tsx       # Supabase, Theme, Razorpay providers
+│   │   └── layout-providers.tsx       # Theme, Razorpay providers
 │   ├── components/
 │   │   ├── LandingPage.tsx            # Full landing page (hero, features, pricing)
 │   │   ├── ChatDashboard.tsx          # Main chat workspace
-│   │   ├── chat/                      # MessageBubble, MessageThread, MessageInput, TokenCounter
-│   │   ├── layout/                    # LandingLayout
-│   │   ├── pricing/                   # PricingPlans
-│   │   ├── providers/                 # SupabaseProvider, ThemeProvider, RazorpayProvider
+│   │   ├── chat/                      # Message components
+│   │   ├── layout/                    # Page layouts
+│   │   ├── pricing/                   # Pricing components
+│   │   ├── providers/                 # ThemeProvider, RazorpayProvider
 │   │   └── ui/                        # Shared UI components
 │   ├── stores/
-│   │   ├── teamStore.ts               # Team, member, subscription state
-│   │   ├── chatStore.ts               # Conversations, messages, export/share
-│   │   └── agentStore.ts              # Agent execution, planning, streaming
+│   │   ├── teamStore.ts               # Team & subscription state
+│   │   ├── chatStore.ts               # Conversations & messages
+│   │   └── agentStore.ts              # Agent execution state
 │   ├── lib/
-│   │   └── razorpay.ts                # Razorpay config, signature verification, types
+│   │   ├── firebase.ts                # Firebase client config
+│   │   ├── firebase-admin.ts          # Firebase Admin SDK config
+│   │   └── razorpay.ts                # Razorpay configuration
 │   ├── types/
-│   │   └── database.ts                # Complete Supabase schema TypeScript types
+│   │   └── database.ts                # Firestore schema types
 │   ├── hooks/                         # Custom React hooks
 │   ├── utils/                         # Utility functions
 │   ├── services/                      # API service layer
-│   ├── middleware.ts                  # Auth & team membership validation
+│   ├── middleware.ts                  # Auth & team validation
 │   ├── next.config.mjs
 │   └── package.json
 ├── backend/
 │   ├── server.py                      # FastAPI AI server (Bytez integration)
-│   ├── supabase/
-│   │   └── schema.sql                 # Full PostgreSQL schema with RLS policies
 │   └── keys/                          # API keys (gitignored)
 ├── docs/
 │   ├── LUMINESCENT_PROJECT_DOCUMENT.md  # Complete technical specification
@@ -168,15 +167,15 @@ luminescent/
 
 - Node.js ≥ 18
 - Python ≥ 3.10
-- A [Supabase](https://supabase.com) project (free tier OK)
+- A [Firebase](https://firebase.google.com) project
 - A [Razorpay](https://razorpay.com) account (for billing)
 - A [Bytez](https://bytez.com) API key (AI inference)
 
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/Ritik-gusain/chatbot
-cd chatbot/luminescent
+git clone https://github.com/Ritik-gusain/saas.git
+cd saas/luminescent
 ```
 
 ### 2. Frontend setup
@@ -199,24 +198,19 @@ uvicorn server:app --reload --port 8000
 # → http://localhost:8000
 ```
 
-### 4. Database setup
+### 4. Database Setup (Firebase)
 
-1. Create a Supabase project at [supabase.com](https://supabase.com)
-2. Copy your **Project URL** and **anon key** from Settings → API
-3. Open the **SQL Editor** and run `backend/supabase/schema.sql`
-4. Enable Auth providers:
-   - Authentication → Providers → Email ✅ (default)
-   - (Optional) Google OAuth — add credentials, set redirect URL to `http://localhost:3000/auth/callback`
+1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+2. Enable **Authentication** (Email/Password, Google)
+3. Create a **Cloud Firestore** database
+4. Obtain your Firebase config from Project Settings → General → Your apps
+5. Generate a new private key for the **Admin SDK** from Project Settings → Service accounts
 
 ### 5. Razorpay setup
 
-1. Create a [Razorpay](https://razorpay.com) account (use **Test mode** for development)
-2. Create 3 Plans in the Razorpay Dashboard:
-   - **Starter:** ₹3,900/month
-   - **Growth:** ₹8,900/month
-   - **Pro:** ₹14,900/month
-3. Configure Webhook URL: `https://your-domain.com/api/razorpay/webhook`
-4. Subscribe to events: `subscription.activated`, `subscription.charged`, `subscription.cancelled`, `payment.failed`
+1. Create a [Razorpay](https://razorpay.com) account (use **Test mode**)
+2. Create Plans in the Dashboard (Starter, Growth, Pro)
+3. Configure Webhook URL and subscribe to `subscription.activated`, `subscription.charged`, etc.
 
 ---
 
@@ -229,20 +223,23 @@ Create `frontend/.env.local` with the following:
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NODE_ENV=development
 
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+# Firebase (Client)
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-auth-domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-storage-bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+
+# Firebase (Admin)
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=your-service-account-email
+FIREBASE_PRIVATE_KEY="your-private-key"
 
 # Razorpay
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxx
 RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxx
 RAZORPAY_WEBHOOK_SECRET=whsec_xxxxxxxxxxxx
-
-# Razorpay Plan IDs (from Razorpay Dashboard)
-RAZORPAY_PLAN_STARTER_ID=plan_xxxxxxxxxxxx
-RAZORPAY_PLAN_GROWTH_ID=plan_xxxxxxxxxxxx
-RAZORPAY_PLAN_PRO_ID=plan_xxxxxxxxxxxx
 
 # Bytez AI
 BYTEZ_API_KEY=your-bytez-api-key
@@ -251,84 +248,7 @@ BYTEZ_API_URL=https://api.bytez.com/v1
 # FastAPI Backend
 FASTAPI_URL=http://localhost:8000
 FASTAPI_API_KEY=your-internal-secret
-
-# Integrations (Optional)
-GITHUB_CLIENT_ID=
-GITHUB_CLIENT_SECRET=
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-SLACK_CLIENT_ID=
-SLACK_CLIENT_SECRET=
 ```
-
----
-
-## API Reference
-
-### Authentication
-
-| Endpoint | Method | Auth | Description |
-|----------|--------|------|-------------|
-| `/api/auth/register` | POST | No | Register new user |
-| `/api/auth/login` | POST | No | Login user |
-| `/api/auth/logout` | POST | Yes | Logout user |
-| `/api/auth/callback` | GET | No | OAuth callback (Google) |
-
-### Chat
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/chat` | POST | Send message (streams from Bytez via FastAPI) |
-| `/api/conversations` | GET | List conversations |
-| `/api/conversations/:id` | GET / PATCH / DELETE | Conversation CRUD |
-| `/api/conversations/:id/pin` | POST | Pin/unpin |
-| `/api/conversations/:id/share` | POST | Share to project |
-| `/api/conversations/:id/export` | POST | Export (JSON / Markdown) |
-
-### Teams
-
-| Endpoint | Method | Role | Description |
-|----------|--------|------|-------------|
-| `/api/teams` | GET / POST | Member / Owner | List / create team |
-| `/api/teams/:id/invite` | POST | Owner/Admin | Invite member |
-| `/api/teams/invite/accept` | POST | — | Accept invite token |
-| `/api/teams/:id/members/:userId` | DELETE / PATCH | Owner/Admin | Remove / update role |
-
-### Billing (Razorpay)
-
-| Endpoint | Method | Role | Description |
-|----------|--------|------|-------------|
-| `/api/razorpay/checkout` | POST | Owner | Create subscription checkout |
-| `/api/razorpay/webhook` | POST | — | Razorpay event handler |
-| `/api/razorpay/portal` | POST | Owner | Customer portal link |
-| `/api/razorpay/subscription` | GET | Owner | Subscription status |
-| `/api/razorpay/cancel` | POST | Owner | Cancel subscription |
-
-### Agents
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/agents/:type/plan` | POST | Generate execution plan |
-| `/api/agents/executions/:id` | GET | Get execution status |
-| `/api/agents/executions/:id/stream` | GET | Stream execution updates |
-| `/api/agents/executions/:id/cancel` | POST | Cancel execution |
-
----
-
-## Deployment
-
-### Vercel (Frontend)
-
-```bash
-cd frontend
-vercel --prod
-```
-
-Set all environment variables in the Vercel project dashboard under **Settings → Environment Variables**.
-
-### FastAPI Backend
-
-Deploy `backend/server.py` to any Python host (Railway, Render, Fly.io, etc.) and set `FASTAPI_URL` in Vercel to point to it.
 
 ---
 
@@ -336,53 +256,42 @@ Deploy `backend/server.py` to any Python host (Railway, Render, Fly.io, etc.) an
 
 ### Phase 1 — MVP ✅ Complete
 - [x] Landing page with hero, features & pricing
-- [x] Supabase authentication (email + OAuth)
-- [x] AI chat interface (Bytez)
+- [x] Firebase authentication (email + OAuth)
+- [x] AI chat interface (Bytez integration)
 - [x] Next.js + FastAPI architecture
 
-### Phase 2 — Team Management 🚧 In Progress
-- [ ] User profile section
-- [ ] Chat history panel
-- [ ] Projects / group collaboration folders
-- [ ] **Razorpay** subscription checkout & webhooks
-- [ ] Team database structure (`razorpay_subscription_id`)
-- [ ] Email invitation system
-- [ ] Seat enforcement + upgrade prompts
-- [ ] Admin dashboard
-- [ ] Billing management portal
-- [ ] User preference settings
+### Phase 2 — Team & Projects ✅ Complete
+- [x] User profile and settings
+- [x] Chat history panel and management
+- [x] Team workspaces and invitation system
+- [x] Projects and group collaboration folders
+- [x] Razorpay subscription integration
+- [x] Admin analytics dashboard
 
 ### Phase 3 — Collaboration & Agents 📅 Planned
-- [ ] Team system prompts (company-wide AI persona)
+- [ ] Team system prompts
 - [ ] Shared team chat history feed
 - [ ] Text-to-image generation
-- [ ] Token usage analytics dashboard
-- [ ] Research, Content, Code, Data, Workflow, Document agents
-- [ ] Google Drive / Slack / GitHub integrations
-- [ ] Custom agents & MCP server registry
-- [ ] Multi-model support
-- [ ] Enterprise SSO & audit log
+- [ ] Advanced AI Agents (Research, Content, Code, etc.)
+- [ ] Third-party integrations (Slack, GitHub, etc.)
 
 ---
 
 ## Security
 
-- JWT verification on all API routes via Next.js middleware
-- Team membership validated on every team-scoped request
-- Row Level Security (RLS) enforced in Supabase for all tables
+- JWT verification via Firebase Auth in Next.js middleware
+- Multi-tenant data isolation in Cloud Firestore
+- Secure server-side operations via Firebase Admin SDK
 - Razorpay webhook signature verification
-- Audit logging for all admin actions and agent tool calls
-- GDPR-compliant data export & deletion
+- Audit logging for administrative actions
 
 ---
 
 ## Support
 
-📧 Open an issue on [GitHub](https://github.com/Ritik-gusain/chatbot/issues)
+📧 Open an issue on [GitHub](https://github.com/Ritik-gusain/saas/issues)
 
-💬 Try the live app: [chatbot-nine-psi-46.vercel.app](https://chatbot-nine-psi-46.vercel.app/)
-
-📄 Full technical spec: [`docs/LUMINESCENT_PROJECT_DOCUMENT.md`](./docs/LUMINESCENT_PROJECT_DOCUMENT.md)
+💬 Try the live app: [luminescent-io.vercel.app](https://luminescent-io.vercel.app/)
 
 ---
 
