@@ -1,298 +1,95 @@
 
-> **AI-Powered Team Collaboration Platform**
->
-> *"Stop paying for individual ChatGPT seats. Unify your team's AI for half the cost."*
+<div align="center">
+  <img src="https://img.shields.io/badge/Luminescent.io-AI--Powered%20Team%20Collaboration-blue?style=for-the-badge&logo=openai" alt="Luminescent Logo" />
+  <br />
+  <h1>✨ Luminescent.io</h1>
+  <p><b>The Ultimate AI Team Workspace: Unify, Collaborate, and Scale with Intelligence.</b></p>
+  <p><i>Stop paying for individual AI seats. Centralize your team's intelligence for a fraction of the cost.</i></p>
 
-
----
-
-Luminescent.io is a hybrid **Freemium (BYOK) + Team AI Chatbot SaaS**. 
-
-- **Individuals (Free/BYOK):** Solo users can use the platform for free by bringing their own API keys (OpenAI, Anthropic, OpenRouter, etc.). Usage is billed directly to their own API accounts.
-- **Teams (Subscription+ BYOK):** Companies replace fragmented individual AI subscriptions with a single team-wide plan. Teams get shared workspaces, collaboration features, and usage is covered by the platform's API allowance (via Bytez).
-
-### Pricing Tiers
-
-| Plan         | Seats    | Monthly Price        | API Model        |
-|--------------|----------|----------------------|------------------|
-| **Solo**     | 1       | **Free**             | BYOK (Required)  |
-| Starter Team | Up to 3  | ₹999                 | BYOK (Required)  |
-| Growth Team  | Up to 7  | ₹2,499               | BYOK (Required)  |
-| Pro Team     | Up to 12 | ₹3,999               | BYOK (Required)  |
-
-> **Business model:** The platform functions as an interface shell. High friction server-based inference costs are eliminated entirely by mandating a Bring Your Own Key (BYOK) model for all tiers. We monetize the team collaboration software (shared workspaces, team instructions) through fixed subscription revenue.
+  <p>
+    <a href="https://luminescent-io.vercel.app/"><b>Try the Live App →</b></a>
+  </p>
+</div>
 
 ---
 
-## Tech Stack
+## 🚀 The Vision
+Luminescent.io is a next-generation **AI-as-a-Service (SaaS)** platform designed to bridge the gap between individual AI power and team-scale productivity. While most platforms lock users into expensive per-seat subscriptions, Luminescent introduces a **Hybrid Freemium + Team Workspace** model.
 
-| Layer            | Technology                                          |
-|------------------|-----------------------------------------------------|
-| **Frontend**     | Next.js 16 (React 19, App Router), TypeScript, Tailwind CSS |
-| **State**        | Zustand stores (team, chat, agent)                  |
-| **Auth & DB**    | Firebase (Auth & Firestore)                         |
-| **Payments**     | Razorpay (Subscriptions + Webhooks + Customer Portal) |
-| **AI Backend**   | Python FastAPI + Bytez API                          |
-
-
-
-### Architecture
-
-```
-User → Next.js Frontend → Next.js API Routes (Middleware) → FastAPI → Bytez API
-              ↓                        ↓                        ↓
-         Firebase Auth          Cloud Firestore          Token Tracking
-         Razorpay Webhooks
-```
+- **For Individuals:** A high-performance, sleek AI interface that lets you bring your own keys (BYOK) for total control and zero markup.
+- **For Teams:** A centralized hub for shared knowledge, collaborative project folders, and team-wide AI personality management.
 
 ---
 
-## Features
+## 💎 Premium Features
 
-### 🔐 Authentication
-- Firebase-powered email/password signup & login
-- Google OAuth support
-- OTP verification via Firebase Auth
-- Middleware-based JWT verification on all protected routes
-- Secure session management
+### 🔐 Enterprise-Grade Workspace
+*   **Secure Multi-Tenant Auth:** Powered by Firebase with Google OAuth, OTP verification, and multi-factor support.
+*   **Role-Based Access Control (RBAC):** Granular permissions for Owners, Admins, and Members.
+*   **Seat Management:** Intelligent subscription tracking that scales with your team growth (3, 7, or 12 seats).
 
-### 🤖 AI Chat Workspace
-- Real-time streaming AI responses (Bytez API)
-- Editable conversation titles, pin/archive/export (JSON, Markdown)
-- Team-shared system prompts with owner control
-- Per-conversation token usage meter
-- Model selector (switch AI models per conversation)
-- Multi-line input with file attachments, voice input toggle, prompt templates
+### 🤖 Intelligent AI Chat Studio
+*   **Real-Time Streaming:** Ultra-low latency responses powered by our proprietary FastAPI orchestration layer.
+*   **Contextual Organization:** Pin, archive, and export conversations (Markdown/JSON).
+*   **Model Agnostic:** Seamlessly switch between OpenAI, Anthropic, and specialized open-source models mid-conversation.
+*   **Token Optimization:** Integrated usage metering to keep track of efficiency across your entire organization.
 
-### 👥 Team Management
-- Create teams with seat limits (3, 7, or 12)
-- Invite members by email (secure magic links)
-- Role-based access: `owner`, `admin`, `member`
-- Seat enforcement — blocks invite when plan limit is reached, prompts upgrade
-- Transfer team ownership
+### 👥 Team Collaboration & Projects
+*   **Shared Workspaces:** Create project-specific folders to centralize AI insights, notes, and shared prompts.
+*   **Team System Prompts:** Maintain brand voice and operational consistency with shared AI instructions.
+*   **Activity Logs:** Full audit trails for team actions, ensuring security and accountability.
 
-### 💳 Razorpay Billing
-- Subscription checkout flow
-- Webhook-driven team provisioning (`subscription.activated`)
-- Customer portal for invoice & payment management
-- Plan upgrade/downgrade/cancel support
-
-### 📁 Projects (Team Workspaces)
-- Shared team folders for conversations, notes, and files
-- Pin AI outputs, tag with color, set project-level system prompt overrides
-- Sub-folder support, starring, activity log
-
-### 🤖 AI Agents (Phase 3)
-| Agent               | Purpose                             |
-|---------------------|-------------------------------------|
-| Research            | Multi-source web research & summary |
-| Content Creation    | Long-form SEO content + image gen   |
-| Code                | Write, test, debug with GitHub      |
-| Data Analysis       | Analyze CSV/Excel, generate charts  |
-| Workflow Automation | Automate Gmail/Calendar/Slack tasks |
-| Document Processing | Extract & compare PDF/Word docs     |
-
-### 📊 Admin Settings (Owner/Admin)
-- Usage analytics per member (tokens: text vs. image)
-- Audit log for all admin actions and agent tool calls
-- Team system prompt management with version history
-- Razorpay billing portal integration
-- SSO, IP allowlist (Enterprise)
+### 💳 Seamless Billing (Razorpay)
+*   **Automated Provisioning:** Webhook-driven subscription activation for a "pay-and-play" experience.
+*   **Self-Service Portal:** Manage invoices, upgrade plans, and handle team seats without ever leaving the app.
 
 ---
 
-## Project Structure
+## 🛠 Proprietary Tech Stack
 
-```
-luminescent/
-├── frontend/                          # Next.js application
-│   ├── app/
-│   │   ├── (auth)/                    # Login / Register pages
-│   │   ├── (dashboard)/               # Protected routes (chat, projects, analytics)
-│   │   │   ├── layout.tsx             # Dashboard layout with sidebar
-│   │   │   └── chat/page.tsx          # Main chat interface
-│   │   ├── api/
-│   │   │   ├── auth/                  # register, login, logout, callback
-│   │   │   ├── chat/route.ts          # AI chat endpoint → FastAPI proxy
-│   │   │   ├── conversations/         # CRUD + pin/archive/share/export
-│   │   │   ├── teams/                 # Team CRUD + invite/accept
-│   │   │   ├── projects/              # Project CRUD + notes/files/pin
-│   │   │   ├── agents/                # Agent plan/execute/stream/cancel
-│   │   │   ├── razorpay/              # checkout, webhook, portal, cancel
-│   │   │   ├── admin/                 # usage analytics, audit log
-│   │   │   └── users/route.ts         # Profile get/update
-│   │   ├── auth/callback/             # OAuth callback
-│   │   ├── invite/[token]/            # Team invitation acceptance
-│   │   ├── layout.tsx                 # Root layout
-│   │   └── layout-providers.tsx       # Theme, Razorpay providers
-│   ├── components/
-│   │   ├── LandingPage.tsx            # Full landing page (hero, features, pricing)
-│   │   ├── ChatDashboard.tsx          # Main chat workspace
-│   │   ├── chat/                      # Message components
-│   │   ├── layout/                    # Page layouts
-│   │   ├── pricing/                   # Pricing components
-│   │   ├── providers/                 # ThemeProvider, RazorpayProvider
-│   │   └── ui/                        # Shared UI components
-│   ├── stores/
-│   │   ├── teamStore.ts               # Team & subscription state
-│   │   ├── chatStore.ts               # Conversations & messages
-│   │   └── agentStore.ts              # Agent execution state
-│   ├── lib/
-│   │   ├── firebase.ts                # Firebase client config
-│   │   ├── firebase-admin.ts          # Firebase Admin SDK config
-│   │   └── razorpay.ts                # Razorpay configuration
-│   ├── types/
-│   │   └── database.ts                # Firestore schema types
-│   ├── hooks/                         # Custom React hooks
-│   ├── utils/                         # Utility functions
-│   ├── services/                      # API service layer
-│   ├── middleware.ts                  # Auth & team validation
-│   ├── next.config.mjs
-│   └── package.json
-├── backend/
-│   ├── server.py                      # FastAPI AI server (Bytez integration)
-│   └── keys/                          # API keys (gitignored)
-├── docs/
-│   ├── LUMINESCENT_PROJECT_DOCUMENT.md  # Complete technical specification
-│   └── SAAS_BUSINESS_PLAN.md            # Business model & GTM strategy
-├── SETUP_COMPLETE.md                  # Implementation status & next steps
-└── README.md
-```
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | **Next.js 16** (React 19, App Router) with Cinematic UI |
+| **Logic** | **TypeScript** with Zustand State Orchestration |
+| **Real-time** | **FastAPI** + Streaming AI Proxy Layer |
+| **Infrastructure** | **Firebase** (Auth & Firestore) for Distributed Scaling |
+| **Fintech** | **Razorpay** Subscription Engine with Secure Webhooks |
 
 ---
 
-## Local Development
+## 🗺 Strategic Roadmap
 
-### Prerequisites
+### ✅ Phase 1: Core Intelligence (Complete)
+*   High-performance Landing Page & Cinematic UI.
+*   Secure Authentication & Session Management.
+*   Real-time AI Chat Orchestration.
 
-- Node.js ≥ 18
-- Python ≥ 3.10
-- A [Firebase](https://firebase.google.com) project
-- A [Razorpay](https://razorpay.com) account (for billing)
-- A [Bytez](https://bytez.com) API key (AI inference)
+### ✅ Phase 2: Team Ecosystem (Complete)
+*   Team Workspace & Invitation System.
+*   Subscription Integration & Seat Enforcement.
+*   Project-based Contextual Organization.
 
-### 1. Clone the repo
-
-```bash
-git clone https://github.com/Ritik-gusain/saas.git
-cd saas/luminescent
-```
-
-### 2. Frontend setup
-
-```bash
-cd frontend
-npm install
-cp .env.example .env.local
-# Fill in your keys (see Environment Variables below)
-npm run dev
-# → http://localhost:3000
-```
-
-### 3. Backend setup
-
-```bash
-cd backend
-pip install fastapi uvicorn httpx python-dotenv
-uvicorn server:app --reload --port 8000
-# → http://localhost:8000
-```
-
-### 4. Database Setup (Firebase)
-
-1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
-2. Enable **Authentication** (Email/Password, Google)
-3. Create a **Cloud Firestore** database
-4. Obtain your Firebase config from Project Settings → General → Your apps
-5. Generate a new private key for the **Admin SDK** from Project Settings → Service accounts
-
-### 5. Razorpay setup
-
-1. Create a [Razorpay](https://razorpay.com) account (use **Test mode**)
-2. Create Plans in the Dashboard (Starter, Growth, Pro)
-3. Configure Webhook URL and subscribe to `subscription.activated`, `subscription.charged`, etc.
+### 📅 Phase 3: Autonomous Agents (In Progress)
+*   **Research Agents:** Multi-source web synthesis.
+*   **Content Agents:** Long-form SEO and creative generation.
+*   **Code Agents:** Deep GitHub integration for automated PR reviews.
+*   **Visual Agents:** Integrated DALL-E & Stable Diffusion workflows.
 
 ---
 
-## Environment Variables
+## 🔒 Commercial & Licensing
 
-Create `frontend/.env.local` with the following:
+**Luminescent.io is a proprietary SaaS application.**
 
-```bash
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NODE_ENV=development
+While the repository provides a showcase of the engineering excellence and architecture behind the platform, the full production setup, orchestration secrets, and commercial deployment configurations are **restricted**.
 
-# Firebase (Client)
-NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-auth-domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-storage-bucket
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
-NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
-
-# Firebase (Admin)
-FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_CLIENT_EMAIL=your-service-account-email
-FIREBASE_PRIVATE_KEY="your-private-key"
-
-# Razorpay
-RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxx
-RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxx
-RAZORPAY_WEBHOOK_SECRET=whsec_xxxxxxxxxxxx
-
-# Bytez AI
-BYTEZ_API_KEY=your-bytez-api-key
-BYTEZ_API_URL=https://api.bytez.com/v1
-
-# FastAPI Backend
-FASTAPI_URL=http://localhost:8000
-FASTAPI_API_KEY=your-internal-secret
-```
+*   **Commercial Use:** Unauthorized cloning or redistribution for commercial purposes is strictly prohibited.
+*   **White-labeling:** Interested in a white-labeled version for your enterprise? Contact [Ritik](mailto:your-email@example.com).
+*   **Consulting:** Need help building a similar AI-driven SaaS? Let's talk.
 
 ---
 
-## Roadmap
-
-### Phase 1 — MVP ✅ Complete
-- [x] Landing page with hero, features & pricing
-- [x] Firebase authentication (email + OAuth)
-- [x] AI chat interface (Bytez integration)
-- [x] Next.js + FastAPI architecture
-
-### Phase 2 — Team & Projects ✅ Complete
-- [x] User profile and settings
-- [x] Chat history panel and management
-- [x] Team workspaces and invitation system
-- [x] Projects and group collaboration folders
-- [x] Razorpay subscription integration
-- [x] Admin analytics dashboard
-
-### Phase 3 — Collaboration & Agents 📅 Planned
-- [ ] Team system prompts
-- [ ] Shared team chat history feed
-- [ ] Text-to-image generation
-- [ ] Advanced AI Agents (Research, Content, Code, etc.)
-- [ ] Third-party integrations (Slack, GitHub, etc.)
-
----
-
-## Security
-
-- JWT verification via Firebase Auth in Next.js middleware
-- Multi-tenant data isolation in Cloud Firestore
-- Secure server-side operations via Firebase Admin SDK
-- Razorpay webhook signature verification
-- Audit logging for administrative actions
-
----
-
-## Support
-
-📧 Open an issue on [GitHub](https://github.com/Ritik-gusain/saas/issues)
-
-💬 Try the live app: [luminescent-io.vercel.app](https://luminescent-io.vercel.app/)
-
----
-
-**Made with ❤️ by Ritik**
+<div align="center">
+  <p>Built for the future of work. Powered by curiosity.</p>
+  <b>Made with ❤️ by Ritik</b>
+</div>

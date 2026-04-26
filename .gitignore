@@ -203,7 +203,7 @@ cython_debug/
 .vercel
 
 # Project Specific
-docs/
+/docs/
 backend/keys/
 *.key
 *.secret
