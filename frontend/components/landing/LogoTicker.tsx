@@ -41,7 +41,7 @@ const OPENROUTER_MODELS = [
     name: "DeepSeek",
     logo: "/ai logo/DeepSeek.png",
     model: "DeepSeek-V3 / R1",
-    invert: true,
+    invert: false,
     font: "'Inter', sans-serif",
     weight: 600,
     letterSpacing: "-0.02em",
@@ -50,7 +50,7 @@ const OPENROUTER_MODELS = [
     name: "Mistral AI",
     logo: "/ai logo/Mistral.png",
     model: "Mistral Large 2",
-    invert: true,
+    invert: false,
     font: "'Plus Jakarta Sans', sans-serif",
     weight: 600,
     letterSpacing: "-0.01em",
@@ -59,7 +59,7 @@ const OPENROUTER_MODELS = [
     name: "Meta",
     logo: "/ai logo/Meta.png",
     model: "Llama 3.3 / 405B",
-    invert: true,
+    invert: false,
     font: "'Inter', sans-serif",
     weight: 700,
     letterSpacing: "-0.02em",
@@ -68,7 +68,7 @@ const OPENROUTER_MODELS = [
     name: "Qwen",
     logo: "/ai logo/Qwen.png",
     model: "Qwen 2.5 / 72B",
-    invert: true,
+    invert: false,
     font: "'Plus Jakarta Sans', sans-serif",
     weight: 600,
     letterSpacing: "-0.01em",
@@ -77,7 +77,7 @@ const OPENROUTER_MODELS = [
     name: "Nvidia",
     logo: "/ai logo/nvidia.png",
     model: "Llama-3.1-Nemotron",
-    invert: true,
+    invert: false,
     font: "'Inter', sans-serif",
     weight: 700,
     letterSpacing: "-0.02em",
@@ -196,7 +196,7 @@ export function LogoTicker() {
                   objectFit: "contain",
                   filter: model.invert 
                     ? "invert(1) brightness(2) contrast(1.2)" 
-                    : "brightness(2) contrast(1.2)",
+                    : "brightness(1.1) contrast(1.1)",
                 }} 
               />
             </div>
