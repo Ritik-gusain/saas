@@ -7,8 +7,9 @@
   <p><i>Stop paying for individual AI seats. Centralize your team's intelligence for a fraction of the cost.</i></p>
 
   <p>
-    <a href="https://luminescent-io.vercel.app/"><b>Try the Live App →</b></a>
+    <a href="https://frontend-lilac-nine-28.vercel.app/"><b>Try the Live App →</b></a>
   </p>
+
 </div>
 
 ---
@@ -57,7 +58,17 @@ Luminescent.io is a next-generation **AI-as-a-Service (SaaS)** platform designed
 
 ---
 
+## 🛠 Resilient Deployment Architecture
+
+Recently optimized for seamless Vercel deployment, Luminescent now features:
+*   **Lazy Initialization:** Firebase Admin and Client SDKs are lazily initialized to prevent build-time crashes when environment variables are unavailable.
+*   **Case-Sensitive Integrity:** Guaranteed compatibility across Linux/macOS environments through strict file-case auditing.
+*   **Next.js 16 Optimized:** Fully compatible with the latest Turbopack build engine.
+
+---
+
 ## 🗺 Strategic Roadmap
+
 
 ### ✅ Phase 1: Core Intelligence (Complete)
 *   High-performance Landing Page & Cinematic UI.

@@ -10,6 +10,11 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Only initialize if not already initialized
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-export const auth = getAuth(app);
+// Only initialize if not already initialized and config is valid
+const isConfigValid = firebaseConfig.apiKey && firebaseConfig.apiKey !== 'undefined';
+const app = isConfigValid 
+  ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0])
+  : null;
+
+export const auth = app ? getAuth(app) : null as any;
+

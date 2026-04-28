@@ -1,10 +1,17 @@
 // Razorpay configuration and utilities
 import Razorpay from 'razorpay';
 
-export const razorpayInstance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || '',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || '',
+export const razorpayInstance = new Proxy({} as Razorpay, {
+  get(target, prop) {
+    const instance = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID || '',
+      key_secret: process.env.RAZORPAY_KEY_SECRET || '',
+    });
+    const val = (instance as any)[prop];
+    return typeof val === 'function' ? val.bind(instance) : val;
+  }
 });
+
 
 export const RAZORPAY_PLANS = {
   starter: process.env.RAZORPAY_PLAN_STARTER_ID || '',

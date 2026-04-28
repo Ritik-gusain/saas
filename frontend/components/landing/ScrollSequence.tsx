@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { SequenceOverlay } from "./sequenceoverlay";
+import { SequenceOverlay } from "./SequenceOverlay";
+
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);

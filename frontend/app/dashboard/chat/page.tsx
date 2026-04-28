@@ -35,7 +35,8 @@ export default function ChatPage() {
     return () => unsubscribe();
   }, []);
 
-  const handleSendMessage = async (message: string, model: string) => {
+  const handleSendMessage = async (message: string, model?: string) => {
+
     if (!currentConversation && teamId) {
       // Create new conversation
       const conv = await createConversation(teamId);

@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
-import ChatDashboard from '@/components/chat/ChatDashboard';
+import ChatDashboard from '@/components/dashboard/chat/ChatDashboard';
+
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
