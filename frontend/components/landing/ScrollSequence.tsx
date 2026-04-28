@@ -10,12 +10,12 @@ if (typeof window !== "undefined") {
 }
 
 // ─── CONFIGURATION ──────────────────────────────────────────────
-// Frames are in /public/frames/ and named ezgif-frame-001.jpg … ezgif-frame-285.jpg
+// Frames are in /public/frames/ and named frame 1.jpg … frame 285.jpg
 const CONFIG = {
   totalFrames: 285,
-  // i is 0-based; files are 1-based with 3-digit zero-padding
+  // i is 0-based; files are 1-based
   framePath: (i: number) =>
-    `/frames/ezgif-frame-${String(i + 1).padStart(3, "0")}.jpg`,
+    `/frames/frame ${i + 1}.jpg`,
   phaseBoundaries: {
     intro: { start: 0, end: 80 },   // Auto-play: 0-8 s (runners)
     zoom:  { start: 80, end: 140 }, // Scroll:    camera push → agents

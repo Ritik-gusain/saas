@@ -12,9 +12,9 @@ if (typeof window !== "undefined") {
 
 // ─── Frame sequence config ──────────────────────────────────────
 const TOTAL_FRAMES = 285;
-// Files in /public/frames/ are named ezgif-frame-001.jpg … ezgif-frame-285.jpg
+// Files in /public/frames/ are named frame 1.jpg … frame 285.jpg
 const FRAME_PATH = (i: number) =>
-  `/frames/ezgif-frame-${String(i + 1).padStart(3, "0")}.jpg`;
+  `/frames/frame ${i + 1}.jpg`;
 
 const PHASES = {
   intro: { start: 0,   end: 80  }, // 0-8 s : figures running
@@ -102,9 +102,10 @@ export function HeroSection() {
 
   // ── New refs / state ───────────────────────────────────────
   const canvasRef  = useRef<HTMLCanvasElement>(null);
-  const [showCanvas, setShowCanvas]         = useState(false);
   const [phase, setPhase]                   = useState<"intro" | "zoom" | "heads">("intro");
   const [activeModelIdx, setActiveModelIdx] = useState(0);
+  const [statusMsg, setStatusMsg]           = useState("Initializing systems...");
+  const [showCanvas, setShowCanvas]         = useState(false);
 
   // ── EXISTING GSAP (unchanged) ──────────────────────────────
   useEffect(() => {
@@ -145,7 +146,7 @@ export function HeroSection() {
     return () => ctx.revert();
   }, []);
 
-  // ── NEW: Canvas frame sequence + ScrollTrigger ─────────────
+  // ── Canvas auto-play intro + scroll scrub ──────────────────
   useEffect(() => {
     const canvas    = canvasRef.current;
     const container = containerRef.current;
@@ -154,90 +155,91 @@ export function HeroSection() {
     const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: false });
     if (!ctx2d) return;
 
-    // Always render at full device sharpness
     const getDpr = () => window.devicePixelRatio || 1;
-
-    // Image cache
     const images: (HTMLImageElement | undefined)[] = [];
     let animId: number | null = null;
-    let targetFrame = 0;
-    let renderedFrame = -1;
+    // Two targets: autoTarget drives intro playback, scrollTarget drives scroll
+    let autoTarget  = 0;   // auto-advances during intro
+    let scrollTarget = 0;  // set by ScrollTrigger
+    let smoothFrame  = 0;
+    let introRunning = true; // true while auto-playing frames 0→79
+    let lastTick     = 0;
+    const INTRO_FPS  = 22; // comfortable 22fps auto-play
+    const MS_PER_F   = 1000 / INTRO_FPS;
 
-    // Preload frames around `center` — load 30 ahead, 8 behind
     const preload = (center: number) => {
-      for (let offset = -8; offset <= 30; offset++) {
-        const idx = center + offset;
+      for (let o = -8; o <= 30; o++) {
+        const idx = center + o;
         if (idx < 0 || idx >= TOTAL_FRAMES || images[idx]) continue;
-        const img = new Image();
-        img.decoding = "async";
-        img.src = FRAME_PATH(idx);
-        images[idx] = img;
+        const img = new Image(); img.decoding = "async";
+        img.src = FRAME_PATH(idx); images[idx] = img;
       }
     };
 
-    // Resize canvas to full device-pixel resolution
     const resize = () => {
-      const dpr  = getDpr();
-      const rect = canvas.getBoundingClientRect();
+      const dpr = getDpr(), rect = canvas.getBoundingClientRect();
       canvas.width  = Math.round(rect.width  * dpr);
       canvas.height = Math.round(rect.height * dpr);
-      // Setting canvas.width resets ALL context state — reapply quality settings
       ctx2d.imageSmoothingEnabled = true;
       ctx2d.imageSmoothingQuality = "high";
     };
     resize();
     window.addEventListener("resize", resize);
 
-    // Paint one frame — work directly in device pixels (no CSS-pixel transform)
     const paint = (img: HTMLImageElement) => {
-      const dpr    = getDpr();
-      const cw     = canvas.width;   // device pixels
-      const ch     = canvas.height;  // device pixels
-      const iw     = img.naturalWidth  || img.width;
-      const ih     = img.naturalHeight || img.height;
+      const cw = canvas.width, ch = canvas.height;
+      const iw = img.naturalWidth || img.width;
+      const ih = img.naturalHeight || img.height;
       if (!iw || !ih) return;
-
-      // Cover-crop: fill the canvas, center the image
-      const scale = Math.max(cw / iw, ch / ih);
-      const dw    = iw * scale;
-      const dh    = ih * scale;
-      const dx    = (cw - dw) / 2;
-      const dy    = (ch - dh) / 2;
-
+      const s = Math.max(cw / iw, ch / ih);
       ctx2d.clearRect(0, 0, cw, ch);
-      ctx2d.drawImage(img, dx, dy, dw, dh);
+      ctx2d.drawImage(img, (cw - iw * s) / 2, (ch - ih * s) / 2, iw * s, ih * s);
     };
 
-    // rAF loop — smooth interpolation toward target
-    let smoothFrame = 0;
-    const loop = () => {
-      smoothFrame += (targetFrame - smoothFrame) * 0.12;
-      const idx = Math.round(smoothFrame);
-
-      if (idx !== renderedFrame) {
-        const img = images[idx];
-        if (img?.complete && img.naturalWidth) {
-          paint(img);
-          renderedFrame = idx;
-        } else {
-          // Fallback: find nearest loaded frame
-          for (let d = 1; d < 15; d++) {
-            const fb = images[idx + d] ?? images[idx - d];
-            if (fb?.complete && fb.naturalWidth) { paint(fb); break; }
+    const loop = (ts: number) => {
+      // Auto-advance intro at INTRO_FPS
+      if (introRunning) {
+        if (ts - lastTick >= MS_PER_F) {
+          autoTarget = Math.min(autoTarget + 1, PHASES.intro.end - 1);
+          lastTick = ts;
+          if (autoTarget >= PHASES.intro.end - 1) {
+            introRunning = false;
+            setStatusMsg("Scroll to explore");
           }
+        }
+      }
+
+      // Blend: during intro use autoTarget, after intro use scrollTarget
+      const target = introRunning ? autoTarget : scrollTarget;
+      smoothFrame += (target - smoothFrame) * (introRunning ? 0.18 : 0.12);
+      const idx = Math.round(smoothFrame);
+      const img = images[idx];
+      if (img?.complete && img.naturalWidth) {
+        paint(img);
+      } else {
+        for (let d = 1; d < 12; d++) {
+          const fb = images[idx + d] ?? images[idx - d];
+          if (fb?.complete && fb.naturalWidth) { paint(fb); break; }
         }
       }
       animId = requestAnimationFrame(loop);
     };
 
-    // Map global scroll progress → frame index + phase state
-    const onScrollUpdate = (self: ScrollTrigger) => {
-      const p = self.progress; // 0→1
+    // Kick off immediately — canvas visible from frame 0
+    preload(0);
+    animId = requestAnimationFrame(loop);
+    setTimeout(() => {
+      setShowCanvas(true);
+      setStatusMsg("Neural systems online");
+    }, 1200);
+    setTimeout(() => setStatusMsg("Scroll to explore"), introRunning ? 4000 : 2000);
 
+    const onScrollUpdate = (self: ScrollTrigger) => {
+      if (introRunning) return; // don't scrub during auto-play
+      const p = self.progress;
       let frame: number;
       if (p < 0.2) {
-        frame = PHASES.intro.end - 1;           // hold at last intro frame
-        setPhase("intro");
+        frame = PHASES.intro.end - 1; setPhase("intro");
       } else if (p < 0.5) {
         const z = (p - 0.2) / 0.3;
         frame = PHASES.zoom.start + z * (PHASES.zoom.end - PHASES.zoom.start);
@@ -246,16 +248,12 @@ export function HeroSection() {
         const h = (p - 0.5) / 0.5;
         frame = PHASES.heads.start + h * (PHASES.heads.end - PHASES.heads.start);
         setPhase("heads");
-        setActiveModelIdx(
-          Math.min(Math.floor(h * MODELS.length), MODELS.length - 1)
-        );
+        setActiveModelIdx(Math.min(Math.floor(h * MODELS.length), MODELS.length - 1));
       }
-
-      targetFrame = Math.round(Math.min(Math.max(frame, 0), TOTAL_FRAMES - 1));
-      preload(targetFrame + 12);
+      scrollTarget = Math.round(Math.min(Math.max(frame, 0), TOTAL_FRAMES - 1));
+      preload(scrollTarget + 15);
     };
 
-    // Build ScrollTrigger
     const st = ScrollTrigger.create({
       trigger: container,
       start: "top top",
@@ -263,16 +261,6 @@ export function HeroSection() {
       pin: true,
       scrub: 0.8,
       anticipatePin: 1,
-      onEnter: () => {
-        setShowCanvas(true);
-        videoRef.current?.pause();
-        preload(0);
-        if (!animId) loop();
-      },
-      onLeaveBack: () => {
-        setShowCanvas(false);
-        videoRef.current?.play().catch(() => {});
-      },
       onUpdate: onScrollUpdate,
     });
 
@@ -300,12 +288,11 @@ export function HeroSection() {
         background: "#101418",
       }}
     >
-      {/* ── Background video (existing, unchanged) ─────────────── */}
+      {/* ── Background video (fallback — hidden once canvas loads) ── */}
       <div
         style={{
           position: "absolute", inset: 0, zIndex: 0, overflow: "hidden",
-          opacity: showCanvas ? 0 : 1,
-          transition: "opacity 0.6s ease",
+          opacity: 0, pointerEvents: "none",
         }}
       >
         <video
@@ -348,6 +335,7 @@ export function HeroSection() {
       />
 
       {/* ── Floating orbs (existing, unchanged) ────────────────── */}
+      {/* ── Floating ambient orbs + particle nodes ─────────────── */}
       <div
         ref={orbsRef}
         style={{
@@ -355,9 +343,79 @@ export function HeroSection() {
           pointerEvents: "none", overflow: "hidden",
         }}
       >
-        <div style={{ position: "absolute", top: "15%", left: "10%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,255,170,.08) 0%, transparent 70%)", filter: "blur(40px)" }} />
-        <div style={{ position: "absolute", top: "60%", right: "15%", width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,208,255,.06) 0%, transparent 70%)", filter: "blur(40px)" }} />
-        <div style={{ position: "absolute", bottom: "20%", left: "30%", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,255,170,.05) 0%, transparent 70%)", filter: "blur(40px)" }} />
+        <div style={{ position: "absolute", top: "15%", left: "10%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,255,170,.07) 0%, transparent 70%)", filter: "blur(40px)" }} />
+        <div style={{ position: "absolute", top: "60%", right: "15%", width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,208,255,.05) 0%, transparent 70%)", filter: "blur(40px)" }} />
+        <div style={{ position: "absolute", bottom: "20%", left: "30%", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,255,170,.04) 0%, transparent 70%)", filter: "blur(40px)" }} />
+
+        {/* Floating particle data-nodes */}
+        {[
+          { top: "22%",  left: "7%",   delay: 0    },
+          { top: "68%",  left: "5%",   delay: 1.1  },
+          { top: "38%",  right: "6%",  delay: 0.6  },
+          { top: "75%",  right: "8%",  delay: 1.8  },
+          { top: "15%",  right: "18%", delay: 0.3  },
+          { top: "82%",  left: "22%",  delay: 2.2  },
+          { top: "50%",  left: "3%",   delay: 0.9  },
+          { top: "30%",  right: "3%",  delay: 1.5  },
+        ].map((p, i) => (
+          <div key={i} style={{
+            position: "absolute", ...p,
+            width: 6, height: 6, borderRadius: "50%",
+            background: i % 2 === 0 ? "#00FFAA" : "#00D0FF",
+            boxShadow: `0 0 10px ${i % 2 === 0 ? "#00FFAA" : "#00D0FF"}`,
+            animation: `float ${3.5 + i * 0.4}s ease-in-out infinite`,
+            animationDelay: `${p.delay}s`,
+            opacity: 0.55,
+          }} />
+        ))}
+      </div>
+
+      {/* ── Corner HUD brackets (always visible) ──────────────── */}
+      {([
+        { top: 16, left: 16,  borderTop: "2px solid", borderLeft: "2px solid"  },
+        { top: 16, right: 16, borderTop: "2px solid", borderRight: "2px solid" },
+        { bottom: 16, left: 16,  borderBottom: "2px solid", borderLeft: "2px solid"  },
+        { bottom: 16, right: 16, borderBottom: "2px solid", borderRight: "2px solid" },
+      ] as React.CSSProperties[]).map((s, i) => (
+        <div key={i} style={{
+          position: "absolute", ...s,
+          width: 28, height: 28,
+          borderColor: "rgba(0,255,170,0.3)",
+          zIndex: 8, pointerEvents: "none",
+        }} />
+      ))}
+
+      {/* ── Live status ticker ────────────────────────────── */}
+      <div style={{
+        position: "absolute", bottom: 22, left: 24,
+        display: "flex", alignItems: "center", gap: 8,
+        zIndex: 8, pointerEvents: "none",
+      }}>
+        <div style={{
+          width: 5, height: 5, borderRadius: "50%",
+          background: "#00FFAA",
+          boxShadow: "0 0 8px #00FFAA",
+          animation: "pulseGlow 1.6s ease-in-out infinite",
+        }} />
+        <span style={{
+          fontFamily: "'DM Mono', monospace",
+          fontSize: 9, color: "rgba(0,255,170,0.6)",
+          letterSpacing: "0.18em", textTransform: "uppercase",
+          transition: "opacity 0.4s",
+        }}>
+          {statusMsg}
+        </span>
+      </div>
+
+      {/* ── Frame counter (top-right HUD readout) ─────────────── */}
+      <div style={{
+        position: "absolute", top: 22, right: 24,
+        zIndex: 8, pointerEvents: "none",
+        fontFamily: "'DM Mono', monospace",
+        fontSize: 9, color: "rgba(255,255,255,0.15)",
+        letterSpacing: "0.15em", textTransform: "uppercase",
+      }}>
+        SYS · LUMINESCENT v2.1
       </div>
 
       {/* ── Hero content (existing, unchanged) ─────────────────── */}
