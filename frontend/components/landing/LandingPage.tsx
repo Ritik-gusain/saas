@@ -14,10 +14,10 @@ export default function LandingPage() {
   return (
     <>
       <LandingStyles />
-      <div style={{ minHeight: "100vh", background: "#101418", overflowX: "hidden" }}>
+      <div style={{ minHeight: "100vh", background: "#0A0D12", overflowX: "hidden" }}>
         <Navbar />
         <HeroSection />
-        <div style={{ position: "relative", zIndex: 20, background: "#101418" }}>
+        <div style={{ position: "relative", zIndex: 20, background: "#0A0D12" }}>
           <LogoTicker />
           <FeaturesSection />
           <HowItWorksSection />
