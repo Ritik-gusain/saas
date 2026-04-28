@@ -5,24 +5,11 @@ import Link from "next/link";
 import { Sparkles, ArrowRight, Zap } from "lucide-react";
 import gsap from "gsap";
 
-const MODELS = [
-  { name: "OpenAI",     logo: "/ai logo/penailogo.svg",    invert: true  },
-  { name: "Claude",     logo: "/ai logo/Anthropic.svg",    invert: true  },
-  { name: "Gemini",     logo: "/ai logo/GoogleGemini.svg", invert: false },
-  { name: "DeepSeek",   logo: "/ai logo/DeepSeek.png",     invert: false },
-  { name: "Mistral",    logo: "/ai logo/Mistral.png",      invert: false },
-  { name: "Meta",       logo: "/ai logo/Meta.png",         invert: false },
-  { name: "xAI",        logo: "/ai logo/xai.png",          invert: true  },
-  { name: "Perplexity", logo: "/ai logo/Perplexity.svg",   invert: true  },
-  { name: "Nvidia",     logo: "/ai logo/nvidia.png",       invert: false },
-  { name: "Qwen",       logo: "/ai logo/Qwen.png",         invert: false },
-];
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const badgeRef   = useRef<HTMLDivElement>(null);
-  const modelsRef  = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Guard against React 18 Strict Mode double-invoke (prevents removeChild crash)
@@ -226,68 +213,6 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* ── Model logos strip ── */}
-      <div
-        ref={modelsRef}
-        style={{
-          position: "relative", zIndex: 5,
-          marginTop: 56, width: "100%", maxWidth: 860,
-        }}
-      >
-        <div style={{
-          fontFamily: "'DM Mono', monospace",
-          fontSize: 9, color: "rgba(248,249,250,0.22)",
-          textTransform: "uppercase", letterSpacing: "0.18em",
-          textAlign: "center", marginBottom: 18,
-        }}>
-          Connects with every major AI provider
-        </div>
-
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "center",
-          flexWrap: "wrap", gap: 10,
-        }}>
-          {MODELS.map((m) => (
-            <div
-              key={m.name}
-              title={m.name}
-              style={{
-                display: "flex", alignItems: "center", gap: 8,
-                padding: "8px 16px",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: 30,
-                transition: "all 0.25s ease",
-                cursor: "default",
-              }}
-              onMouseOver={e => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(0,255,170,0.07)";
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,255,170,0.25)";
-                (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-              }}
-              onMouseOut={e => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)";
-                (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-              }}
-            >
-              <img
-                src={m.logo}
-                alt={m.name}
-                style={{
-                  width: 16, height: 16, objectFit: "contain",
-                  filter: m.invert ? "invert(1) brightness(2)" : "brightness(1.1)",
-                }}
-              />
-              <span style={{
-                fontFamily: "'DM Mono', monospace",
-                fontSize: 10, color: "rgba(248,249,250,0.5)",
-                letterSpacing: "0.04em",
-              }}>{m.name}</span>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* ── Bottom fade ── */}
       <div style={{
