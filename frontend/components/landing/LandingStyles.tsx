@@ -32,17 +32,11 @@ export const LandingStyles = () => (
     @keyframes gridBreath   { 0%,100%{opacity:.03}  50%{opacity:.08} }
     @keyframes ticker       { from{transform:translateX(0)}             to{transform:translateX(-50%)} }
     @keyframes ticker2      { from{transform:translateX(-50%)}          to{transform:translateX(0)} }
-    @keyframes scanline     { 0%{transform:translateY(-100%)}           100%{transform:translateY(100vh)} }
     @keyframes glowPulse    { 0%,100%{filter:drop-shadow(0 0 6px rgba(0,255,170,.6))}  50%{filter:drop-shadow(0 0 22px rgba(0,255,170,1))} }
-    @keyframes heroFadeIn   { from{opacity:0;transform:scale(0.96)}     to{opacity:1;transform:scale(1)} }
-    @keyframes heroSlideUp  { from{opacity:0;transform:translateX(-50%) translateY(30px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-    @keyframes hudSlideRight{ from{opacity:0;transform:translateY(-50%) translateX(-28px)} to{opacity:1;transform:translateY(-50%) translateX(0)} }
-    @keyframes hudSlideLeft { from{opacity:0;transform:translateY(-50%) translateX(28px)}  to{opacity:1;transform:translateY(-50%) translateX(0)} }
-    @keyframes barGrow      { from{width:0} }
     @keyframes spin         { from{transform:rotate(0deg)}              to{transform:rotate(360deg)} }
     @keyframes spinReverse  { from{transform:rotate(360deg)}            to{transform:rotate(0deg)} }
     @keyframes morph        { 0%,100%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%} 50%{border-radius:30% 60% 70% 40%/50% 60% 30% 60%} }
-    @keyframes typewriter   { from{width:0;opacity:0}                   to{width:100%;opacity:1} }
+
     @keyframes countUp      { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes neonFlicker  { 0%,100%{text-shadow:0 0 10px #00FFAA,0 0 30px #00FFAA55} 50%{text-shadow:0 0 20px #00FFAA,0 0 60px #00FFAA,0 0 80px #00D0FF55} }
     @keyframes particleDrift{ 0%{transform:translate(0,0) scale(1);opacity:.7} 100%{transform:translate(var(--dx,30px),var(--dy,-80px)) scale(0);opacity:0} }
@@ -296,7 +290,7 @@ export const LandingStyles = () => (
       .pricing-grid { grid-template-columns: repeat(2, 1fr) !important; }
     }
     @media (max-width: 900px) {
-      .hero-grid    { grid-template-columns: 1fr !important; }
+
       .features-grid, .steps-grid { grid-template-columns: 1fr 1fr !important; }
       .pricing-grid { grid-template-columns: 1fr 1fr !important; }
     }
