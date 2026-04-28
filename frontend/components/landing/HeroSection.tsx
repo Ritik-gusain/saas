@@ -186,14 +186,41 @@ export function HeroSection() {
     resize();
     window.addEventListener("resize", resize);
 
-    const paint = (img: HTMLImageElement) => {
+    const paint = (img: HTMLImageElement, extraScale = 1, isZooming = false) => {
       const cw = canvas.width, ch = canvas.height;
       const iw = img.naturalWidth || img.width;
       const ih = img.naturalHeight || img.height;
       if (!iw || !ih) return;
-      const s = Math.max(cw / iw, ch / ih);
+
+      const baseScale = Math.max(cw / iw, ch / ih);
+      const s = baseScale * extraScale;
+
+      ctx2d.save();
+      
+      // Dynamic sharpen/contrast for zoom phase
+      if (isZooming) {
+        ctx2d.filter = "contrast(1.1) brightness(1.04) saturate(1.05)";
+      } else {
+        ctx2d.filter = "none";
+      }
+
       ctx2d.clearRect(0, 0, cw, ch);
-      ctx2d.drawImage(img, (cw - iw * s) / 2, (ch - ih * s) / 2, iw * s, ih * s);
+      const x = (cw - iw * s) / 2;
+      const y = (ch - ih * s) / 2;
+      
+      ctx2d.drawImage(img, x, y, iw * s, ih * s);
+
+      // Add subtle noise/grain to hide pixelation
+      if (extraScale > 1.01) {
+        ctx2d.globalAlpha = 0.02;
+        for (let i = 0; i < 5; i++) {
+           ctx2d.fillStyle = i % 2 === 0 ? "#fff" : "#000";
+           ctx2d.fillRect(Math.random() * cw, Math.random() * ch, 1.5, 1.5);
+        }
+        ctx2d.globalAlpha = 1.0;
+      }
+
+      ctx2d.restore();
     };
 
     const loop = (ts: number) => {
@@ -212,14 +239,31 @@ export function HeroSection() {
       // Blend: during intro use autoTarget, after intro use scrollTarget
       const target = introRunning ? autoTarget : scrollTarget;
       smoothFrame += (target - smoothFrame) * (introRunning ? 0.18 : 0.12);
+      
       const idx = Math.round(smoothFrame);
       const img = images[idx];
+      
+      // Calculate dynamic over-zoom
+      let extraScale = 1.0;
+      let isZooming = false;
+      
+      if (idx >= PHASES.zoom.start && idx <= PHASES.zoom.end) {
+        const p = (idx - PHASES.zoom.start) / (PHASES.zoom.end - PHASES.zoom.start);
+        extraScale = 1.0 + (p * 0.02); // add 2% programmatic zoom (reduced from 12%)
+        isZooming = true;
+      } else if (idx > PHASES.zoom.end) {
+        extraScale = 1.02; // maintain zoom for heads phase
+      }
+
       if (img?.complete && img.naturalWidth) {
-        paint(img);
+        paint(img, extraScale, isZooming);
       } else {
         for (let d = 1; d < 12; d++) {
           const fb = images[idx + d] ?? images[idx - d];
-          if (fb?.complete && fb.naturalWidth) { paint(fb); break; }
+          if (fb?.complete && fb.naturalWidth) { 
+            paint(fb, extraScale, isZooming); 
+            break; 
+          }
         }
       }
       animId = requestAnimationFrame(loop);
@@ -325,6 +369,18 @@ export function HeroSection() {
           opacity: showCanvas ? 1 : 0,
           transition: "opacity 0.6s ease",
           pointerEvents: "none",
+          filter: phase === "zoom" ? "contrast(1.05) brightness(1.05)" : "none",
+        }}
+      />
+
+      {/* ── Vignette overlay to hide edge pixelation ── */}
+      <div
+        style={{
+          position: "absolute", inset: 0, zIndex: 2,
+          pointerEvents: "none",
+          background: "radial-gradient(circle, transparent 40%, rgba(11,14,20,0.4) 100%)",
+          opacity: phase !== "intro" ? 1 : 0,
+          transition: "opacity 1s ease",
         }}
       />
 
