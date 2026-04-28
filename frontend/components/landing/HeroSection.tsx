@@ -32,13 +32,7 @@ export function HeroSection() {
             "-=0.4"
           );
         }
-        if (modelsRef.current) {
-          tl.fromTo(modelsRef.current,
-            { y: 24, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.8 },
-            "-=0.3"
-          );
-        }
+
 
         // Floating orbs — target by ref, not class selector, to avoid cross-component conflicts
         if (sectionRef.current) {

@@ -5,10 +5,6 @@ export const metadata: Metadata = {
   title: "Luminescent.io — Team AI Chatbot for Modern Teams",
   description:
     "Stop paying ₹1,600/user for individual ChatGPT seats. Luminescent gives your entire team unified AI with shared history, system prompts, and autonomous agents — at half the cost.",
-  icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
-  },
   keywords: [
     "team AI chatbot",
     "ChatGPT for teams",
