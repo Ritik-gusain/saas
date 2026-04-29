@@ -16,15 +16,17 @@ jest.mock('@supabase/supabase-js', () => {
   };
 });
 
+import { NextRequest } from 'next/server';
+
 describe('POST /api/teams/invite', () => {
-  let req: Request;
+  let req: NextRequest;
   
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('returns 401 if no Authorization header is provided', async () => {
-    req = new Request('http://localhost/api/teams/invite', {
+    req = new NextRequest('http://localhost/api/teams/invite', {
       method: 'POST',
       body: JSON.stringify({ email: 'test@example.com', team_id: '123' })
     });
