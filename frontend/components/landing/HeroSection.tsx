@@ -28,7 +28,7 @@ export function HeroSection() {
         if (bgImageRef.current) {
           gsap.fromTo(bgImageRef.current,
             { scale: 1.1, opacity: 0 },
-            { scale: 1, opacity: 0.4, duration: 2.5, ease: "power2.out" }
+            { scale: 1, opacity: 0.8, duration: 2.5, ease: "power2.out" }
           );
         }
 
@@ -133,8 +133,8 @@ export function HeroSection() {
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            opacity: 0.35,
-            filter: "brightness(0.7) contrast(1.1)",
+            opacity: 0.8,
+            filter: "brightness(0.85) contrast(1.1)",
             transform: "scale(1.06)", // Slight over-scale to hide corner watermarks (Veo)
           }}
         >
