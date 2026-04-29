@@ -105,9 +105,7 @@ export function FeaturesSection() {
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Section Header */}
         <div ref={headRef} style={{ textAlign: "center", marginBottom: 80 }}>
-          <div className="mono-label" style={{ color: "#00FFAA", marginBottom: 16 }}>
-            SYSTEM CAPABILITIES // 01
-          </div>
+
           <h2 className="display-h1" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24 }}>
             Built for teams that <span className="shimmer-text">move at lightspeed.</span>
           </h2>

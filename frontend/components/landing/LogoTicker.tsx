@@ -61,9 +61,7 @@ export function LogoTicker() {
     >
       {/* Label */}
       <div ref={titleRef} style={{ textAlign: "center", marginBottom: 40 }}>
-        <div className="mono-label" style={{ justifyContent: "center", fontSize: 10, opacity: 0.4 }}>
-          ◈ &nbsp; Distributed Intelligence Across 40+ Foundation Models &nbsp; ◈
-        </div>
+
       </div>
 
       {/* Flowing stream */}

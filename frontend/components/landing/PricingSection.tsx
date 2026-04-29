@@ -126,9 +126,7 @@ export function PricingSection() {
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Header */}
         <div ref={headRef} style={{ textAlign: "center", marginBottom: 80 }}>
-          <div className="mono-label" style={{ color: "#00D0FF", marginBottom: 16 }}>
-            SUBSCRIPTION TIERS // 03
-          </div>
+
           <h2 className="display-h1" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24 }}>
             Flat team pricing. <span className="shimmer-text">No surprises.</span>
           </h2>

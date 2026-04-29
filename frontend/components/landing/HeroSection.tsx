@@ -181,15 +181,7 @@ export function HeroSection() {
         }} />
       ))}
 
-      {/* ── SYS badge ── */}
-      <div style={{
-        position: "absolute", top: 32, right: 40, zIndex: 4,
-        fontFamily: "'DM Mono', monospace",
-        fontSize: 10, color: "rgba(255,255,255,0.2)",
-        letterSpacing: "0.2em", pointerEvents: "none",
-      }}>
-        LUMINESCENT // CORE_OS v2.5
-      </div>
+
 
       {/* ── Eyebrow badge ── */}
       <div ref={badgeRef} style={{ position: "relative", zIndex: 10, marginBottom: 32 }}>

@@ -124,9 +124,7 @@ export function HowItWorksSection() {
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px", position: "relative" }}>
         {/* Header */}
         <div ref={headRef} style={{ textAlign: "center", marginBottom: 100 }}>
-          <div className="mono-label" style={{ justifyContent: "center", marginBottom: 24 }}>
-            <span style={{ color: "var(--landing-green)" }}>◆</span> Protocol Workflow
-          </div>
+
           <h2 className="display-h1" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24 }}>
             Deploy in <span className="shimmer-text">Seconds.</span>
           </h2>

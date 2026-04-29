@@ -18,9 +18,9 @@ export function Navbar() {
     
     const ctx = gsap.context(() => {
       // Entry Animation
-      gsap.fromTo([statusBarRef.current, navRef.current],
+      gsap.fromTo(navRef.current,
         { y: -100, opacity: 0 },
-        { y: 0, opacity: 1, duration: 1.2, ease: "expo.out", stagger: 0.1, delay: 0.2 }
+        { y: 0, opacity: 1, duration: 1.2, ease: "expo.out", delay: 0.2 }
       );
     });
 
@@ -32,45 +32,12 @@ export function Navbar() {
 
   return (
     <>
-      {/* Top Status Bar */}
-      <div 
-        ref={statusBarRef}
-        style={{
-          position: "fixed", top: 0, left: 0, right: 0, zIndex: 101,
-          height: 32, background: "rgba(10, 13, 18, 0.95)",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          backdropFilter: "blur(12px)",
-          transition: "transform 0.4s ease",
-          transform: scrolled ? "translateY(-100%)" : "translateY(0)"
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ 
-              width: 6, height: 6, borderRadius: "50%", background: "#00FFAA", 
-              boxShadow: "0 0 10px rgba(0, 255, 170, 0.5)",
-              animation: "pulse-status 2s infinite"
-            }} />
-            <span className="mono-label" style={{ fontSize: 9, opacity: 0.5 }}>
-              STATUS: OPERATIONAL // DISTRIBUTED NODE V2.0.4
-            </span>
-          </div>
-          <span style={{ width: 1, height: 10, background: "rgba(255,255,255,0.1)" }} />
-          <Link href="/docs" className="mono-label" style={{ 
-            fontSize: 9, color: "#00FFAA", textDecoration: "none", 
-            letterSpacing: "0.1em", transition: "opacity 0.2s"
-          }} onMouseEnter={e => e.currentTarget.style.opacity = "0.7"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-            VIEW CHANGELOG
-          </Link>
-        </div>
-      </div>
 
       <nav 
         ref={navRef} 
         style={{
           position: "fixed", 
-          top: scrolled ? 0 : 32, 
+          top: 0, 
           left: 0, 
           right: 0, 
           zIndex: 100,

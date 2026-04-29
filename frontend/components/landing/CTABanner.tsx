@@ -114,9 +114,7 @@ export function CTABanner() {
         }} />
 
         <div ref={contentRef} style={{ position: "relative", zIndex: 2 }}>
-          <div className="mono-label" style={{ justifyContent: "center", marginBottom: 32 }}>
-            <Sparkles size={12} color="var(--landing-green)" /> Ready to Evolve
-          </div>
+
 
           <h2 className="display-h1" style={{ fontSize: "clamp(32px, 5vw, 72px)", marginBottom: 32 }}>
             The future of team AI is <span className="shimmer-text">Luminescent.</span>

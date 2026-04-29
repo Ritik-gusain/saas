@@ -10,10 +10,12 @@ import { HowItWorksSection } from "./HowItWorksSection";
 import { PricingSection } from "./PricingSection";
 import { CTABanner } from "./CTABanner";
 import { Footer } from "./Footer";
+import { SmoothScroll } from "./SmoothScroll";
 
 export default function LandingPage() {
   return (
     <>
+      <SmoothScroll />
       <LandingStyles />
       <div style={{ minHeight: "100vh", background: "#0A0D12", overflowX: "hidden" }}>
         <Navbar />
