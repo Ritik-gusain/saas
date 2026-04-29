@@ -28,16 +28,20 @@ const STREAM = [...MODELS, ...MODELS, ...MODELS];
 export function LogoTicker() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const titleRef   = useRef<HTMLDivElement>(null);
-  const trackRef   = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       if (titleRef.current) {
-        gsap.fromTo(titleRef.current,
-          { opacity: 0, y: 16 },
-          { opacity: 1, y: 0, duration: 0.9, ease: "power3.out",
-            scrollTrigger: { trigger: sectionRef.current, start: "top 88%" } }
-        );
+        gsap.from(titleRef.current, {
+          opacity: 0,
+          y: 10,
+          duration: 1,
+          ease: "expo.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 90%",
+          },
+        });
       }
     }, sectionRef);
     return () => ctx.revert();
@@ -49,35 +53,28 @@ export function LogoTicker() {
       style={{
         position: "relative",
         overflow: "hidden",
-        padding: "52px 0",
-        borderTop: "1px solid rgba(255,255,255,0.05)",
-        borderBottom: "1px solid rgba(255,255,255,0.05)",
-        background: "transparent",
+        padding: "60px 0",
+        borderTop: "1px solid rgba(255,255,255,0.03)",
+        borderBottom: "1px solid rgba(255,255,255,0.03)",
+        background: "rgba(255,255,255,0.01)",
       }}
     >
       {/* Label */}
-      <div ref={titleRef} style={{ textAlign: "center", marginBottom: 32 }}>
-        <span style={{
-          fontFamily: "'DM Mono', monospace",
-          fontSize: 9.5,
-          letterSpacing: "0.28em",
-          textTransform: "uppercase",
-          color: "rgba(255,255,255,0.2)",
-        }}>
-          ◈ &nbsp; Seamless integration with 40+ leading AI models &nbsp; ◈
-        </span>
+      <div ref={titleRef} style={{ textAlign: "center", marginBottom: 40 }}>
+        <div className="mono-label" style={{ justifyContent: "center", fontSize: 10, opacity: 0.4 }}>
+          ◈ &nbsp; Distributed Intelligence Across 40+ Foundation Models &nbsp; ◈
+        </div>
       </div>
 
       {/* Flowing stream */}
       <div style={{ position: "relative" }}>
         <div
-          ref={trackRef}
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 48,
+            gap: 60,
             width: "max-content",
-            animation: "ticker 50s linear infinite",
+            animation: "ticker 60s linear infinite",
             willChange: "transform",
           }}
           onMouseEnter={e => (e.currentTarget.style.animationPlayState = "paused")}
@@ -89,55 +86,70 @@ export function LogoTicker() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 10,
-                opacity: 0.45,
-                transition: "opacity 0.3s ease",
+                gap: 12,
+                opacity: 0.3,
+                filter: "grayscale(100%) brightness(1.5)",
+                transition: "all 0.4s ease",
                 cursor: "default",
                 flexShrink: 0,
               }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = "1"}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = "0.45"}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.opacity = "1";
+                (e.currentTarget as HTMLElement).style.filter = "grayscale(0%) brightness(1)";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.opacity = "0.3";
+                (e.currentTarget as HTMLElement).style.filter = "grayscale(100%) brightness(1.5)";
+              }}
             >
               <img
                 src={m.logo}
                 alt={m.name}
                 style={{
-                  height: m.name === "OpenAI" ? 15 : 22,
+                  height: 20,
                   width: "auto",
                   objectFit: "contain",
-                  filter: m.invert ? "invert(1) brightness(1.8)" : "brightness(1.1) saturate(1.1)",
-                  flexShrink: 0,
+                  filter: m.invert ? "invert(1)" : "none",
                 }}
               />
               <span style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: "var(--font-display)",
                 fontWeight: 600,
-                fontSize: 14,
-                color: "#F8F9FA",
+                fontSize: 15,
+                color: "#fff",
                 whiteSpace: "nowrap",
                 letterSpacing: "-0.01em",
               }}>
                 {m.name}
               </span>
 
-              {/* Subtle dot separator */}
-              <span style={{
-                width: 3, height: 3, borderRadius: "50%",
-                background: "rgba(255,255,255,0.12)",
-                display: "inline-block",
-                marginLeft: 8,
-                flexShrink: 0,
+              <div style={{
+                width: 4,
+                height: 4,
+                borderRadius: "50%",
+                background: "rgba(255,255,255,0.1)",
+                marginLeft: 10,
               }} />
             </div>
           ))}
         </div>
 
-        {/* Edge fades */}
+        {/* Cinematic Edge Fades */}
         <div style={{
-          position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2,
-          background: "linear-gradient(90deg, var(--landing-bg) 0%, transparent 12%, transparent 88%, var(--landing-bg) 100%)",
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          zIndex: 2,
+          background: "linear-gradient(90deg, var(--landing-bg) 0%, transparent 15%, transparent 85%, var(--landing-bg) 100%)",
         }} />
       </div>
+
+      <style>{`
+        @keyframes ticker {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-33.33%); }
+        }
+      `}</style>
     </div>
   );
 }

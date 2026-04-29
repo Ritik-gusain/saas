@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Globe, Users, Brain, TrendingUp } from "lucide-react";
+import { Globe, Users, Brain, TrendingUp, ChevronRight } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -13,30 +13,30 @@ const STEPS = [
   {
     num: "01",
     title: "Create Workspace",
-    desc: "Sign up free and bring your own API key. No credit card. Your workspace is ready in 30 seconds.",
+    desc: "Deploy your private node. Bring your own API keys. Own your data from the first second.",
     icon: Globe,
     accent: "#00FFAA",
   },
   {
     num: "02",
     title: "Invite Your Team",
-    desc: "Add teammates with one click. Roles, permissions, and shared context are set up automatically.",
+    desc: "Scale horizontally. Add teammates with granular permissions and shared persistent context.",
     icon: Users,
     accent: "#00D0FF",
   },
   {
     num: "03",
     title: "Deploy AI Agents",
-    desc: "Upload your SOPs. Configure specialized agents per workflow — sales, support, growth, research.",
+    desc: "Initialize specialized agents for research, coding, or support with zero-config deployment.",
     icon: Brain,
-    accent: "#00FFAA",
+    accent: "#7B61FF",
   },
   {
     num: "04",
     title: "Collaborate & Scale",
-    desc: "Every conversation, prompt, and output is searchable and shared across your team in real time.",
+    desc: "Infinite history, real-time sync, and collaborative prompt engineering for high-perf teams.",
     icon: TrendingUp,
-    accent: "#00D0FF",
+    accent: "#00FFAA",
   },
 ];
 
@@ -51,62 +51,55 @@ export function HowItWorksSection() {
     const ctx = gsap.context(() => {
       // Header reveal
       if (headRef.current) {
-        gsap.fromTo(
-          Array.from(headRef.current.children),
-          { y: 40, opacity: 0 },
-          {
-            y: 0, opacity: 1, duration: 0.9, stagger: 0.1, ease: "power3.out",
-            scrollTrigger: { trigger: headRef.current, start: "top 82%" },
-          }
-        );
+        gsap.from(headRef.current.children, {
+          y: 30,
+          opacity: 0,
+          duration: 1,
+          stagger: 0.2,
+          ease: "expo.out",
+          scrollTrigger: {
+            trigger: headRef.current,
+            start: "top 85%",
+          },
+        });
       }
 
-      // Animated progress line
+      // Progress Line Animation
       if (lineRef.current && progressRef.current) {
-        gsap.fromTo(progressRef.current,
-          { scaleX: 0 },
-          {
-            scaleX: 1, duration: 1.8, ease: "power2.inOut",
-            scrollTrigger: { trigger: lineRef.current, start: "top 70%" },
-          }
-        );
+        gsap.to(progressRef.current, {
+          scaleX: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: lineRef.current,
+            start: "top 80%",
+            end: "bottom 20%",
+            scrub: 1,
+          },
+        });
       }
 
-      // Step cards — cascade in
+      // Step cards reveal
       stepsRef.current.forEach((card, i) => {
         if (!card) return;
-        gsap.fromTo(card,
-          { y: 60, opacity: 0, scale: 0.88 },
-          {
-            y: 0, opacity: 1, scale: 1,
-            duration: 0.8,
-            delay: i * 0.15,
-            ease: "back.out(1.4)",
-            scrollTrigger: { trigger: card, start: "top 88%", once: true },
-          }
-        );
+        gsap.from(card, {
+          y: 40,
+          opacity: 0,
+          duration: 0.8,
+          delay: i * 0.1,
+          ease: "expo.out",
+          scrollTrigger: {
+            trigger: card,
+            start: "top 90%",
+          },
+        });
 
-        // Number count-up effect
-        const numEl = card.querySelector<HTMLElement>(".step-num");
-        if (numEl) {
-          gsap.fromTo(numEl,
-            { y: 10, opacity: 0 },
-            {
-              y: 0, opacity: 1, duration: 0.5,
-              delay: i * 0.15 + 0.3,
-              ease: "power2.out",
-              scrollTrigger: { trigger: card, start: "top 88%", once: true },
-            }
-          );
-        }
-
-        // Icon bounce on hover
-        const iconBox = card.querySelector<HTMLElement>(".step-icon");
+        // Icon pulse on hover
+        const icon = card.querySelector(".step-icon");
         card.addEventListener("mouseenter", () => {
-          gsap.to(iconBox, { scale: 1.15, rotate: 8, duration: 0.35, ease: "back.out(1.7)" });
+          gsap.to(icon, { scale: 1.1, rotate: 5, duration: 0.4, ease: "back.out(2)" });
         });
         card.addEventListener("mouseleave", () => {
-          gsap.to(iconBox, { scale: 1, rotate: 0, duration: 0.3, ease: "power2.out" });
+          gsap.to(icon, { scale: 1, rotate: 0, duration: 0.4, ease: "power2.out" });
         });
       });
     }, sectionRef);
@@ -116,153 +109,119 @@ export function HowItWorksSection() {
 
   return (
     <section
-      id="agents"
+      id="how-it-works"
       ref={sectionRef}
       style={{
-        padding: "130px 0 120px",
-        background: "linear-gradient(180deg, var(--landing-bg) 0%, #0C1018 100%)",
+        padding: "160px 0",
+        background: "var(--landing-bg)",
         position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Decorative orbs */}
-      <div
-        className="section-orb"
-        style={{ top: "20%", right: "-8%", width: 500, height: 500, background: "radial-gradient(circle, rgba(0,208,255,.03) 0%, transparent 70%)" }}
-      />
-      <div
-        className="section-orb"
-        style={{ bottom: "15%", left: "-5%", width: 350, height: 350, background: "radial-gradient(circle, rgba(0,255,170,.025) 0%, transparent 70%)" }}
-      />
-
-      {/* Top glow divider */}
-      <div className="glow-divider" style={{ position: "absolute", top: 0, left: 0, right: 0 }} />
-
+      {/* Dynamic Background Grid */}
+      <div className="grid-bg" style={{ position: "absolute", inset: 0, opacity: 0.15 }} />
+      
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px", position: "relative" }}>
         {/* Header */}
-        <div ref={headRef} style={{ textAlign: "center", marginBottom: 90 }}>
-          <span className="tag" style={{ marginBottom: 20, display: "inline-flex" }}>
-            <Brain size={11} /> How It Works
-          </span>
-          <h2
-            style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontWeight: 900,
-              fontSize: "clamp(34px, 5vw, 56px)",
-              letterSpacing: "-0.04em",
-              lineHeight: 1.05,
-              color: "#F8F9FA",
-              marginTop: 18, marginBottom: 18,
-            }}
-          >
-            From zero to team AI{" "}
-            <br />
-            <span className="shimmer-text-cyan">in four steps.</span>
+        <div ref={headRef} style={{ textAlign: "center", marginBottom: 100 }}>
+          <div className="mono-label" style={{ justifyContent: "center", marginBottom: 24 }}>
+            <span style={{ color: "var(--landing-green)" }}>◆</span> Protocol Workflow
+          </div>
+          <h2 className="display-h1" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24 }}>
+            Deploy in <span className="shimmer-text">Seconds.</span>
           </h2>
-          <p style={{ fontSize: 16, color: "rgba(248,249,250,.38)", maxWidth: 450, margin: "0 auto", lineHeight: 1.72, fontWeight: 300 }}>
-            No complex onboarding. No IT tickets. Just a workspace your team will actually use.
+          <p style={{ fontSize: 18, color: "var(--landing-muted)", maxWidth: 600, margin: "0 auto", lineHeight: 1.6 }}>
+            The streamlined architecture designed for rapid deployment and seamless team integration.
           </p>
         </div>
 
-        {/* Connecting progress line (desktop) */}
+        {/* Progress Line */}
         <div
           ref={lineRef}
-          style={{ position: "relative", maxWidth: 1000, margin: "0 auto -20px", display: "none" }}
-          className="hiw-line-wrap"
+          style={{
+            position: "relative",
+            height: 2,
+            background: "rgba(255,255,255,0.05)",
+            borderRadius: 2,
+            marginBottom: 60,
+            maxWidth: 1000,
+            margin: "0 auto 80px",
+          }}
         >
-          <div style={{ position: "absolute", top: 56, left: "12.5%", right: "12.5%", height: 2, background: "rgba(255,255,255,.05)", borderRadius: 2 }} />
           <div
             ref={progressRef}
             style={{
-              position: "absolute", top: 56, left: "12.5%", right: "12.5%", height: 2,
-              background: "linear-gradient(90deg, #00FFAA, #00D0FF, #00FFAA)",
-              borderRadius: 2, transformOrigin: "left",
-              boxShadow: "0 0 8px rgba(0,255,170,.4)",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              background: "linear-gradient(90deg, var(--landing-green), var(--landing-cyan))",
+              transformOrigin: "left",
+              transform: "scaleX(0)",
+              boxShadow: "0 0 20px var(--landing-green)",
             }}
           />
         </div>
 
-        {/* Step cards */}
-        <div
-          className="steps-grid"
-          style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, position: "relative", zIndex: 2 }}
-        >
+        {/* Steps Grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 32 }}>
           {STEPS.map((step, i) => {
             const Icon = step.icon;
             return (
               <div
-                key={step.num}
+                key={i}
                 ref={(el) => { stepsRef.current[i] = el; }}
                 className="cyber-card"
-                style={{ padding: "36px 26px 30px", textAlign: "center", cursor: "default" }}
+                style={{ padding: "40px 32px" }}
               >
-                {/* Top accent line */}
-                <div style={{
-                  position: "absolute", top: 0, left: 0, right: 0, height: 2,
-                  background: `linear-gradient(90deg, transparent, ${step.accent}55, transparent)`,
-                }} />
-
-                {/* Step number */}
-                <span
-                  className="step-num"
-                  style={{
-                    fontFamily: "'DM Mono', monospace",
-                    fontSize: 10, letterSpacing: ".2em",
-                    color: step.accent, display: "block", marginBottom: 20,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  STEP {step.num}
-                </span>
-
-                {/* Icon */}
                 <div
                   className="step-icon"
                   style={{
-                    width: 52, height: 52, borderRadius: 15,
-                    background: `${step.accent}0D`,
-                    border: `1px solid ${step.accent}22`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    margin: "0 auto 22px",
-                    boxShadow: `0 0 24px ${step.accent}12`,
+                    width: 56,
+                    height: 56,
+                    borderRadius: 16,
+                    background: `${step.accent}10`,
+                    border: `1px solid ${step.accent}20`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 28,
+                    color: step.accent,
                   }}
                 >
-                  <Icon size={22} color={step.accent} strokeWidth={1.8} />
+                  <Icon size={24} />
                 </div>
 
+                <div className="mono-label" style={{ fontSize: 10, color: step.accent, marginBottom: 12 }}>
+                  Step {step.num}
+                </div>
+                
                 <h3
                   style={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    fontWeight: 700, fontSize: 16,
-                    color: "#F8F9FA", marginBottom: 12, letterSpacing: "-0.02em",
+                    fontFamily: "var(--font-display)",
+                    fontSize: 22,
+                    fontWeight: 800,
+                    marginBottom: 16,
+                    color: "#fff",
+                    letterSpacing: "-0.02em",
                   }}
                 >
                   {step.title}
                 </h3>
-                <p style={{ fontSize: 13, color: "rgba(248,249,250,.38)", lineHeight: 1.75, fontWeight: 300 }}>
+                
+                <p style={{ color: "var(--landing-muted)", lineHeight: 1.7, fontSize: 15 }}>
                   {step.desc}
                 </p>
 
-                {/* Connector dot (desktop) */}
-                <div style={{
-                  position: "absolute", top: 57, left: "50%", transform: "translateX(-50%)",
-                  width: 10, height: 10, borderRadius: "50%",
-                  background: step.accent,
-                  boxShadow: `0 0 12px ${step.accent}`,
-                  display: "none",
-                }} className="step-dot" />
+                <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 8, color: step.accent, fontSize: 13, fontWeight: 600, opacity: 0.8 }}>
+                  Initialize <ChevronRight size={14} />
+                </div>
               </div>
             );
           })}
         </div>
       </div>
-
-      <style>{`
-        @media (min-width: 900px) {
-          .hiw-line-wrap { display: block !important; }
-          .step-dot { display: block !important; }
-        }
-      `}</style>
     </section>
   );
 }

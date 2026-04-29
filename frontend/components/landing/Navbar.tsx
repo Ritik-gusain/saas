@@ -10,132 +10,190 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navRef = useRef<HTMLElement>(null);
+  const statusBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
+    const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
-    if (!navRef.current) return;
-    gsap.fromTo(navRef.current,
-      { y: -80, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1.1, ease: "power4.out", delay: 0.3 }
-    );
-    return () => window.removeEventListener("scroll", onScroll);
+    
+    const ctx = gsap.context(() => {
+      // Entry Animation
+      gsap.fromTo([statusBarRef.current, navRef.current],
+        { y: -100, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.2, ease: "expo.out", stagger: 0.1, delay: 0.2 }
+      );
+    });
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      ctx.revert();
+    };
   }, []);
 
   return (
     <>
-      <div style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 101,
-        height: 32, background: "rgba(10, 13, 18, 0.9)",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        backdropFilter: "blur(12px)"
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ 
-            width: 6, height: 6, borderRadius: "50%", background: "#00FFAA", 
-            boxShadow: "0 0 10px rgba(0, 255, 170, 0.5)" 
-          }} />
-          <span className="mono-label" style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>
-            SYSTEM STATUS: OPERATIONAL // V2.0
-          </span>
+      {/* Top Status Bar */}
+      <div 
+        ref={statusBarRef}
+        style={{
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 101,
+          height: 32, background: "rgba(10, 13, 18, 0.95)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          backdropFilter: "blur(12px)",
+          transition: "transform 0.4s ease",
+          transform: scrolled ? "translateY(-100%)" : "translateY(0)"
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ 
+              width: 6, height: 6, borderRadius: "50%", background: "#00FFAA", 
+              boxShadow: "0 0 10px rgba(0, 255, 170, 0.5)",
+              animation: "pulse-status 2s infinite"
+            }} />
+            <span className="mono-label" style={{ fontSize: 9, opacity: 0.5 }}>
+              STATUS: OPERATIONAL // DISTRIBUTED NODE V2.0.4
+            </span>
+          </div>
           <span style={{ width: 1, height: 10, background: "rgba(255,255,255,0.1)" }} />
           <Link href="/docs" className="mono-label" style={{ 
             fontSize: 9, color: "#00FFAA", textDecoration: "none", 
-          }}>
-            CHANGELOG
+            letterSpacing: "0.1em", transition: "opacity 0.2s"
+          }} onMouseEnter={e => e.currentTarget.style.opacity = "0.7"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+            VIEW CHANGELOG
           </Link>
         </div>
       </div>
 
-      <nav ref={navRef} style={{
-        position: "fixed", top: 32, left: 0, right: 0, zIndex: 100,
-        padding: "0 48px", height: 80,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        transition: "all .4s cubic-bezier(0.16, 1, 0.3, 1)",
-        background: scrolled ? "rgba(10,13,18,.8)" : "transparent",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,.05)" : "1px solid transparent",
-        backdropFilter: scrolled ? "blur(24px)" : "none",
-      }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none", flexShrink: 0 }}>
-          <Logo size={36} />
+      <nav 
+        ref={navRef} 
+        style={{
+          position: "fixed", 
+          top: scrolled ? 0 : 32, 
+          left: 0, 
+          right: 0, 
+          zIndex: 100,
+          padding: "0 60px", 
+          height: scrolled ? 72 : 88,
+          display: "flex", 
+          alignItems: "center", 
+          justifyContent: "space-between",
+          transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+          background: scrolled ? "rgba(10, 13, 18, 0.85)" : "transparent",
+          borderBottom: scrolled ? "1px solid rgba(255, 255, 255, 0.05)" : "1px solid transparent",
+          backdropFilter: scrolled ? "blur(24px)" : "none",
+        }}
+      >
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 14, textDecoration: "none", flexShrink: 0 }}>
+          <Logo size={scrolled ? 32 : 36} />
           <span style={{
-            fontFamily: "var(--font-header)", fontWeight: 700, fontSize: 20,
+            fontFamily: "var(--font-header)", fontWeight: 700, fontSize: scrolled ? 18 : 20,
             color: "#FFF",
-            letterSpacing: "-0.04em"
+            letterSpacing: "-0.04em",
+            transition: "all 0.4s ease"
           }}>
             Luminescent<span style={{ color: "#00FFAA" }}>.</span>
           </span>
         </Link>
 
+        {/* Center Links (Desktop) */}
         <div className="nav-desktop" style={{ 
           display: "flex", 
           alignItems: "center", 
-          gap: 40,
-          background: "rgba(255,255,255,0.03)",
-          padding: "8px 24px",
+          gap: 32,
+          background: scrolled ? "transparent" : "rgba(255, 255, 255, 0.03)",
+          padding: scrolled ? "0" : "10px 32px",
           borderRadius: 100,
-          border: "1px solid rgba(255,255,255,0.05)",
-          backdropFilter: "blur(10px)",
+          border: scrolled ? "1px solid transparent" : "1px solid rgba(255, 255, 255, 0.05)",
+          backdropFilter: scrolled ? "none" : "blur(12px)",
+          transition: "all 0.4s ease"
         }}>
           {["Features", "Agents", "Pricing"].map(item => (
             <a key={item} href={`#${item.toLowerCase()}`} className="nav-link" style={{ 
               fontFamily: "var(--font-mono)", 
-              fontSize: 12, 
+              fontSize: 11, 
               textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              color: "rgba(255,255,255,0.5)"
-            }}>{item}</a>
+              letterSpacing: "0.1em",
+              color: "rgba(255, 255, 255, 0.5)",
+              textDecoration: "none",
+              transition: "color 0.3s ease"
+            }} onMouseEnter={e => e.currentTarget.style.color = "#FFF"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255, 255, 255, 0.5)"}>
+              {item}
+            </a>
           ))}
         </div>
 
-        <div className="nav-desktop" style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        {/* Auth (Desktop) */}
+        <div className="nav-desktop" style={{ display: "flex", alignItems: "center", gap: 24 }}>
           <Link href="/login" style={{ 
             fontFamily: "var(--font-mono)", 
-            fontSize: 12, 
-            color: "rgba(255,255,255,.5)", 
+            fontSize: 11, 
+            color: "rgba(255, 255, 255, 0.5)", 
             textDecoration: "none", 
-            textTransform: "uppercase" 
-          }}>
-            Log in
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            transition: "color 0.3s ease"
+          }} onMouseEnter={e => e.currentTarget.style.color = "#FFF"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255, 255, 255, 0.5)"}>
+            Login
           </Link>
-          <Link href="/register" className="btn-primary" style={{ padding: "12px 24px", fontSize: 13 }}>
-            Join Waitlist <ArrowRight size={14} />
+          <Link href="/register" className="btn-primary" style={{ 
+            padding: scrolled ? "10px 24px" : "12px 28px", 
+            fontSize: 13,
+            transition: "all 0.4s ease"
+          }}>
+            Join Waitlist <ArrowRight size={14} style={{ marginLeft: 6 }} />
           </Link>
         </div>
 
         <button onClick={() => setMenuOpen(!menuOpen)} style={{
           display: "none", background: "none", border: "none",
-          color: "rgba(248,249,250,.6)", cursor: "pointer",
+          color: "rgba(248, 249, 250, 0.6)", cursor: "pointer",
+          padding: 8
         }} className="mobile-toggle">
-          {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          {menuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
         <style>{`
-          @media (max-width: 900px) {
+          @keyframes pulse-status {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+          }
+          @media (max-width: 1024px) {
             .mobile-toggle { display: flex !important; }
             .nav-desktop { display: none !important; }
           }
         `}</style>
 
+        {/* Mobile Menu Overlay */}
         {menuOpen && (
           <div style={{
-            position: "absolute", top: 64, left: 0, right: 0,
-            background: "rgba(16,20,24,.96)", backdropFilter: "blur(20px)",
-            borderBottom: "1px solid rgba(0,255,170,.1)",
-            padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16,
+            position: "absolute", top: scrolled ? 72 : 88, left: 0, right: 0,
+            background: "rgba(10, 13, 18, 0.98)", backdropFilter: "blur(20px)",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+            padding: "32px", display: "flex", flexDirection: "column", gap: 24,
+            animation: "fadeInDown 0.4s ease"
           }}>
             {["Features", "Agents", "Pricing"].map(item => (
               <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setMenuOpen(false)}
-                style={{ fontSize: 14, color: "rgba(248,249,250,.55)", textDecoration: "none", fontWeight: 500 }}>
+                style={{ 
+                  fontFamily: "var(--font-header)", 
+                  fontSize: 18, 
+                  color: "#FFF", 
+                  textDecoration: "none", 
+                  fontWeight: 600,
+                  letterSpacing: "-0.02em"
+                }}>
                 {item}
               </a>
             ))}
-            <Link href="/docs" onClick={() => setMenuOpen(false)}
-              style={{ fontSize: 14, color: "rgba(248,249,250,.55)", textDecoration: "none", fontWeight: 500 }}>
-              Docs
+            <div style={{ height: 1, background: "rgba(255, 255, 255, 0.05)" }} />
+            <Link href="/login" onClick={() => setMenuOpen(false)}
+              style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none", textTransform: "uppercase" }}>
+              Login
             </Link>
-            <Link href="/register" className="btn-primary" style={{ justifyContent: "center", marginTop: 4 }}>
+            <Link href="/register" className="btn-primary" style={{ justifyContent: "center", padding: "16px" }}>
               Get Started Free
             </Link>
           </div>
