@@ -98,10 +98,10 @@ export const LandingStyles = () => (
     }
 
     .cyber-card:hover {
-      background: rgba(255,255,255,0.04);
-      border-color: rgba(0,255,170,0.3);
+      background: linear-gradient(135deg, rgba(0,255,170,0.15) 0%, rgba(0,208,255,0.15) 100%);
+      border-color: rgba(0,255,170,0.5);
       transform: translateY(-5px);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,255,170,0.1);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 0 80px rgba(0,255,170,0.05), 0 0 0 1px rgba(0,255,170,0.3);
     }
     
     .stat-bg {
