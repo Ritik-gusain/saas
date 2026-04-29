@@ -32,16 +32,19 @@ export function LogoTicker() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       if (titleRef.current) {
-        gsap.from(titleRef.current, {
-          opacity: 0,
-          y: 10,
-          duration: 1,
-          ease: "expo.out",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 90%",
-          },
-        });
+        gsap.fromTo(titleRef.current, 
+          { y: 20, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top 90%",
+            },
+          }
+        );
       }
     }, sectionRef);
     return () => ctx.revert();

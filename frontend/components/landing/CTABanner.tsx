@@ -20,32 +20,38 @@ export function CTABanner() {
     const ctx = gsap.context(() => {
       // Card reveal with subtle parallax
       if (cardRef.current) {
-        gsap.from(cardRef.current, {
-          y: 60,
-          opacity: 0,
-          scale: 0.98,
-          duration: 1.2,
-          ease: "expo.out",
-          scrollTrigger: {
-            trigger: cardRef.current,
-            start: "top 85%",
-          },
-        });
+        gsap.fromTo(cardRef.current, 
+          { scale: 0.95, opacity: 0, y: 40 },
+          {
+            scale: 1,
+            opacity: 1,
+            y: 0,
+            duration: 1.2,
+            ease: "expo.out",
+            scrollTrigger: {
+              trigger: cardRef.current,
+              start: "top 85%",
+            },
+          }
+        );
       }
 
       // Content stagger
       if (contentRef.current) {
-        gsap.from(contentRef.current.children, {
-          y: 20,
-          opacity: 0,
-          duration: 0.8,
-          stagger: 0.1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: contentRef.current,
-            start: "top 80%",
-          },
-        });
+        gsap.fromTo(contentRef.current.children, 
+          { y: 30, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            stagger: 0.15,
+            ease: "power4.out",
+            scrollTrigger: {
+              trigger: cardRef.current,
+              start: "top 80%",
+            },
+          }
+        );
       }
 
       // Magnetic Button Effect

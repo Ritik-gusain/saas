@@ -133,7 +133,7 @@ export function HeroSection() {
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            opacity: 0.8,
+            opacity: 0.65,
             filter: "brightness(0.85) contrast(1.1)",
             transform: "scale(1.06)", // Slight over-scale to hide corner watermarks (Veo)
           }}

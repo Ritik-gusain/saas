@@ -51,17 +51,20 @@ export function HowItWorksSection() {
     const ctx = gsap.context(() => {
       // Header reveal
       if (headRef.current) {
-        gsap.from(headRef.current.children, {
-          y: 30,
-          opacity: 0,
-          duration: 1,
-          stagger: 0.2,
-          ease: "expo.out",
-          scrollTrigger: {
-            trigger: headRef.current,
-            start: "top 85%",
-          },
-        });
+        gsap.fromTo(headRef.current.children, 
+          { y: 30, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            stagger: 0.15,
+            ease: "power4.out",
+            scrollTrigger: {
+              trigger: headRef.current,
+              start: "top 80%",
+            },
+          }
+        );
       }
 
       // Progress Line Animation
@@ -81,17 +84,19 @@ export function HowItWorksSection() {
       // Step cards reveal
       stepsRef.current.forEach((card, i) => {
         if (!card) return;
-        gsap.from(card, {
-          y: 40,
-          opacity: 0,
-          duration: 0.8,
-          delay: i * 0.1,
-          ease: "expo.out",
-          scrollTrigger: {
-            trigger: card,
-            start: "top 90%",
-          },
-        });
+        gsap.fromTo(card, 
+          { y: 50, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1.2,
+            ease: "expo.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 85%",
+            },
+          }
+        );
 
         // Icon pulse on hover
         const icon = card.querySelector(".step-icon");

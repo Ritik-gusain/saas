@@ -83,34 +83,40 @@ export function PricingSection() {
     const ctx = gsap.context(() => {
       // Header animation
       if (headRef.current) {
-        gsap.from(headRef.current.children, {
-          y: 30,
-          opacity: 0,
-          duration: 1,
-          stagger: 0.15,
-          ease: "power4.out",
-          scrollTrigger: {
-            trigger: headRef.current,
-            start: "top 85%",
-          },
-        });
+        gsap.fromTo(headRef.current.children, 
+          { y: 30, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            stagger: 0.15,
+            ease: "power4.out",
+            scrollTrigger: {
+              trigger: headRef.current,
+              start: "top 85%",
+            },
+          }
+        );
       }
 
       // Card cascade
       cardsRef.current.forEach((card, i) => {
         if (!card) return;
-        gsap.from(card, {
-          y: 40,
-          opacity: 0,
-          scale: 0.95,
-          duration: 1.2,
-          delay: i * 0.1,
-          ease: "expo.out",
-          scrollTrigger: {
-            trigger: card,
-            start: "top 82%",
-          },
-        });
+        gsap.fromTo(card, 
+          { y: 40, opacity: 0, scale: 0.95 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 1.2,
+            delay: i * 0.1,
+            ease: "expo.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 82%",
+            },
+          }
+        );
       });
     }, sectionRef);
 
