@@ -4,52 +4,93 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { Sparkles, ArrowRight, Zap } from "lucide-react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const badgeRef   = useRef<HTMLDivElement>(null);
+  const bgImageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Guard against React 18 Strict Mode double-invoke (prevents removeChild crash)
     let ctx: ReturnType<typeof gsap.context> | null = null;
+    
+    // Slight delay to ensure hydration and assets are ready
     const timer = setTimeout(() => {
       ctx = gsap.context(() => {
         const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
 
-        if (badgeRef.current) {
-          tl.fromTo(badgeRef.current,
-            { y: 20, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.8 }
+        // 1. Initial Entrance
+        if (bgImageRef.current) {
+          gsap.fromTo(bgImageRef.current,
+            { scale: 1.1, opacity: 0 },
+            { scale: 1, opacity: 0.4, duration: 2.5, ease: "power2.out" }
           );
         }
+
+        if (badgeRef.current) {
+          tl.fromTo(badgeRef.current,
+            { y: 30, opacity: 0 },
+            { y: 0, opacity: 1, duration: 1 },
+            0.5
+          );
+        }
+
         if (contentRef.current) {
           tl.fromTo(
             Array.from(contentRef.current.children),
-            { y: 40, opacity: 0 },
-            { y: 0, opacity: 1, duration: 1, stagger: 0.12 },
-            "-=0.4"
+            { y: 50, opacity: 0 },
+            { y: 0, opacity: 1, duration: 1.2, stagger: 0.15 },
+            "-=0.7"
           );
         }
 
+        // 2. Parallax Effect on Scroll
+        if (bgImageRef.current && sectionRef.current) {
+          gsap.to(bgImageRef.current, {
+            y: "20%",
+            ease: "none",
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top top",
+              end: "bottom top",
+              scrub: true,
+            }
+          });
+        }
 
-        // Floating orbs — target by ref, not class selector, to avoid cross-component conflicts
+        // 3. Floating Content Animation
+        if (contentRef.current) {
+          gsap.to(contentRef.current, {
+            y: -15,
+            duration: 4,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+          });
+        }
+
+        // 4. Floating Orbs
         if (sectionRef.current) {
           const orbs = sectionRef.current.querySelectorAll<HTMLElement>(".hero-orb");
           orbs.forEach((orb, i) => {
             gsap.to(orb, {
-              y: i % 2 === 0 ? -22 : 18,
-              x: i % 2 === 0 ? 10 : -14,
-              duration: 5 + i * 0.8,
-              repeat: -1, yoyo: true,
+              y: i % 2 === 0 ? -30 : 25,
+              x: i % 2 === 0 ? 15 : -20,
+              duration: 6 + i,
+              repeat: -1,
+              yoyo: true,
               ease: "sine.inOut",
-              delay: i * 0.9,
+              delay: i * 0.5,
             });
           });
         }
       }, sectionRef);
-    }, 0);
+    }, 100);
 
     return () => {
       clearTimeout(timer);
@@ -72,57 +113,87 @@ export function HeroSection() {
         padding: "120px 24px 80px",
       }}
     >
-      {/* ── Grid bg ── */}
-      <div className="grid-bg" style={{ position: "absolute", inset: 0, zIndex: 0 }} />
+      {/* ── Background Video Layer ── */}
+      <div 
+        ref={bgImageRef}
+        style={{
+          position: "absolute",
+          inset: "-10% 0", // Overlap for parallax movement
+          zIndex: 0,
+          overflow: "hidden", // Ensure watermark crop stays hidden
+        }}
+      >
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster="/landing-bg.png"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            opacity: 0.35,
+            filter: "brightness(0.7) contrast(1.1)",
+            transform: "scale(1.06)", // Slight over-scale to hide corner watermarks (Veo)
+          }}
+        >
+          <source src="/video.mp4" type="video/mp4" />
+        </video>
+      </div>
+
+      {/* ── Grid bg Overlay ── */}
+      <div className="grid-bg" style={{ position: "absolute", inset: 0, zIndex: 1, opacity: 0.3 }} />
 
       {/* ── Ambient orbs ── */}
       <div className="hero-orb" style={{
-        position: "absolute", top: "8%", left: "12%",
+        position: "absolute", top: "10%", left: "5%",
+        width: 600, height: 600, borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(0,255,170,.12) 0%, transparent 70%)",
+        filter: "blur(80px)", pointerEvents: "none", zIndex: 2,
+      }} />
+      <div className="hero-orb" style={{
+        position: "absolute", bottom: "10%", right: "5%",
         width: 500, height: 500, borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(0,255,170,.08) 0%, transparent 70%)",
-        filter: "blur(60px)", pointerEvents: "none",
+        background: "radial-gradient(circle, rgba(123,97,255,.1) 0%, transparent 70%)",
+        filter: "blur(80px)", pointerEvents: "none", zIndex: 2,
       }} />
-      <div className="hero-orb" style={{
-        position: "absolute", top: "20%", right: "10%",
-        width: 420, height: 420, borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(0,208,255,.07) 0%, transparent 70%)",
-        filter: "blur(60px)", pointerEvents: "none",
-      }} />
-      <div className="hero-orb" style={{
-        position: "absolute", bottom: "15%", left: "35%",
-        width: 350, height: 350, borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(123,97,255,.05) 0%, transparent 70%)",
-        filter: "blur(70px)", pointerEvents: "none",
+
+      {/* ── Vignette / Dark Gradient Overlays ── */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "radial-gradient(circle at center, transparent 0%, #0A0D12 100%)",
+        opacity: 0.6, zIndex: 3, pointerEvents: "none",
       }} />
 
       {/* ── Corner HUD brackets ── */}
       {([
-        { top: 20, left: 20,   borderTop: "1.5px solid", borderLeft: "1.5px solid"   },
-        { top: 20, right: 20,  borderTop: "1.5px solid", borderRight: "1.5px solid"  },
-        { bottom: 20, left: 20,  borderBottom: "1.5px solid", borderLeft: "1.5px solid"  },
-        { bottom: 20, right: 20, borderBottom: "1.5px solid", borderRight: "1.5px solid" },
+        { top: 40, left: 40,   borderTop: "1.5px solid", borderLeft: "1.5px solid"   },
+        { top: 40, right: 40,  borderTop: "1.5px solid", borderRight: "1.5px solid"  },
+        { bottom: 40, left: 40,  borderBottom: "1.5px solid", borderLeft: "1.5px solid"  },
+        { bottom: 40, right: 40, borderBottom: "1.5px solid", borderRight: "1.5px solid" },
       ] as React.CSSProperties[]).map((s, i) => (
         <div key={i} style={{
           position: "absolute", ...s,
-          width: 22, height: 22,
-          borderColor: "rgba(0,255,170,0.2)",
-          zIndex: 2, pointerEvents: "none",
+          width: 30, height: 30,
+          borderColor: "rgba(0,255,170,0.3)",
+          zIndex: 4, pointerEvents: "none",
         }} />
       ))}
 
       {/* ── SYS badge ── */}
       <div style={{
-        position: "absolute", top: 22, right: 28, zIndex: 2,
+        position: "absolute", top: 32, right: 40, zIndex: 4,
         fontFamily: "'DM Mono', monospace",
-        fontSize: 9, color: "rgba(255,255,255,0.14)",
-        letterSpacing: "0.15em", pointerEvents: "none",
+        fontSize: 10, color: "rgba(255,255,255,0.2)",
+        letterSpacing: "0.2em", pointerEvents: "none",
       }}>
-        SYS · LUMINESCENT v2.1
+        LUMINESCENT // CORE_OS v2.5
       </div>
 
       {/* ── Eyebrow badge ── */}
-      <div ref={badgeRef} style={{ position: "relative", zIndex: 5, marginBottom: 28 }}>
-        <div className="tag">
+      <div ref={badgeRef} style={{ position: "relative", zIndex: 10, marginBottom: 32 }}>
+        <div className="tag" style={{ backdropFilter: "blur(12px)", background: "rgba(0,255,170,0.08)" }}>
           <Sparkles size={11} /> Now Supporting 40+ AI Models
         </div>
       </div>
@@ -131,21 +202,22 @@ export function HeroSection() {
       <div
         ref={contentRef}
         style={{
-          position: "relative", zIndex: 5,
+          position: "relative", zIndex: 10,
           display: "flex", flexDirection: "column",
           alignItems: "center", textAlign: "center",
-          gap: 24, maxWidth: 860, width: "100%",
+          gap: 28, maxWidth: 900, width: "100%",
         }}
       >
         {/* Headline */}
         <h1 style={{
           fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontWeight: 900,
-          fontSize: "clamp(42px, 7.5vw, 88px)",
-          lineHeight: 0.96,
-          letterSpacing: "-0.045em",
+          fontSize: "clamp(48px, 8vw, 92px)",
+          lineHeight: 0.92,
+          letterSpacing: "-0.05em",
           color: "#F8F9FA",
           margin: 0,
+          textShadow: "0 10px 30px rgba(0,0,0,0.5)",
         }}>
           Free for individuals.<br />
           <span className="shimmer-text">Powerful for teams.</span>
@@ -153,9 +225,9 @@ export function HeroSection() {
 
         {/* Subheadline */}
         <p style={{
-          fontSize: "clamp(15px, 1.5vw, 18px)",
-          color: "rgba(248,249,250,0.46)",
-          maxWidth: 520, lineHeight: 1.72,
+          fontSize: "clamp(16px, 1.6vw, 19px)",
+          color: "rgba(248,249,250,0.55)",
+          maxWidth: 580, lineHeight: 1.7,
           fontWeight: 300, margin: 0,
         }}>
           The world&apos;s most advanced AI collaboration platform.
@@ -163,11 +235,11 @@ export function HeroSection() {
         </p>
 
         {/* CTA buttons */}
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-          <Link href="/register" className="btn-primary" style={{ padding: "16px 40px", fontSize: 15 }}>
-            Get Started Free <ArrowRight size={16} />
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
+          <Link href="/register" className="btn-primary" style={{ padding: "18px 44px", fontSize: 16 }}>
+            Get Started Free <ArrowRight size={18} />
           </Link>
-          <a href="#features" className="btn-ghost" style={{ padding: "15px 28px", fontSize: 15 }}>
+          <a href="#features" className="btn-ghost" style={{ padding: "17px 32px", fontSize: 15 }}>
             <Zap size={14} /> Explore Features
           </a>
         </div>
@@ -175,12 +247,13 @@ export function HeroSection() {
         {/* Stats strip */}
         <div style={{
           display: "flex",
-          background: "rgba(255,255,255,0.025)",
-          backdropFilter: "blur(20px)",
-          borderRadius: 14,
-          border: "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(255,255,255,0.03)",
+          backdropFilter: "blur(24px)",
+          borderRadius: 16,
+          border: "1px solid rgba(255,255,255,0.08)",
           overflow: "hidden",
-          marginTop: 8,
+          marginTop: 24,
+          boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
         }}>
           {[
             { label: "Active Teams", val: "14.2k+", accent: "#00FFAA" },
@@ -189,18 +262,18 @@ export function HeroSection() {
             { label: "Uptime",       val: "99.99%", accent: "#00D0FF" },
           ].map((s, i, arr) => (
             <div key={s.label} style={{
-              padding: "18px 32px", textAlign: "center",
-              borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
+              padding: "20px 40px", textAlign: "center",
+              borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
             }}>
               <div style={{
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontWeight: 800, fontSize: 21,
+                fontWeight: 800, fontSize: 24,
                 color: s.accent, letterSpacing: "-0.03em",
               }}>{s.val}</div>
               <div style={{
                 fontFamily: "'DM Mono', monospace",
-                fontSize: 9, color: "rgba(248,249,250,0.25)",
-                textTransform: "uppercase", letterSpacing: "0.12em", marginTop: 4,
+                fontSize: 10, color: "rgba(248,249,250,0.3)",
+                textTransform: "uppercase", letterSpacing: "0.15em", marginTop: 6,
               }}>{s.label}</div>
             </div>
           ))}
@@ -210,9 +283,9 @@ export function HeroSection() {
 
       {/* ── Bottom fade ── */}
       <div style={{
-        position: "absolute", bottom: 0, left: 0, right: 0, height: 100,
+        position: "absolute", bottom: 0, left: 0, right: 0, height: 160,
         background: "linear-gradient(to bottom, transparent, #0A0D12)",
-        zIndex: 4, pointerEvents: "none",
+        zIndex: 15, pointerEvents: "none",
       }} />
     </section>
   );
