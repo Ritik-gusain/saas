@@ -209,15 +209,11 @@ export function HeroSection() {
         }}
       >
         {/* Headline */}
-        <h1 style={{
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          fontWeight: 900,
-          fontSize: "clamp(48px, 8vw, 92px)",
-          lineHeight: 0.92,
-          letterSpacing: "-0.05em",
+        <h1 className="display-h1" style={{
+          fontSize: "clamp(54px, 9vw, 104px)",
           color: "#F8F9FA",
           margin: 0,
-          textShadow: "0 10px 30px rgba(0,0,0,0.5)",
+          textShadow: "0 20px 50px rgba(0,0,0,0.5)",
         }}>
           Free for individuals.<br />
           <span className="shimmer-text">Powerful for teams.</span>
@@ -225,22 +221,23 @@ export function HeroSection() {
 
         {/* Subheadline */}
         <p style={{
-          fontSize: "clamp(16px, 1.6vw, 19px)",
-          color: "rgba(248,249,250,0.55)",
-          maxWidth: 580, lineHeight: 1.7,
-          fontWeight: 300, margin: 0,
+          fontFamily: "var(--font-body)",
+          fontSize: "clamp(17px, 1.7vw, 20px)",
+          color: "rgba(248,249,250,0.6)",
+          maxWidth: 620, lineHeight: 1.6,
+          fontWeight: 400, margin: "10px 0 0",
         }}>
           The world&apos;s most advanced AI collaboration platform.
           Bring your own keys. Own your data. Collaborate at lightspeed.
         </p>
 
         {/* CTA buttons */}
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
-          <Link href="/register" className="btn-primary" style={{ padding: "18px 44px", fontSize: 16 }}>
-            Get Started Free <ArrowRight size={18} />
+        <div style={{ display: "flex", gap: 20, flexWrap: "wrap", justifyContent: "center", marginTop: 15 }}>
+          <Link href="/register" className="btn-primary">
+            Get Started Free <ArrowRight size={20} />
           </Link>
-          <a href="#features" className="btn-ghost" style={{ padding: "17px 32px", fontSize: 15 }}>
-            <Zap size={14} /> Explore Features
+          <a href="#features" className="btn-ghost">
+            <Zap size={16} /> Explore Features
           </a>
         </div>
 
@@ -248,12 +245,12 @@ export function HeroSection() {
         <div style={{
           display: "flex",
           background: "rgba(255,255,255,0.03)",
-          backdropFilter: "blur(24px)",
-          borderRadius: 16,
+          backdropFilter: "blur(30px)",
+          borderRadius: 24,
           border: "1px solid rgba(255,255,255,0.08)",
           overflow: "hidden",
-          marginTop: 24,
-          boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
+          marginTop: 40,
+          boxShadow: "0 30px 80px rgba(0,0,0,0.4)",
         }}>
           {[
             { label: "Active Teams", val: "14.2k+", accent: "#00FFAA" },
@@ -262,18 +259,17 @@ export function HeroSection() {
             { label: "Uptime",       val: "99.99%", accent: "#00D0FF" },
           ].map((s, i, arr) => (
             <div key={s.label} style={{
-              padding: "20px 40px", textAlign: "center",
+              padding: "24px 48px", textAlign: "center",
               borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
             }}>
               <div style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontWeight: 800, fontSize: 24,
-                color: s.accent, letterSpacing: "-0.03em",
+                fontFamily: "var(--font-header)",
+                fontWeight: 700, fontSize: 28,
+                color: s.accent, letterSpacing: "-0.04em",
               }}>{s.val}</div>
-              <div style={{
-                fontFamily: "'DM Mono', monospace",
-                fontSize: 10, color: "rgba(248,249,250,0.3)",
-                textTransform: "uppercase", letterSpacing: "0.15em", marginTop: 6,
+              <div className="mono-label" style={{ 
+                fontSize: 10, color: "rgba(248,249,250,0.4)", 
+                marginTop: 6 
               }}>{s.label}</div>
             </div>
           ))}
@@ -283,7 +279,7 @@ export function HeroSection() {
 
       {/* ── Bottom fade ── */}
       <div style={{
-        position: "absolute", bottom: 0, left: 0, right: 0, height: 160,
+        position: "absolute", bottom: 0, left: 0, right: 0, height: 200,
         background: "linear-gradient(to bottom, transparent, #0A0D12)",
         zIndex: 15, pointerEvents: "none",
       }} />

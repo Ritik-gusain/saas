@@ -26,66 +26,81 @@ export function Navbar() {
     <>
       <div style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 101,
-        height: 34, background: "rgba(16, 20, 24, 0.8)",
+        height: 32, background: "rgba(10, 13, 18, 0.9)",
         borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
         display: "flex", alignItems: "center", justifyContent: "center",
         backdropFilter: "blur(12px)"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ 
-            width: 8, height: 8, borderRadius: "50%", background: "#00FFAA", 
-            animation: "pulseGlow 2s infinite", boxShadow: "0 0 10px rgba(0, 255, 170, 0.4)" 
+            width: 6, height: 6, borderRadius: "50%", background: "#00FFAA", 
+            boxShadow: "0 0 10px rgba(0, 255, 170, 0.5)" 
           }} />
-          <span style={{ 
-            fontFamily: "'DM Mono', monospace", fontSize: 10, color: "rgba(248, 249, 250, 0.8)", 
-            fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase" 
-          }}>
-            V2.0 Cinematic Release
+          <span className="mono-label" style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>
+            SYSTEM STATUS: OPERATIONAL // V2.0
           </span>
-          <span style={{ width: 1, height: 12, background: "rgba(255,255,255,0.1)" }} />
-          <Link href="/docs" style={{ 
-            fontSize: 10, color: "#00FFAA", textDecoration: "none", 
-            fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" 
+          <span style={{ width: 1, height: 10, background: "rgba(255,255,255,0.1)" }} />
+          <Link href="/docs" className="mono-label" style={{ 
+            fontSize: 9, color: "#00FFAA", textDecoration: "none", 
           }}>
-            Read Changelog
+            CHANGELOG
           </Link>
         </div>
       </div>
 
       <nav ref={navRef} style={{
-        position: "fixed", top: 34, left: 0, right: 0, zIndex: 100,
-        padding: "0 40px", height: 64,
+        position: "fixed", top: 32, left: 0, right: 0, zIndex: 100,
+        padding: "0 48px", height: 80,
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        transition: "background .3s, border-color .3s",
-        background: scrolled ? "rgba(16,20,24,.85)" : "transparent",
-        borderBottom: scrolled ? "1px solid rgba(0,255,170,.08)" : "1px solid transparent",
-        backdropFilter: scrolled ? "blur(20px)" : "none",
+        transition: "all .4s cubic-bezier(0.16, 1, 0.3, 1)",
+        background: scrolled ? "rgba(10,13,18,.8)" : "transparent",
+        borderBottom: scrolled ? "1px solid rgba(255,255,255,.05)" : "1px solid transparent",
+        backdropFilter: scrolled ? "blur(24px)" : "none",
       }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
-          <Logo size={34} />
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none", flexShrink: 0 }}>
+          <Logo size={36} />
           <span style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 18,
-            background: "linear-gradient(135deg, #00FFAA, #00D0FF)",
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-            letterSpacing: "-0.02em"
+            fontFamily: "var(--font-header)", fontWeight: 700, fontSize: 20,
+            color: "#FFF",
+            letterSpacing: "-0.04em"
           }}>
-            Luminescent.io
+            Luminescent<span style={{ color: "#00FFAA" }}>.</span>
           </span>
         </Link>
 
-        <div className="nav-desktop" style={{ display: "flex", alignItems: "center", gap: 36 }}>
+        <div className="nav-desktop" style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: 40,
+          background: "rgba(255,255,255,0.03)",
+          padding: "8px 24px",
+          borderRadius: 100,
+          border: "1px solid rgba(255,255,255,0.05)",
+          backdropFilter: "blur(10px)",
+        }}>
           {["Features", "Agents", "Pricing"].map(item => (
-            <a key={item} href={`#${item.toLowerCase()}`} className="nav-link">{item}</a>
+            <a key={item} href={`#${item.toLowerCase()}`} className="nav-link" style={{ 
+              fontFamily: "var(--font-mono)", 
+              fontSize: 12, 
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              color: "rgba(255,255,255,0.5)"
+            }}>{item}</a>
           ))}
-          <Link href="/docs" className="nav-link">Docs</Link>
         </div>
 
-        <div className="nav-desktop" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Link href="/login" style={{ fontSize: 14, color: "rgba(248,249,250,.45)", textDecoration: "none", fontWeight: 500, transition: "color .2s" }}>
-            Sign in
+        <div className="nav-desktop" style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <Link href="/login" style={{ 
+            fontFamily: "var(--font-mono)", 
+            fontSize: 12, 
+            color: "rgba(255,255,255,.5)", 
+            textDecoration: "none", 
+            textTransform: "uppercase" 
+          }}>
+            Log in
           </Link>
-          <Link href="/register" className="btn-primary" style={{ padding: "10px 20px", fontSize: 13 }}>
-            Get Started Free <ArrowRight size={13} />
+          <Link href="/register" className="btn-primary" style={{ padding: "12px 24px", fontSize: 13 }}>
+            Join Waitlist <ArrowRight size={14} />
           </Link>
         </div>
 

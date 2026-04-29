@@ -4,6 +4,7 @@ import { LandingStyles } from "./LandingStyles";
 import { Navbar } from "./Navbar";
 import { HeroSection } from "./HeroSection";
 import { LogoTicker } from "./LogoTicker";
+import { LuminescentConsole } from "./LuminescentConsole";
 import { FeaturesSection } from "./FeaturesSection";
 import { HowItWorksSection } from "./HowItWorksSection";
 import { PricingSection } from "./PricingSection";
@@ -19,6 +20,7 @@ export default function LandingPage() {
         <HeroSection />
         <div style={{ position: "relative", zIndex: 20, background: "#0A0D12" }}>
           <LogoTicker />
+          <LuminescentConsole />
           <FeaturesSection />
           <HowItWorksSection />
           <PricingSection />
