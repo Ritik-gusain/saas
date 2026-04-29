@@ -103,6 +103,25 @@ export const LandingStyles = () => (
       transform: translateY(-5px);
       box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,255,170,0.1);
     }
+    
+    .stat-bg {
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .cyber-card:hover .stat-bg {
+      transform: scale(1.1) translate(-10px, -10px);
+      color: rgba(0,255,170,0.08) !important;
+    }
+
+    .stat-text {
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .cyber-card:hover .stat-text {
+      transform: scale(1.1);
+      color: #00D0FF !important;
+      text-shadow: 0 0 20px rgba(0,208,255,0.4);
+    }
 
     /* ─── Buttons ─── */
     .btn-primary {
@@ -123,6 +142,15 @@ export const LandingStyles = () => (
     .btn-primary:hover {
       transform: translateY(-3px);
       box-shadow: 0 20px 50px rgba(0,255,170,0.4);
+    }
+
+    .icon-bounce {
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .cyber-card:hover .icon-bounce {
+      transform: scale(1.2) translateY(-5px);
+      filter: drop-shadow(0 0 15px currentColor);
     }
 
     .btn-ghost {

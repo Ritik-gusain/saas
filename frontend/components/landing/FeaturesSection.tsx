@@ -138,14 +138,14 @@ export function FeaturesSection() {
           {/* Feature 1: Large */}
           <div className="cyber-card" style={{ gridColumn: "span 2", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "relative", zIndex: 2 }}>
-              <div style={{ color: "#00FFAA", marginBottom: 24 }}><MessageSquare size={32} /></div>
+              <div className="icon-bounce" style={{ color: "#00FFAA", marginBottom: 24, display: "inline-block" }}><MessageSquare size={32} /></div>
               <h3 style={{ fontFamily: "var(--font-header)", fontSize: 24, color: "#FFF", marginBottom: 12 }}>Shared Chat History</h3>
               <p style={{ color: "rgba(255,255,255,0.4)", lineHeight: 1.6, maxWidth: "80%" }}>
                 Your team&apos;s entire AI conversation history in one searchable place. 
                 Reference and build on each other&apos;s work seamlessly.
               </p>
             </div>
-            <div style={{ 
+            <div className="stat-bg" style={{ 
               position: "absolute", bottom: -20, right: -20, 
               fontSize: 120, fontWeight: 900, color: "rgba(0,255,170,0.03)",
               fontFamily: "var(--font-header)"
@@ -155,7 +155,7 @@ export function FeaturesSection() {
           {/* Feature 2: Tall/Medium */}
           <div className="cyber-card" style={{ gridRow: "span 2", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
             <div>
-              <div style={{ color: "#00D0FF", marginBottom: 24 }}><Brain size={32} /></div>
+              <div className="icon-bounce" style={{ color: "#00D0FF", marginBottom: 24, display: "inline-block" }}><Brain size={32} /></div>
               <h3 style={{ fontFamily: "var(--font-header)", fontSize: 24, color: "#FFF", marginBottom: 12 }}>Custom AI Agents</h3>
               <p style={{ color: "rgba(255,255,255,0.4)", lineHeight: 1.6 }}>
                 Deploy specialized agents trained on your SOPs. 
@@ -164,13 +164,13 @@ export function FeaturesSection() {
             </div>
             <div style={{ marginTop: 40 }}>
               <div className="mono-label" style={{ color: "#00D0FF", opacity: 0.5, marginBottom: 8 }}>MODELS DEPLOYED</div>
-              <div style={{ fontSize: 48, fontWeight: 700, color: "#FFF", fontFamily: "var(--font-header)" }}>40+</div>
+              <div className="stat-text" style={{ fontSize: 48, fontWeight: 700, color: "#FFF", fontFamily: "var(--font-header)", display: "inline-block" }}>40+</div>
             </div>
           </div>
 
           {/* Feature 3: Small */}
           <div className="cyber-card">
-            <div style={{ color: "#7B61FF", marginBottom: 20 }}><Zap size={24} /></div>
+            <div className="icon-bounce" style={{ color: "#7B61FF", marginBottom: 20, display: "inline-block" }}><Zap size={24} /></div>
             <h3 style={{ fontFamily: "var(--font-header)", fontSize: 20, color: "#FFF", marginBottom: 8 }}>Smart Prompt Library</h3>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, lineHeight: 1.5 }}>
               Save and version-control your best prompts. Stop re-engineering.
@@ -179,7 +179,7 @@ export function FeaturesSection() {
 
           {/* Feature 4: Small */}
           <div className="cyber-card">
-            <div style={{ color: "#00FFAA", marginBottom: 20 }}><Lock size={24} /></div>
+            <div className="icon-bounce" style={{ color: "#00FFAA", marginBottom: 20, display: "inline-block" }}><Lock size={24} /></div>
             <h3 style={{ fontFamily: "var(--font-header)", fontSize: 20, color: "#FFF", marginBottom: 8 }}>Enterprise Security</h3>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, lineHeight: 1.5 }}>
               SSO, RBAC, and full audit logs. Compliance-ready from day one.
