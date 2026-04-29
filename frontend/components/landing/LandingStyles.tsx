@@ -110,7 +110,7 @@ export const LandingStyles = () => (
     
     .cyber-card:hover .stat-bg {
       transform: scale(1.1) translate(-10px, -10px);
-      color: rgba(0,255,170,0.08) !important;
+      opacity: 0.6 !important;
     }
 
     .stat-text {
@@ -119,7 +119,6 @@ export const LandingStyles = () => (
 
     .cyber-card:hover .stat-text {
       transform: scale(1.1);
-      color: #00D0FF !important;
       text-shadow: 0 0 20px rgba(0,208,255,0.4);
     }
 
