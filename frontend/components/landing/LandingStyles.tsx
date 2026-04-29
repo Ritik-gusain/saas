@@ -87,21 +87,22 @@ export const LandingStyles = () => (
     }
 
     .cyber-card {
-      background: rgba(255,255,255,0.02);
+      background: linear-gradient(135deg, rgba(0,255,170,0.15) 0%, rgba(0,208,255,0.15) 100%);
       backdrop-filter: blur(20px);
-      border: 1px solid var(--landing-border);
+      border: 1px solid rgba(0,255,170,0.3);
       border-radius: 24px;
       padding: 40px;
       position: relative;
       overflow: hidden;
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: inset 0 0 80px rgba(0,255,170,0.05);
     }
 
     .cyber-card:hover {
-      background: linear-gradient(135deg, rgba(0,255,170,0.15) 0%, rgba(0,208,255,0.15) 100%);
-      border-color: rgba(0,255,170,0.5);
+      background: rgba(10, 13, 18, 0.9);
+      border-color: var(--landing-border);
       transform: translateY(-5px);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 0 80px rgba(0,255,170,0.05), 0 0 0 1px rgba(0,255,170,0.3);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
     }
     
     .stat-bg {
