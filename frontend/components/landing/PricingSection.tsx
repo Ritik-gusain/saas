@@ -111,6 +111,7 @@ export function PricingSection() {
             duration: 1.2,
             delay: i * 0.1,
             ease: "expo.out",
+            clearProps: "transform",
             scrollTrigger: {
               trigger: card,
               start: "top 82%",

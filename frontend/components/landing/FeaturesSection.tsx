@@ -90,6 +90,7 @@ export function FeaturesSection() {
             duration: 1.2,
             stagger: 0.1,
             ease: "expo.out",
+            clearProps: "transform",
             scrollTrigger: {
               trigger: gridRef.current,
               start: "top 80%",

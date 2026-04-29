@@ -91,6 +91,7 @@ export function HowItWorksSection() {
             opacity: 1,
             duration: 1.2,
             ease: "expo.out",
+            clearProps: "transform",
             scrollTrigger: {
               trigger: card,
               start: "top 85%",
