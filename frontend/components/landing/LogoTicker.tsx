@@ -27,6 +27,30 @@ const STREAM = [...MODELS, ...MODELS, ...MODELS];
 
 export function LogoTicker() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const tickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!tickerRef.current) return;
+    
+    // Smooth GSAP animation for organic control
+    const loop = gsap.to(tickerRef.current, {
+      xPercent: -33.33,
+      duration: 50,
+      ease: "none",
+      repeat: -1,
+    });
+
+    // Suble speed variation for "human" feel
+    gsap.to(loop, {
+      timeScale: 1.1,
+      duration: 3,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut"
+    });
+
+    return () => loop.kill();
+  }, []);
 
   return (
     <section
@@ -37,25 +61,39 @@ export function LogoTicker() {
       style={{
         position: "relative",
         overflow: "hidden",
-        padding: "80px 0",
+        padding: "100px 0",
         borderTop: "1px solid rgba(255,255,255,0.03)",
         borderBottom: "1px solid rgba(255,255,255,0.03)",
         background: "transparent",
       }}
     >
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", marginBottom: 40, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="mono-label" style={{ opacity: 0.3, fontSize: 10 }}>
+          01 // INTELLIGENCE_NETWORK_FEED
+        </div>
+        <div style={{ display: "flex", gap: 24 }}>
+          <div className="mono-label" style={{ color: "var(--landing-green)", fontSize: 10 }}>
+            ● STATUS: OPERATIONAL
+          </div>
+          <div className="mono-label" style={{ opacity: 0.3, fontSize: 10 }}>
+            THROUGHPUT: 12.4K TOKENS/S
+          </div>
+        </div>
+      </div>
+
       {/* Flowing stream */}
       <div style={{ position: "relative" }}>
         <div
+          ref={tickerRef}
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 80,
+            gap: 100,
             width: "max-content",
-            animation: "ticker 60s linear infinite",
             willChange: "transform",
           }}
-          onMouseEnter={e => (e.currentTarget.style.animationPlayState = "paused")}
-          onMouseLeave={e => (e.currentTarget.style.animationPlayState = "running")}
+          onMouseEnter={() => gsap.to(tickerRef.current, { opacity: 0.8 })}
+          onMouseLeave={() => gsap.to(tickerRef.current, { opacity: 1 })}
         >
           {STREAM.map((m, i) => (
             <div
@@ -64,39 +102,34 @@ export function LogoTicker() {
                 display: "flex",
                 alignItems: "center",
                 gap: 40,
-                opacity: 0.6,
-                filter: "none",
+                opacity: 0.5,
                 transition: "all 0.4s ease",
                 cursor: "default",
                 flexShrink: 0,
               }}
               onMouseEnter={e => {
                 (e.currentTarget as HTMLElement).style.opacity = "1";
-                (e.currentTarget as HTMLElement).style.transform = "scale(1.05)";
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.opacity = "0.6";
-                (e.currentTarget as HTMLElement).style.transform = "scale(1)";
+                (e.currentTarget as HTMLElement).style.opacity = "0.5";
               }}
             >
               <img
                 src={m.logo}
                 alt={m.name}
                 style={{
-                  height: 40,
+                  height: 32,
                   width: "auto",
-                  maxWidth: 160,
+                  maxWidth: 140,
                   objectFit: "contain",
-                  filter: m.invert ? "invert(1) brightness(1.5)" : "none",
+                  filter: m.invert ? "invert(1) grayscale(1) brightness(2)" : "grayscale(1) brightness(1.5)",
                 }}
               />
               
-              {/* Separator Dot */}
               <div style={{
-                width: 4,
-                height: 4,
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.15)",
+                width: 1,
+                height: 20,
+                background: "rgba(255,255,255,0.05)",
               }} />
             </div>
           ))}
@@ -108,16 +141,9 @@ export function LogoTicker() {
           inset: 0,
           pointerEvents: "none",
           zIndex: 2,
-          background: "linear-gradient(90deg, #0A0D12 0%, transparent 15%, transparent 85%, #0A0D12 100%)",
+          background: "linear-gradient(90deg, #0A0D12 0%, transparent 20%, transparent 80%, #0A0D12 100%)",
         }} />
       </div>
-
-      <style>{`
-        @keyframes ticker {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-33.33%); }
-        }
-      `}</style>
     </section>
   );
 }

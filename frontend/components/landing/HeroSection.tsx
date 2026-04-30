@@ -264,17 +264,19 @@ export function HeroSection() {
       >
         {/* Headline */}
         <h1 className="display-h1" style={{
-          fontSize: "clamp(54px, 9vw, 104px)",
+          fontSize: "clamp(54px, 8vw, 96px)",
           color: "#F8F9FA",
           margin: 0,
-          textShadow: "0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(0,255,170,0.1)",
+          textAlign: "center",
+          textShadow: "0 10px 40px rgba(0,0,0,0.9)",
+          letterSpacing: "-0.06em",
         }}>
           <div className="reveal-container">
-            <span className="reveal-text">Free for individuals.</span>
+            <span className="reveal-text">Infrastructure for the</span>
           </div>
           <br />
           <div className="reveal-container">
-            <span className="reveal-text shimmer-text">Powerful for teams.</span>
+            <span className="reveal-text shimmer-text" style={{ fontStyle: "italic", paddingRight: "0.1em" }}>next intelligence.</span>
           </div>
         </h1>
 
@@ -282,13 +284,14 @@ export function HeroSection() {
         <div className="reveal-container">
           <p className="reveal-text" style={{
             fontFamily: "var(--font-body)",
-            fontSize: "clamp(17px, 1.7vw, 20px)",
-            color: "rgba(248,249,250,0.6)",
-            maxWidth: 620, lineHeight: 1.6,
-            fontWeight: 400, margin: "10px 0 0",
+            fontSize: "clamp(16px, 1.6vw, 18px)",
+            color: "rgba(248,249,250,0.5)",
+            maxWidth: 580, lineHeight: 1.7,
+            fontWeight: 400, margin: "20px auto 0",
+            textAlign: "center",
           }}>
-            The world&apos;s most advanced AI collaboration platform.
-            Bring your own keys. Own your data. Collaborate at lightspeed.
+            Luminescent is a high-performance orchestration layer for team-based AI. 
+            Bring your own models, own your context, and engineer at the speed of thought.
           </p>
         </div>
 

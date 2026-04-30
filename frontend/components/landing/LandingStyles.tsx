@@ -37,13 +37,29 @@ export const LandingStyles = () => (
       font-family: var(--font-body);
       background: var(--landing-bg);
       background-image: 
-        radial-gradient(circle at 50% 0%, rgba(0, 255, 170, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 0% 100%, rgba(123, 97, 255, 0.05) 0%, transparent 50%);
+        radial-gradient(circle at 50% 0%, rgba(0, 255, 170, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 100% 100%, rgba(123, 97, 255, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 0% 50%, rgba(0, 208, 255, 0.05) 0%, transparent 40%);
       background-attachment: fixed;
       color: var(--landing-white);
       margin: 0;
       overflow-x: hidden;
       transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ─── Organic Noise Overlay ─── */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.25;
+      z-index: 9999;
+      pointer-events: none;
+      background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+      filter: contrast(120%) brightness(100%);
     }
 
 
@@ -148,15 +164,15 @@ export const LandingStyles = () => (
 
     /* ─── Shimmer & Glow Utils ─── */
     .shimmer-text {
-      background: linear-gradient(90deg, #F8F9FA 0%, #00FFAA 30%, #00D0FF 55%, #7B61FF 75%, #F8F9FA 100%);
-      background-size: 250% auto;
+      background: linear-gradient(90deg, #F8F9FA 0%, var(--landing-green) 35%, var(--landing-cyan) 65%, #F8F9FA 100%);
+      background-size: 200% auto;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: shimmer 6s linear infinite;
+      animation: shimmer 8s linear infinite;
     }
 
     .glow-text {
-      text-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
+      text-shadow: 0 0 15px rgba(0, 255, 170, 0.25); /* Dials back glow for legibility */
     }
 
     .sparkle-slow {
@@ -164,12 +180,20 @@ export const LandingStyles = () => (
     }
 
 
-    /* ─── Grid Background ─── */
+    /* ─── Sophisticated Grid ─── */
     .grid-bg {
       background-image: 
-        linear-gradient(rgba(0,255,170,.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,170,.04) 1px, transparent 1px);
-      background-size: 60px 60px;
+        linear-gradient(rgba(0,255,170,.02) 1.5px, transparent 1.5px),
+        linear-gradient(90deg, rgba(0,255,170,.02) 1.5px, transparent 1.5px);
+      background-size: 80px 80px;
+      mask-image: radial-gradient(circle at center, black, transparent 85%);
+    }
+
+    .grid-bg-fine {
+      background-image: 
+        linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px);
+      background-size: 16px 16px;
     }
 
     /* ─── Bento Grid & Cards ─── */
@@ -206,46 +230,50 @@ export const LandingStyles = () => (
       opacity: 0.6 !important;
     }
 
-    /* ─── nvg8 "Launch" Button Style ─── */
+    /* ─── Premium Buttons ─── */
     .btn-launch {
       display: inline-flex;
       align-items: center;
       gap: 12px;
       padding: 10px 24px;
-      background: linear-gradient(135deg, var(--landing-green) 0%, var(--landing-cyan) 100%);
+      background: linear-gradient(135deg, #00FFAA 0%, #00D0FF 50%, #00FFAA 100%);
+      background-size: 200% 100%;
       color: #000;
       font-family: var(--font-header);
       font-weight: 700;
       border-radius: 100px;
       text-decoration: none;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      font-size: 13px;
-      box-shadow: 0 4px 15px rgba(0,255,170,0.2);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      font-size: 12px;
+      box-shadow: 0 4px 20px rgba(0,255,170,0.15);
     }
 
     .btn-launch:hover {
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 8px 25px rgba(0,255,170,0.4);
+      background-position: 100% center;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0,255,170,0.3);
     }
 
     .btn-primary {
       display: inline-flex;
       align-items: center;
       gap: 12px;
-      padding: 16px 36px;
-      background: linear-gradient(135deg, var(--landing-green) 0%, var(--landing-cyan) 100%);
+      padding: 18px 40px;
+      background: linear-gradient(135deg, #00FFAA 0%, #00D0FF 50%, #00FFAA 100%);
+      background-size: 200% 100%;
       color: #000;
       font-family: var(--font-header);
       font-weight: 700;
-      border-radius: 14px;
+      border-radius: 12px;
       text-decoration: none;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 10px 30px rgba(0,255,170,0.2);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 10px 40px rgba(0,255,170,0.2);
     }
 
     .btn-primary:hover {
+      background-position: 100% center;
       transform: translateY(-4px);
-      box-shadow: 0 20px 50px rgba(0,255,170,0.4);
+      box-shadow: 0 20px 60px rgba(0,255,170,0.4);
     }
 
     .btn-ghost {

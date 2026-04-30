@@ -81,17 +81,16 @@ export function PricingSection() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Header reveal
       if (headRef.current) {
         const reveals = headRef.current.querySelectorAll(".reveal-text");
         gsap.fromTo(reveals, 
-          { y: "100%", opacity: 0 },
+          { y: 30, opacity: 0 },
           {
-            y: "0%",
+            y: 0,
             opacity: 1,
             duration: 1.2,
             stagger: 0.1,
-            ease: "power4.out",
+            ease: "expo.out",
             scrollTrigger: {
               trigger: headRef.current,
               start: "top 85%",
@@ -100,22 +99,20 @@ export function PricingSection() {
         );
       }
 
-      // Card cascade
       cardsRef.current.forEach((card, i) => {
         if (!card) return;
         gsap.fromTo(card, 
-          { y: 40, opacity: 0, scale: 0.95 },
+          { y: 60, opacity: 0, scale: 0.98 },
           {
             y: 0,
             opacity: 1,
             scale: 1,
-            duration: 1.2,
+            duration: 1.5,
             delay: i * 0.1,
             ease: "expo.out",
-            clearProps: "transform",
             scrollTrigger: {
               trigger: card,
-              start: "top 82%",
+              start: "top 85%",
             },
           }
         );
@@ -132,118 +129,102 @@ export function PricingSection() {
       className="scrolly-section"
       data-bg="#0A0D12"
       data-text="#FFFFFF"
-      style={{ padding: "140px 24px", position: "relative", background: "transparent" }}
+      style={{ padding: "160px 24px", position: "relative" }}
     >
       <div className="grid-bg" style={{ position: "absolute", inset: 0, zIndex: 0, opacity: 0.1 }} />
-      
-      <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 1 }}>
+      <div className="grid-bg-fine" style={{ position: "absolute", inset: 0, zIndex: 0, opacity: 0.05 }} />
+
+      <div style={{ maxWidth: 1300, margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* Header */}
-        <div ref={headRef} style={{ textAlign: "center", marginBottom: 80 }}>
-          <div className="mono-label reveal-text" style={{ marginBottom: 16, display: "inline-block", color: "var(--landing-green)" }}>
-            04 → PRICING
+        <div ref={headRef} style={{ marginBottom: 80, display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 40 }}>
+          <div style={{ maxWidth: 540 }}>
+            <div className="mono-label reveal-text" style={{ color: "var(--landing-green)", marginBottom: 20 }}>
+              04 → PROTOCOL ECONOMICS
+            </div>
+            <h2 className="display-h1 reveal-text" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 0 }}>
+              Scalable power. <span className="shimmer-text">Predictable cost.</span>
+            </h2>
           </div>
-          <h2 className="display-h1 glow-text reveal-text" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24, letterSpacing: "-0.03em" }}>
-            Flat team pricing. <span className="shimmer-text">No surprises.</span>
-          </h2>
-          <p className="reveal-text" style={{ 
-            fontFamily: "var(--font-body)", 
-            color: "var(--landing-muted)", 
-            maxWidth: 500, 
-            margin: "0 auto",
-            fontSize: 18,
-            lineHeight: 1.6
-          }}>
-            One subscription for your entire organization. 
-            Bring your own keys, own your costs.
-          </p>
+          <div className="reveal-text" style={{ display: "flex", background: "rgba(255,255,255,0.03)", padding: 6, borderRadius: 100, border: "1px solid rgba(255,255,255,0.06)" }}>
+            <button style={{ padding: "10px 24px", borderRadius: 100, border: "none", background: "var(--landing-green)", color: "#000", fontWeight: 600, fontSize: 13 }}>Monthly</button>
+            <button style={{ padding: "10px 24px", borderRadius: 100, border: "none", background: "transparent", color: "rgba(255,255,255,0.4)", fontWeight: 600, fontSize: 13 }}>Yearly (-20%)</button>
+          </div>
         </div>
 
-        {/* Pricing Cards Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: 24,
-            alignItems: "stretch",
-          }}
-        >
-          {PLANS.map((plan, i) => (
-            <div
-              key={plan.name}
-              ref={(el) => { cardsRef.current[i] = el; }}
-              className="cyber-card"
-              style={{
-                padding: "48px 32px",
-                display: "flex",
-                flexDirection: "column",
-                border: plan.highlight ? "1px solid rgba(0,255,170,0.2)" : "1px solid rgba(255,255,255,0.06)",
-                background: plan.highlight ? "rgba(0,255,170,0.03)" : "rgba(255,255,255,0.02)",
-                backdropFilter: "blur(12px)",
-                borderRadius: 24,
-                position: "relative",
-                transition: "all 0.4s ease",
-              }}
-            >
-              {plan.highlight && (
-                <div style={{
-                  position: "absolute", top: 16, right: 16,
-                  background: "rgba(0,255,170,0.1)",
-                  color: "#00FFAA",
-                  padding: "4px 12px",
-                  borderRadius: 100,
-                  fontSize: 10,
-                  fontFamily: "var(--font-mono)",
-                  fontWeight: 700,
-                }}>
-                  MOST POPULAR
-                </div>
-              )}
-
-              <div className="mono-label" style={{ color: plan.accent, marginBottom: 20, fontSize: 10 }}>
-                {plan.name.toUpperCase()}
-              </div>
-
-              <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
-                <span style={{ fontFamily: "var(--font-display)", fontSize: 48, fontWeight: 700, color: "#FFF" }}>{plan.price}</span>
-                <span style={{ fontSize: 14, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-mono)" }}>{plan.period}</span>
-              </div>
-
-              <p style={{ fontSize: 14, color: "var(--landing-muted)", lineHeight: 1.6, marginBottom: 32 }}>
-                {plan.desc}
-              </p>
-
-              <div style={{ height: 1, background: "rgba(255,255,255,0.05)", marginBottom: 32 }} />
-
-              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px", flex: 1 }}>
-                {plan.features.map((f) => (
-                  <li key={f} style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16, fontSize: 14, color: "rgba(255,255,255,0.6)" }}>
-                    <Check size={16} color={plan.accent} />
-                    <span>{f}</span>
-                  </li>
+        {/* Pricing Architecture */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 24 }}>
+          {/* Individual Plan (Aside) */}
+          <div 
+            ref={(el) => { cardsRef.current[0] = el; }}
+            style={{ gridColumn: "span 3" }}
+          >
+            <div className="cyber-card" style={{ height: "100%", padding: "40px", borderStyle: "dashed" }}>
+              <div className="mono-label" style={{ opacity: 0.4, marginBottom: 32 }}>CORE_NODE // v1.0</div>
+              <h3 style={{ fontFamily: "var(--font-header)", fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Individual</h3>
+              <div style={{ fontSize: 40, fontWeight: 800, marginBottom: 24 }}>Free</div>
+              <p style={{ fontSize: 14, color: "var(--landing-muted)", marginBottom: 40, lineHeight: 1.6 }}>The baseline protocol. For individual engineers owning their own intelligence stack.</p>
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px", display: "flex", flexDirection: "column", gap: 16 }}>
+                {["Full BYOK Access", "Local Chat History", "All 40+ Models"].map(f => (
+                  <li key={f} style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", display: "flex", gap: 10 }}><Check size={14} color="var(--landing-green)" /> {f}</li>
                 ))}
               </ul>
-
-              <Link 
-                href="/register" 
-                className={plan.highlight ? "btn-primary" : "btn-ghost"}
-                style={{ 
-                  width: "100%", 
-                  justifyContent: "center",
-                  borderRadius: 12,
-                  padding: "14px",
-                  fontWeight: 600,
-                  fontSize: 14
-                }}
-              >
-                {plan.price === "Free" ? "Start Free" : "Get Started"}
-              </Link>
+              <Link href="/register" className="btn-ghost" style={{ width: "100%", justifyContent: "center", fontSize: 13 }}>Initialize Solo</Link>
             </div>
-          ))}
+          </div>
+
+          {/* Team Plans (Primary) */}
+          <div style={{ gridColumn: "span 9", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+            {PLANS.slice(1).map((plan, i) => (
+              <div 
+                key={plan.name}
+                ref={(el) => { cardsRef.current[i+1] = el; }}
+                className="cyber-card glow-card"
+                style={{ 
+                  padding: "48px 40px",
+                  background: plan.highlight ? "rgba(255,255,255,0.03)" : "rgba(10,13,18,0.4)",
+                  borderColor: plan.highlight ? "rgba(0,255,170,0.2)" : "rgba(255,255,255,0.05)",
+                  transform: plan.highlight ? "scale(1.02)" : "none",
+                  zIndex: plan.highlight ? 2 : 1,
+                } as any}
+              >
+                {plan.highlight && (
+                   <div style={{ position: "absolute", top: 24, right: 24 }}><Star size={16} color="var(--landing-green)" fill="var(--landing-green)" /></div>
+                )}
+                <div className="mono-label" style={{ color: plan.accent, marginBottom: 24 }}>L-NODE // {plan.name.toUpperCase()}</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
+                  <span style={{ fontSize: 44, fontWeight: 800 }}>{plan.price}</span>
+                  <span style={{ fontSize: 14, opacity: 0.3 }}>/mo</span>
+                </div>
+                <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", marginBottom: 40, minHeight: 44 }}>{plan.desc}</p>
+                
+                <div style={{ height: 1, background: "rgba(255,255,255,0.05)", marginBottom: 32 }} />
+                
+                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px", display: "flex", flexDirection: "column", gap: 18 }}>
+                  {plan.features.map(f => (
+                    <li key={f} style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", display: "flex", gap: 12 }}>
+                      <Check size={16} color={plan.accent} style={{ flexShrink: 0 }} /> 
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <Link 
+                  href="/register" 
+                  className={plan.highlight ? "btn-primary" : "btn-ghost"}
+                  style={{ width: "100%", justifyContent: "center" }}
+                >
+                  Deploy Node
+                </Link>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Footer note */}
-        <div className="mono-label" style={{ textAlign: "center", marginTop: 48, opacity: 0.3, fontSize: 10 }}>
-          ALL PLANS INCLUDE BYOK // NO PER-SEAT PRICING // CANCEL ANYTIME
+        {/* Technical Footer */}
+        <div style={{ marginTop: 60, display: "flex", justifyContent: "center", gap: 40, opacity: 0.2 }}>
+           {["ISO 27001", "SOC2 TYPE II", "GDPR COMPLIANT", "256-BIT ENCRYPTION"].map(s => (
+             <div key={s} className="mono-label" style={{ fontSize: 8 }}>{s}</div>
+           ))}
         </div>
       </div>
     </section>

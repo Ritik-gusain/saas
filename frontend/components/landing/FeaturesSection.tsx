@@ -111,67 +111,113 @@ export function FeaturesSection() {
           </p>
         </div>
 
-        {/* Features Grid */}
+        {/* Bento Grid */}
         <div 
           ref={gridRef}
           style={{ 
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gridTemplateColumns: "repeat(6, 1fr)",
+            gridAutoRows: "minmax(240px, auto)",
             gap: "24px"
           }}
+          onMouseMove={(e) => {
+            const cards = gridRef.current?.querySelectorAll(".feature-card");
+            cards?.forEach((card: any) => {
+              const rect = card.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              card.style.setProperty("--x", `${x}px`);
+              card.style.setProperty("--y", `${y}px`);
+            });
+          }}
         >
-          {FEATURES.map((f, i) => (
-            <div 
-              key={i}
-              className="feature-card"
-              style={{
-                padding: "40px 32px",
-                borderRadius: 24,
-                border: "1px solid rgba(255, 255, 255, 0.06)",
-                background: "rgba(255, 255, 255, 0.02)",
-                backdropFilter: "blur(12px)",
-                transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
-                display: "flex",
-                flexDirection: "column",
-                gap: 20,
-                cursor: "default",
-              }}
-            >
-              <div style={{
-                width: 52,
-                height: 52,
-                borderRadius: 16,
-                background: "rgba(255,255,255,0.03)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "var(--landing-green)",
-                border: "1px solid rgba(255,255,255,0.05)",
-              }}>
-                <f.icon size={24} strokeWidth={1.5} />
-              </div>
-              
-              <div>
-                <h3 style={{ 
-                  fontFamily: "var(--font-display)", 
-                  fontSize: 22, 
-                  fontWeight: 700, 
-                  color: "#FFF",
-                  marginBottom: 12,
-                  letterSpacing: "-0.01em"
+          {FEATURES.map((f, i) => {
+            // Asymmetric spans for bento feel
+            const spans = [
+              "span 3", "span 3", // Row 1
+              "span 2", "span 4", // Row 2
+              "span 4", "span 2", // Row 3
+            ][i] || "span 3";
+
+            return (
+              <div 
+                key={i}
+                className="feature-card glow-card"
+                style={{
+                  gridColumn: spans,
+                  padding: "48px",
+                  borderRadius: 32,
+                  border: "1px solid rgba(255, 255, 255, 0.04)",
+                  background: "rgba(15, 20, 28, 0.3)",
+                  backdropFilter: "blur(20px)",
+                  transition: "all 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 32,
+                  position: "relative",
+                  overflow: "hidden",
+                } as any}
+              >
+                {/* Local Spot Light */}
+                <div style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(0, 255, 170, 0.08) 0%, transparent 50%)",
+                  pointerEvents: "none",
+                  zIndex: 0,
+                }} />
+
+                <div style={{ position: "relative", zIndex: 1 }}>
+                  <div style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 14,
+                    background: "rgba(0,255,170,0.05)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "var(--landing-green)",
+                    border: "1px solid rgba(0,255,170,0.1)",
+                    marginBottom: 32,
+                  }}>
+                    <f.icon size={22} strokeWidth={1.5} />
+                  </div>
+                  
+                  <h3 style={{ 
+                    fontFamily: "var(--font-display)", 
+                    fontSize: 26, 
+                    fontWeight: 700, 
+                    color: "#FFF",
+                    marginBottom: 16,
+                    letterSpacing: "-0.02em"
+                  }}>
+                    {f.title}
+                  </h3>
+                  <p style={{ 
+                    color: "rgba(248,249,250,0.5)", 
+                    lineHeight: 1.7,
+                    fontSize: 16,
+                    maxWidth: 380,
+                  }}>
+                    {f.desc}
+                  </p>
+                </div>
+
+                {/* Subtle Detail */}
+                <div style={{ 
+                  marginTop: "auto", 
+                  paddingTop: 24, 
+                  borderTop: "1px solid rgba(255,255,255,0.03)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center"
                 }}>
-                  {f.title}
-                </h3>
-                <p style={{ 
-                  color: "var(--landing-muted)", 
-                  lineHeight: 1.6,
-                  fontSize: 15,
-                }}>
-                  {f.desc}
-                </p>
+                   <div className="mono-label" style={{ fontSize: 8, opacity: 0.3 }}>{f.title.toUpperCase()} // SYSTEM_READY</div>
+                   <div style={{ width: 40, height: 2, background: "rgba(0,255,170,0.1)", borderRadius: 1 }} />
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
