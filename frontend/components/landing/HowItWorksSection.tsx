@@ -120,8 +120,8 @@ export function HowItWorksSection() {
     <section
       id="how-it-works"
       ref={sectionRef}
-      data-bg="#FF6B00"
-      data-text="#000000"
+      data-bg="#0D0D0D"
+      data-text="#FFFFFF"
       style={{
         padding: "160px 0",
         position: "relative",
@@ -150,7 +150,7 @@ export function HowItWorksSection() {
             </div>
           </h2>
           <div className="reveal-container">
-            <p className="reveal-text" style={{ fontSize: 18, color: "rgba(0,0,0,0.7)", maxWidth: 600, margin: "0 auto", lineHeight: 1.6 }}>
+            <p className="reveal-text" style={{ fontSize: 18, color: "var(--landing-muted)", maxWidth: 600, margin: "0 auto", lineHeight: 1.6 }}>
               The streamlined architecture designed for rapid deployment and seamless team integration.
             </p>
           </div>

@@ -130,8 +130,8 @@ export function PricingSection() {
       id="pricing"
       ref={sectionRef}
       className="scrolly-section"
-      data-bg="var(--nvg-beige)"
-      data-text="black"
+      data-bg="#0A0D12"
+      data-text="#FFFFFF"
       style={{ padding: "140px 24px", position: "relative" }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -145,7 +145,7 @@ export function PricingSection() {
           </h2>
           <p className="reveal-text" style={{ 
             fontFamily: "var(--font-body)", 
-            color: "rgba(0,0,0,0.5)", 
+            color: "var(--landing-muted)", 
             maxWidth: 500, 
             margin: "0 auto",
             fontSize: 18,
