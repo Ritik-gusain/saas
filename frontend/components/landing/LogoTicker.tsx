@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -28,29 +28,30 @@ const STREAM = [...MODELS, ...MODELS, ...MODELS];
 export function LogoTicker() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const tickerRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!tickerRef.current) return;
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!tickerRef.current || !mounted) return;
     
-    // Smooth GSAP animation for organic control
+    // Stabilized GSAP animation - linear and constant for "stability"
     const loop = gsap.to(tickerRef.current, {
       xPercent: -33.33,
-      duration: 50,
+      duration: 40, // Slightly faster for energy but steady
       ease: "none",
       repeat: -1,
+      force3D: true,
     });
 
-    // Suble speed variation for "human" feel
-    gsap.to(loop, {
-      timeScale: 1.1,
-      duration: 3,
-      repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut"
-    });
+    return () => {
+      loop.kill();
+    };
+  }, [mounted]);
 
-    return () => loop.kill();
-  }, []);
+  if (!mounted) return <div style={{ height: 260 }} />; // Maintain height during hydration
 
   return (
     <section
@@ -61,7 +62,7 @@ export function LogoTicker() {
       style={{
         position: "relative",
         overflow: "hidden",
-        padding: "100px 0",
+        padding: "80px 0",
         borderTop: "1px solid rgba(255,255,255,0.03)",
         borderBottom: "1px solid rgba(255,255,255,0.03)",
         background: "transparent",
@@ -76,7 +77,7 @@ export function LogoTicker() {
             ● STATUS: OPERATIONAL
           </div>
           <div className="mono-label" style={{ opacity: 0.3, fontSize: 10 }}>
-            THROUGHPUT: 12.4K TOKENS/S
+            CORE_STABILITY: 99.9%
           </div>
         </div>
       </div>
@@ -88,12 +89,9 @@ export function LogoTicker() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 100,
             width: "max-content",
             willChange: "transform",
           }}
-          onMouseEnter={() => gsap.to(tickerRef.current, { opacity: 0.8 })}
-          onMouseLeave={() => gsap.to(tickerRef.current, { opacity: 1 })}
         >
           {STREAM.map((m, i) => (
             <div
@@ -101,47 +99,49 @@ export function LogoTicker() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 40,
-                opacity: 0.5,
-                transition: "all 0.4s ease",
+                justifyContent: "center",
+                width: 220, // Fixed width for absolute stability
+                opacity: 0.7, // Increased visibility
+                transition: "opacity 0.4s ease",
                 cursor: "default",
                 flexShrink: 0,
+                padding: "0 20px",
               }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.opacity = "1";
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.opacity = "0.5";
-              }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+              onMouseLeave={e => (e.currentTarget.style.opacity = "0.7")}
             >
               <img
                 src={m.logo}
                 alt={m.name}
                 style={{
-                  height: 32,
+                  height: 34,
                   width: "auto",
-                  maxWidth: 140,
+                  maxWidth: 160,
                   objectFit: "contain",
-                  filter: m.invert ? "invert(1) grayscale(1) brightness(2)" : "grayscale(1) brightness(1.5)",
+                  // Reverting to more color but professional
+                  filter: m.invert ? "invert(1) brightness(1.5)" : "brightness(1.2)",
                 }}
               />
               
+              {/* Discrete separator inside the fixed container to maintain rhythm */}
               <div style={{
+                position: "absolute",
+                right: 0,
                 width: 1,
-                height: 20,
-                background: "rgba(255,255,255,0.05)",
+                height: 24,
+                background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.1), transparent)",
               }} />
             </div>
           ))}
         </div>
 
-        {/* Cinematic Edge Fades */}
+        {/* Cinematic Edge Fades - slightly sharper for focus */}
         <div style={{
           position: "absolute",
           inset: 0,
           pointerEvents: "none",
           zIndex: 2,
-          background: "linear-gradient(90deg, #0A0D12 0%, transparent 20%, transparent 80%, #0A0D12 100%)",
+          background: "linear-gradient(90deg, #0A0D12 0%, transparent 15%, transparent 85%, #0A0D12 100%)",
         }} />
       </div>
     </section>
