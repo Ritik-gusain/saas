@@ -51,14 +51,17 @@ export function HowItWorksSection() {
     const ctx = gsap.context(() => {
       // Header reveal
       if (headRef.current) {
-        gsap.fromTo(headRef.current.children, 
-          { y: 30, opacity: 0 },
+        const reveals = headRef.current.querySelectorAll(".reveal-text");
+        gsap.fromTo(reveals, 
+          { y: "100%", opacity: 0, rotateX: 20, scale: 0.95 },
           {
-            y: 0,
+            y: "0%",
             opacity: 1,
-            duration: 1,
-            stagger: 0.15,
-            ease: "power4.out",
+            rotateX: 0,
+            scale: 1,
+            duration: 1.5,
+            stagger: 0.12,
+            ease: "expo.out",
             scrollTrigger: {
               trigger: headRef.current,
               start: "top 80%",
@@ -117,9 +120,10 @@ export function HowItWorksSection() {
     <section
       id="how-it-works"
       ref={sectionRef}
+      data-bg="#FF6B00"
+      data-text="#000000"
       style={{
         padding: "160px 0",
-        background: "var(--landing-bg)",
         position: "relative",
         overflow: "hidden",
       }}
@@ -130,13 +134,26 @@ export function HowItWorksSection() {
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px", position: "relative" }}>
         {/* Header */}
         <div ref={headRef} style={{ textAlign: "center", marginBottom: 100 }}>
+          <div className="reveal-container">
+            <div className="step-number reveal-text" style={{ margin: "0 auto 32px", maxWidth: 400 }}>
+              03 → HOW IT WORKS
+            </div>
+          </div>
 
           <h2 className="display-h1" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24 }}>
-            Deploy in <span className="shimmer-text">Seconds.</span>
+            <div className="reveal-container">
+              <span className="reveal-text">Deploy in</span>
+            </div>
+            <br />
+            <div className="reveal-container">
+              <span className="reveal-text shimmer-text" style={{ textShadow: "0 0 40px rgba(255,255,255,0.4)" }}>Seconds.</span>
+            </div>
           </h2>
-          <p style={{ fontSize: 18, color: "var(--landing-muted)", maxWidth: 600, margin: "0 auto", lineHeight: 1.6 }}>
-            The streamlined architecture designed for rapid deployment and seamless team integration.
-          </p>
+          <div className="reveal-container">
+            <p className="reveal-text" style={{ fontSize: 18, color: "rgba(0,0,0,0.7)", maxWidth: 600, margin: "0 auto", lineHeight: 1.6 }}>
+              The streamlined architecture designed for rapid deployment and seamless team integration.
+            </p>
+          </div>
         </div>
 
         {/* Progress Line */}

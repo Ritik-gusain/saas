@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { LandingStyles } from "./LandingStyles";
 import { Navbar } from "./Navbar";
 import { HeroSection } from "./HeroSection";
@@ -11,24 +12,67 @@ import { PricingSection } from "./PricingSection";
 import { CTABanner } from "./CTABanner";
 import { Footer } from "./Footer";
 import { SmoothScroll } from "./SmoothScroll";
+import { SoundToggle } from "./SoundToggle";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export default function LandingPage() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const ctx = gsap.context(() => {
+      // ── Background Color Shifts ──
+      // Target elements with .scrolly-section class
+      const sections = containerRef.current?.querySelectorAll(".scrolly-section");
+      
+      sections?.forEach((section) => {
+        const bg = section.getAttribute("data-bg") || "#0D0D0D";
+        const color = section.getAttribute("data-text") || "#FFFFFF";
+        
+        ScrollTrigger.create({
+          trigger: section,
+          start: "top 60%",
+          end: "bottom 60%",
+          onEnter: () => {
+            gsap.to(document.body, { backgroundColor: bg, color: color, duration: 1.2, ease: "power2.inOut" });
+          },
+          onEnterBack: () => {
+            gsap.to(document.body, { backgroundColor: bg, color: color, duration: 1.2, ease: "power2.inOut" });
+          }
+        });
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  if (!mounted) return null;
+
   return (
     <>
       <SmoothScroll />
       <LandingStyles />
-      <div style={{ minHeight: "100vh", background: "#0A0D12", overflowX: "hidden" }}>
+      <SoundToggle />
+      <div 
+        ref={containerRef}
+        style={{ minHeight: "100vh", overflowX: "hidden" }}
+      >
         <Navbar />
         <HeroSection />
-        <div style={{ position: "relative", zIndex: 20, background: "#0A0D12" }}>
-          <LogoTicker />
-          <LuminescentConsole />
-          <FeaturesSection />
-          <HowItWorksSection />
-          <PricingSection />
-          <CTABanner />
-          <Footer />
-        </div>
+        <LogoTicker />
+        <LuminescentConsole />
+        <FeaturesSection />
+        <HowItWorksSection />
+        <PricingSection />
+        <CTABanner />
+        <Footer />
       </div>
     </>
   );

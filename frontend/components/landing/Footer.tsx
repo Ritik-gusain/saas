@@ -67,8 +67,10 @@ const LINKS = {
 export function Footer() {
   return (
     <footer
+      className="scrolly-section"
+      data-bg="#0D0D0D"
+      data-text="white"
       style={{
-        background: "var(--landing-bg)",
         borderTop: "1px solid rgba(255,255,255,0.05)",
         position: "relative",
         overflow: "hidden",

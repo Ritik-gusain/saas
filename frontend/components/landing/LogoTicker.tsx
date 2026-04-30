@@ -51,8 +51,11 @@ export function LogoTicker() {
   }, []);
 
   return (
-    <div
+    <section
       ref={sectionRef}
+      className="scrolly-section"
+      data-bg="#0D0D0D"
+      data-text="#FFFFFF"
       style={{
         position: "relative",
         overflow: "hidden",
@@ -151,6 +154,6 @@ export function LogoTicker() {
           100% { transform: translateX(-33.33%); }
         }
       `}</style>
-    </div>
+    </section>
   );
 }

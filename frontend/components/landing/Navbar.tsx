@@ -104,12 +104,8 @@ export function Navbar() {
           }} onMouseEnter={e => e.currentTarget.style.color = "#FFF"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255, 255, 255, 0.5)"}>
             Login
           </Link>
-          <Link href="/register" className="btn-primary" style={{ 
-            padding: scrolled ? "10px 24px" : "12px 28px", 
-            fontSize: 13,
-            transition: "all 0.4s ease"
-          }}>
-            Join Waitlist <ArrowRight size={14} style={{ marginLeft: 6 }} />
+          <Link href="/register" className="btn-launch">
+            Launch Console <ArrowRight size={14} />
           </Link>
         </div>
 

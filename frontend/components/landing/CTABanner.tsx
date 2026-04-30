@@ -38,14 +38,17 @@ export function CTABanner() {
 
       // Content stagger
       if (contentRef.current) {
-        gsap.fromTo(contentRef.current.children, 
-          { y: 30, opacity: 0 },
+        const reveals = contentRef.current.querySelectorAll(".reveal-text");
+        gsap.fromTo(reveals, 
+          { y: "100%", opacity: 0, rotateX: 20, scale: 0.95 },
           {
-            y: 0,
+            y: "0%",
             opacity: 1,
-            duration: 1,
-            stagger: 0.15,
-            ease: "power4.out",
+            rotateX: 0,
+            scale: 1,
+            duration: 1.5,
+            stagger: 0.12,
+            ease: "expo.out",
             scrollTrigger: {
               trigger: cardRef.current,
               start: "top 80%",
@@ -86,9 +89,11 @@ export function CTABanner() {
   return (
     <section
       ref={sectionRef}
+      className="scrolly-section"
+      data-bg="var(--nvg-blue)"
+      data-text="white"
       style={{
         padding: "120px 40px",
-        background: "var(--landing-bg)",
         position: "relative",
         overflow: "hidden",
       }}
@@ -120,21 +125,33 @@ export function CTABanner() {
         }} />
 
         <div ref={contentRef} style={{ position: "relative", zIndex: 2 }}>
-
+          <div className="reveal-container">
+            <div className="mono-label reveal-text" style={{ marginBottom: 24, display: "block" }}>
+              05 → GET STARTED
+            </div>
+          </div>
 
           <h2 className="display-h1" style={{ fontSize: "clamp(32px, 5vw, 72px)", marginBottom: 32 }}>
-            The future of team AI is <span className="shimmer-text">Luminescent.</span>
+            <div className="reveal-container">
+              <span className="reveal-text">The future of team AI is</span>
+            </div>
+            <br />
+            <div className="reveal-container">
+              <span className="reveal-text shimmer-text">Luminescent.</span>
+            </div>
           </h2>
 
-          <p style={{
-            fontSize: 19,
-            color: "var(--landing-muted)",
-            maxWidth: 500,
-            margin: "0 auto 48px",
-            lineHeight: 1.6
-          }}>
-            Join 14,000+ teams engineering the next generation of collaborative intelligence.
-          </p>
+          <div className="reveal-container">
+            <p className="reveal-text" style={{
+              fontSize: 19,
+              color: "rgba(255,255,255,0.6)",
+              maxWidth: 500,
+              margin: "0 auto 48px",
+              lineHeight: 1.6
+            }}>
+              Join 14,000+ teams engineering the next generation of collaborative intelligence.
+            </p>
+          </div>
 
           <div style={{ display: "flex", gap: 20, justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
             <Link 

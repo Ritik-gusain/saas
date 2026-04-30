@@ -17,7 +17,9 @@ export function LuminescentConsole() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const timeoutRefs: NodeJS.Timeout[] = [];
     let interval: NodeJS.Timeout;
+    
     const startSequence = () => {
       let current = 0;
       interval = setInterval(() => {
@@ -26,20 +28,24 @@ export function LuminescentConsole() {
           current++;
         } else {
           // Reset after a pause
-          setTimeout(() => {
+          const t = setTimeout(() => {
             setActiveStep(-1);
             current = 0;
           }, 3000);
+          timeoutRefs.push(t);
         }
       }, 1500);
     };
 
     startSequence();
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      timeoutRefs.forEach(t => clearTimeout(t));
+    };
   }, []);
 
   return (
-    <section style={{ padding: "80px 24px", position: "relative", zIndex: 10 }}>
+    <section className="scrolly-section" data-bg="#0D0D0D" data-text="#FFFFFF" style={{ padding: "80px 24px", position: "relative", zIndex: 10 }}>
       <div 
         ref={containerRef}
         className="cyber-card"

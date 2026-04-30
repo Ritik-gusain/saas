@@ -41,10 +41,19 @@ export function HeroSection() {
         }
 
         if (contentRef.current) {
+          const reveals = contentRef.current.querySelectorAll(".reveal-text");
           tl.fromTo(
-            Array.from(contentRef.current.children),
-            { y: 50, opacity: 0 },
-            { y: 0, opacity: 1, duration: 1.2, stagger: 0.15 },
+            reveals,
+            { y: "100%", opacity: 0, rotateX: 20, scale: 0.95 },
+            { 
+              y: "0%", 
+              opacity: 1, 
+              rotateX: 0, 
+              scale: 1, 
+              duration: 1.5, 
+              stagger: 0.12, 
+              ease: "expo.out" 
+            },
             "-=0.7"
           );
         }
@@ -101,6 +110,9 @@ export function HeroSection() {
   return (
     <section
       ref={sectionRef}
+      className="scrolly-section"
+      data-bg="#0D0D0D"
+      data-text="#FFFFFF"
       style={{
         position: "relative",
         minHeight: "100vh",
@@ -109,7 +121,6 @@ export function HeroSection() {
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
-        background: "#0A0D12",
         padding: "120px 24px 80px",
       }}
     >
@@ -184,9 +195,9 @@ export function HeroSection() {
 
 
       {/* ── Eyebrow badge ── */}
-      <div ref={badgeRef} style={{ position: "relative", zIndex: 10, marginBottom: 32 }}>
-        <div className="tag" style={{ backdropFilter: "blur(12px)", background: "rgba(0,255,170,0.08)" }}>
-          <Sparkles size={11} /> Now Supporting 40+ AI Models
+      <div ref={badgeRef} style={{ position: "relative", zIndex: 10, marginBottom: 12 }}>
+        <div className="step-number" style={{ width: "fit-content", minWidth: 400 }}>
+          01 → INTRODUCTION
         </div>
       </div>
 
@@ -207,30 +218,39 @@ export function HeroSection() {
           margin: 0,
           textShadow: "0 20px 50px rgba(0,0,0,0.5)",
         }}>
-          Free for individuals.<br />
-          <span className="shimmer-text">Powerful for teams.</span>
+          <div className="reveal-container">
+            <span className="reveal-text">Free for individuals.</span>
+          </div>
+          <br />
+          <div className="reveal-container">
+            <span className="reveal-text shimmer-text">Powerful for teams.</span>
+          </div>
         </h1>
 
         {/* Subheadline */}
-        <p style={{
-          fontFamily: "var(--font-body)",
-          fontSize: "clamp(17px, 1.7vw, 20px)",
-          color: "rgba(248,249,250,0.6)",
-          maxWidth: 620, lineHeight: 1.6,
-          fontWeight: 400, margin: "10px 0 0",
-        }}>
-          The world&apos;s most advanced AI collaboration platform.
-          Bring your own keys. Own your data. Collaborate at lightspeed.
-        </p>
+        <div className="reveal-container">
+          <p className="reveal-text" style={{
+            fontFamily: "var(--font-body)",
+            fontSize: "clamp(17px, 1.7vw, 20px)",
+            color: "rgba(248,249,250,0.6)",
+            maxWidth: 620, lineHeight: 1.6,
+            fontWeight: 400, margin: "10px 0 0",
+          }}>
+            The world&apos;s most advanced AI collaboration platform.
+            Bring your own keys. Own your data. Collaborate at lightspeed.
+          </p>
+        </div>
 
         {/* CTA buttons */}
-        <div style={{ display: "flex", gap: 20, flexWrap: "wrap", justifyContent: "center", marginTop: 15 }}>
-          <Link href="/register" className="btn-primary">
-            Get Started Free <ArrowRight size={20} />
-          </Link>
-          <a href="#features" className="btn-ghost">
-            <Zap size={16} /> Explore Features
-          </a>
+        <div className="reveal-container" style={{ marginTop: 15 }}>
+          <div className="reveal-text" style={{ display: "flex", gap: 20, flexWrap: "wrap", justifyContent: "center" }}>
+            <Link href="/register" className="btn-primary">
+              Get Started Free <ArrowRight size={20} />
+            </Link>
+            <a href="#features" className="btn-ghost">
+              <Zap size={16} /> Explore Features
+            </a>
+          </div>
         </div>
 
         {/* Stats strip */}

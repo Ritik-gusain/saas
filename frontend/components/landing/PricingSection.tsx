@@ -81,15 +81,16 @@ export function PricingSection() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Header animation
+      // Header reveal
       if (headRef.current) {
-        gsap.fromTo(headRef.current.children, 
-          { y: 30, opacity: 0 },
+        const reveals = headRef.current.querySelectorAll(".reveal-text");
+        gsap.fromTo(reveals, 
+          { y: "100%", opacity: 0 },
           {
-            y: 0,
+            y: "0%",
             opacity: 1,
-            duration: 1,
-            stagger: 0.15,
+            duration: 1.2,
+            stagger: 0.1,
             ease: "power4.out",
             scrollTrigger: {
               trigger: headRef.current,
@@ -128,18 +129,23 @@ export function PricingSection() {
     <section
       id="pricing"
       ref={sectionRef}
-      style={{ padding: "140px 24px", background: "#0A0D12", position: "relative" }}
+      className="scrolly-section"
+      data-bg="var(--nvg-beige)"
+      data-text="black"
+      style={{ padding: "140px 24px", position: "relative" }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Header */}
         <div ref={headRef} style={{ textAlign: "center", marginBottom: 80 }}>
-
-          <h2 className="display-h1" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24 }}>
+          <div className="mono-label reveal-text" style={{ marginBottom: 16, display: "block" }}>
+            04 → PRICING
+          </div>
+          <h2 className="display-h1 reveal-text" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24 }}>
             Flat team pricing. <span className="shimmer-text">No surprises.</span>
           </h2>
-          <p style={{ 
+          <p className="reveal-text" style={{ 
             fontFamily: "var(--font-body)", 
-            color: "rgba(255,255,255,0.4)", 
+            color: "rgba(0,0,0,0.5)", 
             maxWidth: 500, 
             margin: "0 auto",
             fontSize: 18,

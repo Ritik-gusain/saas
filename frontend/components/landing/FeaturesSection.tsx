@@ -63,14 +63,17 @@ export function FeaturesSection() {
     const ctx = gsap.context(() => {
       // Header animation
       if (headRef.current) {
-        gsap.fromTo(headRef.current.children, 
-          { y: 30, opacity: 0 },
+        const reveals = headRef.current.querySelectorAll(".reveal-text");
+        gsap.fromTo(reveals, 
+          { y: "100%", opacity: 0, rotateX: 20, scale: 0.95 },
           {
-            y: 0,
+            y: "0%",
             opacity: 1,
-            duration: 1,
-            stagger: 0.15,
-            ease: "power4.out",
+            rotateX: 0,
+            scale: 1,
+            duration: 1.5,
+            stagger: 0.12,
+            ease: "expo.out",
             scrollTrigger: {
               trigger: headRef.current,
               start: "top 85%",
@@ -107,26 +110,39 @@ export function FeaturesSection() {
     <section
       id="features"
       ref={sectionRef}
-      style={{ padding: "140px 24px", background: "#0A0D12", position: "relative" }}
+      data-bg="#F5F2EA"
+      data-text="#0A0D12"
+      style={{ padding: "140px 24px", position: "relative" }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Section Header */}
         <div ref={headRef} style={{ textAlign: "center", marginBottom: 80 }}>
+          <div className="step-number" style={{ margin: "0 auto 32px", maxWidth: 400 }}>
+            02 → FEATURES
+          </div>
 
           <h2 className="display-h1" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24 }}>
-            Built for teams that <span className="shimmer-text">move at lightspeed.</span>
+            <div className="reveal-container">
+              <span className="reveal-text">Built for teams that</span>
+            </div>
+            <br />
+            <div className="reveal-container">
+              <span className="reveal-text shimmer-text">move at lightspeed.</span>
+            </div>
           </h2>
-          <p style={{ 
-            fontFamily: "var(--font-body)", 
-            color: "rgba(255,255,255,0.4)", 
-            maxWidth: 600, 
-            margin: "0 auto",
-            fontSize: 18,
-            lineHeight: 1.6
-          }}>
-            Luminescent provides the infrastructure for high-performance AI collaboration.
-            No lag. No complexity. Just pure execution.
-          </p>
+          <div className="reveal-container">
+            <p className="reveal-text" style={{ 
+              fontFamily: "var(--font-body)", 
+              color: "rgba(0,0,0,0.5)", 
+              maxWidth: 600, 
+              margin: "0 auto",
+              fontSize: 18,
+              lineHeight: 1.6
+            }}>
+              Luminescent provides the infrastructure for high-performance AI collaboration.
+              No lag. No complexity. Just pure execution.
+            </p>
+          </div>
         </div>
 
         {/* Bento Grid */}

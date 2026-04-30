@@ -20,20 +20,16 @@ export function SmoothScroll() {
 
     lenis.on('scroll', ScrollTrigger.update);
 
-    gsap.ticker.add((time) => {
+    function update(time: number) {
       lenis.raf(time * 1000);
-    });
+    }
 
+    gsap.ticker.add(update);
     gsap.ticker.lagSmoothing(0);
 
     return () => {
       lenis.destroy();
-      // Remove ticker
-      // The current way gsap handles it is we can just use lenis.destroy()
-      // But it's safer to not have memory leak
-      gsap.ticker.remove((time) => {
-        lenis.raf(time * 1000);
-      });
+      gsap.ticker.remove(update);
     };
   }, []);
 

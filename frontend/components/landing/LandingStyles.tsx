@@ -8,12 +8,18 @@ export const LandingStyles = () => (
       --landing-green:   #00FFAA;
       --landing-cyan:    #00D0FF;
       --landing-purple:  #7B61FF;
+      --landing-orange:  #FF6B00;
       --landing-bg:      #0A0D12;
       --landing-bg2:     #0E1218;
       --landing-surface: #12171E;
       --landing-border:  rgba(255,255,255,0.06);
       --landing-white:   #F8F9FA;
       --landing-muted:   rgba(248,249,250,0.5);
+      
+      /* nvg8-inspired Palette */
+      --nvg-beige: #F5F2EA;
+      --nvg-orange: #FF5C00;
+      --nvg-blue: #007AFF;
       
       /* Typography Tokens */
       --font-header:    'Space Grotesk', sans-serif;
@@ -32,6 +38,8 @@ export const LandingStyles = () => (
       background: var(--landing-bg);
       color: var(--landing-white);
       margin: 0;
+      overflow-x: hidden;
+      transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     /* ─── Typography Utils ─── */
@@ -56,10 +64,46 @@ export const LandingStyles = () => (
       font-size: 11px;
     }
 
+    /* ─── nvg8 Step Number ─── */
+    .step-number {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--landing-green);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .step-number::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: currentColor;
+      opacity: 0.2;
+    }
+
+    /* ─── Scrollytelling Reveal ─── */
+    .reveal-container {
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: bottom;
+      perspective: 1000px;
+      transform-style: preserve-3d;
+    }
+
+    .reveal-text {
+      transform: translateY(100%);
+      opacity: 0;
+      display: inline-block;
+    }
+
     /* ─── Animations ─── */
     @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
     @keyframes glow { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
+    @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
     /* ─── Shimmer Gradient Text ─── */
     .shimmer-text {
@@ -87,22 +131,20 @@ export const LandingStyles = () => (
     }
 
     .cyber-card {
-      background: linear-gradient(135deg, rgba(0,255,170,0.15) 0%, rgba(0,208,255,0.15) 100%);
+      background: rgba(255, 255, 255, 0.02);
       backdrop-filter: blur(20px);
-      border: 1px solid rgba(0,255,170,0.3);
+      border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 24px;
       padding: 40px;
       position: relative;
       overflow: hidden;
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: inset 0 0 80px rgba(0,255,170,0.05);
     }
 
     .cyber-card:hover {
-      background: rgba(10, 13, 18, 0.9);
-      border-color: var(--landing-border);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--landing-green);
       transform: translateY(-5px);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
     }
     
     .stat-bg {
@@ -114,16 +156,27 @@ export const LandingStyles = () => (
       opacity: 0.6 !important;
     }
 
-    .stat-text {
-      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    /* ─── nvg8 "Launch" Button Style ─── */
+    .btn-launch {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      background: var(--landing-green);
+      color: #000;
+      font-family: var(--font-header);
+      font-weight: 700;
+      border-radius: 100px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 14px;
     }
 
-    .cyber-card:hover .stat-text {
-      transform: scale(1.1);
-      text-shadow: 0 0 20px rgba(0,208,255,0.4);
+    .btn-launch:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(0,255,170,0.4);
     }
 
-    /* ─── Buttons ─── */
     .btn-primary {
       display: inline-flex;
       align-items: center;
@@ -142,15 +195,6 @@ export const LandingStyles = () => (
     .btn-primary:hover {
       transform: translateY(-3px);
       box-shadow: 0 20px 50px rgba(0,255,170,0.4);
-    }
-
-    .icon-bounce {
-      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .cyber-card:hover .icon-bounce {
-      transform: scale(1.2) translateY(-5px);
-      filter: drop-shadow(0 0 15px currentColor);
     }
 
     .btn-ghost {
