@@ -120,7 +120,7 @@ export function HowItWorksSection() {
     <section
       id="how-it-works"
       ref={sectionRef}
-      data-bg="#0D0D0D"
+      data-bg="#0A0D12"
       data-text="#FFFFFF"
       style={{
         padding: "160px 0",
@@ -140,13 +140,13 @@ export function HowItWorksSection() {
             </div>
           </div>
 
-          <h2 className="display-h1" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24 }}>
+          <h2 className="display-h1 glow-text" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24 }}>
             <div className="reveal-container">
               <span className="reveal-text">Deploy in</span>
             </div>
             <br />
             <div className="reveal-container">
-              <span className="reveal-text shimmer-text" style={{ textShadow: "0 0 40px rgba(255,255,255,0.4)" }}>Seconds.</span>
+              <span className="reveal-text shimmer-text" style={{ textShadow: "0 0 40px rgba(0,255,170,0.4)" }}>Seconds.</span>
             </div>
           </h2>
           <div className="reveal-container">

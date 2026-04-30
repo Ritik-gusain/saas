@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { MessageSquare, Brain, Zap, Workflow, TrendingUp, Lock } from "lucide-react";
+import { MessageSquare, Zap, Shield, Search, Globe, Layout, Brain, Cpu } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -11,196 +11,167 @@ if (typeof window !== "undefined") {
 
 const FEATURES = [
   {
+    title: "Shared Intelligence",
+    desc: "A collaborative workspace where team context is preserved across all AI conversations.",
     icon: MessageSquare,
-    title: "Shared Chat History",
-    accent: "#00FFAA",
-    desc: "Your team's entire AI conversation history in one searchable place. Reference and build on each other's work seamlessly across time zones.",
-    stat: "100%", statLabel: "Searchable",
   },
   {
+    title: "Deploy Anywhere",
+    desc: "Scale your AI operations globally with private node deployment and zero-config setup.",
+    icon: Globe,
+  },
+  {
+    title: "BYOK Protocol",
+    desc: "Bring Your Own Keys. Full control over model usage and per-token expenses.",
+    icon: Key,
+  },
+  {
+    title: "Enterprise Shield",
+    desc: "Bank-grade security for your organizational prompts and sensitive company data.",
+    icon: Shield,
+  },
+  {
+    title: "Neural Search",
+    desc: "Instantly surface insights from thousands of team conversations with semantic lookup.",
+    icon: Search,
+  },
+  {
+    title: "Custom Agents",
+    desc: "Create specialized agents for coding, research, or support in under 60 seconds.",
     icon: Brain,
-    title: "Custom AI Agents",
-    accent: "#00D0FF",
-    desc: "Deploy specialized agents trained on your SOPs. One focused agent per workflow — sales, support, growth. They learn and execute autonomously.",
-    stat: "40+", statLabel: "AI Models",
-  },
-  {
-    icon: Zap,
-    title: "Smart Prompt Library",
-    accent: "#00FFAA",
-    desc: "Save, share, and version-control your best prompts. Stop re-engineering the same prompts every sprint — build institutional AI knowledge.",
-    stat: "10x", statLabel: "Faster",
-  },
-  {
-    icon: Workflow,
-    title: "Projects & Folders",
-    accent: "#00D0FF",
-    desc: "Organize AI work by client or sprint. Files, outputs, and conversations — all structured exactly the way your team thinks and works.",
-    stat: "∞", statLabel: "Projects",
-  },
-  {
-    icon: TrendingUp,
-    title: "Token Efficiency",
-    accent: "#00FFAA",
-    desc: "Team-wide shared context means 60% fewer tokens spent. Less waste, significantly more output per rupee. Your API budget goes further.",
-    stat: "60%", statLabel: "Cost Cut",
-  },
-  {
-    icon: Lock,
-    title: "Enterprise Security",
-    accent: "#00D0FF",
-    desc: "SSO, RBAC, and full audit logs. Your IP stays yours — never used to train any public models. Compliance-ready from day one.",
-    stat: "SOC2", statLabel: "Certified",
-  },
+  }
 ];
+
+import { Key } from "lucide-react";
 
 export function FeaturesSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const headRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Header animation
-      if (headRef.current) {
-        const reveals = headRef.current.querySelectorAll(".reveal-text");
-        gsap.fromTo(reveals, 
-          { y: "100%", opacity: 0, rotateX: 20, scale: 0.95 },
-          {
-            y: "0%",
-            opacity: 1,
-            rotateX: 0,
-            scale: 1,
-            duration: 1.5,
-            stagger: 0.12,
-            ease: "expo.out",
-            scrollTrigger: {
-              trigger: headRef.current,
-              start: "top 85%",
-            },
-          }
-        );
-      }
-
-      // Bento cards reveal
-      if (gridRef.current) {
-        gsap.fromTo(gridRef.current.children, 
-          { y: 40, opacity: 0, scale: 0.95 },
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            duration: 1.2,
-            stagger: 0.1,
-            ease: "expo.out",
-            clearProps: "transform",
-            scrollTrigger: {
-              trigger: gridRef.current,
-              start: "top 80%",
-            },
-          }
-        );
-      }
+      if (!gridRef.current) return;
+      
+      const cards = gridRef.current.children;
+      gsap.fromTo(cards, 
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 1,
+          stagger: 0.1,
+          ease: "expo.out",
+          scrollTrigger: {
+            trigger: gridRef.current,
+            start: "top 85%",
+          },
+        }
+      );
     }, sectionRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <section
+    <section 
       id="features"
       ref={sectionRef}
-      data-bg="#F5F2EA"
-      data-text="#0A0D12"
-      style={{ padding: "140px 24px", position: "relative" }}
+      className="scrolly-section"
+      data-bg="#0A0D12"
+      data-text="#FFFFFF"
+      style={{
+        padding: "160px 24px",
+        position: "relative",
+        background: "transparent"
+      }}
     >
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        {/* Section Header */}
-        <div ref={headRef} style={{ textAlign: "center", marginBottom: 80 }}>
-          <div className="step-number" style={{ margin: "0 auto 32px", maxWidth: 400 }}>
-            02 → FEATURES
+      <div className="grid-bg" style={{ position: "absolute", inset: 0, zIndex: 0, opacity: 0.1 }} />
+      
+      <div style={{ maxWidth: 1280, margin: "0 auto", position: "relative", zIndex: 1 }}>
+        {/* Header */}
+        <div style={{ marginBottom: 80, maxWidth: 640 }}>
+          <div className="mono-label" style={{ color: "var(--landing-green)", marginBottom: 16 }}>
+            02 → CORE CAPABILITIES
           </div>
-
-          <h2 className="display-h1" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24 }}>
-            <div className="reveal-container">
-              <span className="reveal-text">Built for teams that</span>
-            </div>
-            <br />
-            <div className="reveal-container">
-              <span className="reveal-text shimmer-text">move at lightspeed.</span>
-            </div>
+          <h2 
+            className="glow-text"
+            style={{ 
+              fontFamily: "var(--font-display)", 
+              fontSize: "clamp(32px, 5vw, 48px)", 
+              fontWeight: 800,
+              lineHeight: 1.1,
+              marginBottom: 24,
+              letterSpacing: "-0.02em"
+            }}
+          >
+            The Operating System for <span className="shimmer-text">AI-First Teams.</span>
           </h2>
-          <div className="reveal-container">
-            <p className="reveal-text" style={{ 
-              fontFamily: "var(--font-body)", 
-              color: "rgba(0,0,0,0.5)", 
-              maxWidth: 600, 
-              margin: "0 auto",
-              fontSize: 18,
-              lineHeight: 1.6
-            }}>
-              Luminescent provides the infrastructure for high-performance AI collaboration.
-              No lag. No complexity. Just pure execution.
-            </p>
-          </div>
+          <p style={{ fontSize: 18, color: "var(--landing-muted)", lineHeight: 1.6 }}>
+            Everything you need to orchestrate large language models at scale across your entire organization.
+          </p>
         </div>
 
-        {/* Bento Grid */}
+        {/* Features Grid */}
         <div 
           ref={gridRef}
-          className="bento-grid"
-          style={{ gridTemplateRows: "repeat(2, 320px)" }}
+          style={{ 
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gap: "24px"
+          }}
         >
-          {/* Feature 1: Large */}
-          <div className="cyber-card" style={{ gridColumn: "span 2", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "relative", zIndex: 2 }}>
-              <div className="icon-bounce" style={{ color: "#00FFAA", marginBottom: 24, display: "inline-block" }}><MessageSquare size={32} /></div>
-              <h3 style={{ fontFamily: "var(--font-header)", fontSize: 24, color: "#FFF", marginBottom: 12 }}>Shared Chat History</h3>
-              <p style={{ color: "rgba(255,255,255,0.4)", lineHeight: 1.6, maxWidth: "80%" }}>
-                Your team&apos;s entire AI conversation history in one searchable place. 
-                Reference and build on each other&apos;s work seamlessly.
-              </p>
+          {FEATURES.map((f, i) => (
+            <div 
+              key={i}
+              className="feature-card"
+              style={{
+                padding: "40px 32px",
+                borderRadius: 24,
+                border: "1px solid rgba(255, 255, 255, 0.06)",
+                background: "rgba(255, 255, 255, 0.02)",
+                backdropFilter: "blur(12px)",
+                transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 20,
+                cursor: "default",
+              }}
+            >
+              <div style={{
+                width: 52,
+                height: 52,
+                borderRadius: 16,
+                background: "rgba(255,255,255,0.03)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--landing-green)",
+                border: "1px solid rgba(255,255,255,0.05)",
+              }}>
+                <f.icon size={24} strokeWidth={1.5} />
+              </div>
+              
+              <div>
+                <h3 style={{ 
+                  fontFamily: "var(--font-display)", 
+                  fontSize: 22, 
+                  fontWeight: 700, 
+                  color: "#FFF",
+                  marginBottom: 12,
+                  letterSpacing: "-0.01em"
+                }}>
+                  {f.title}
+                </h3>
+                <p style={{ 
+                  color: "var(--landing-muted)", 
+                  lineHeight: 1.6,
+                  fontSize: 15,
+                }}>
+                  {f.desc}
+                </p>
+              </div>
             </div>
-            <div className="stat-bg" style={{ 
-              position: "absolute", bottom: -20, right: -20, 
-              fontSize: 120, fontWeight: 900, color: "rgba(0,255,170,0.03)",
-              fontFamily: "var(--font-header)"
-            }}>100%</div>
-          </div>
-
-          {/* Feature 2: Tall/Medium */}
-          <div className="cyber-card" style={{ gridRow: "span 2", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-            <div>
-              <div className="icon-bounce" style={{ color: "#00D0FF", marginBottom: 24, display: "inline-block" }}><Brain size={32} /></div>
-              <h3 style={{ fontFamily: "var(--font-header)", fontSize: 24, color: "#FFF", marginBottom: 12 }}>Custom AI Agents</h3>
-              <p style={{ color: "rgba(255,255,255,0.4)", lineHeight: 1.6 }}>
-                Deploy specialized agents trained on your SOPs. 
-                One focused agent per workflow.
-              </p>
-            </div>
-            <div style={{ marginTop: 40 }}>
-              <div className="mono-label" style={{ color: "#00D0FF", opacity: 0.5, marginBottom: 8 }}>MODELS DEPLOYED</div>
-              <div className="stat-text" style={{ fontSize: 48, fontWeight: 700, color: "#FFF", fontFamily: "var(--font-header)", display: "inline-block" }}>40+</div>
-            </div>
-          </div>
-
-          {/* Feature 3: Small */}
-          <div className="cyber-card">
-            <div className="icon-bounce" style={{ color: "#7B61FF", marginBottom: 20, display: "inline-block" }}><Zap size={24} /></div>
-            <h3 style={{ fontFamily: "var(--font-header)", fontSize: 20, color: "#FFF", marginBottom: 8 }}>Smart Prompt Library</h3>
-            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, lineHeight: 1.5 }}>
-              Save and version-control your best prompts. Stop re-engineering.
-            </p>
-          </div>
-
-          {/* Feature 4: Small */}
-          <div className="cyber-card">
-            <div className="icon-bounce" style={{ color: "#00FFAA", marginBottom: 20, display: "inline-block" }}><Lock size={24} /></div>
-            <h3 style={{ fontFamily: "var(--font-header)", fontSize: 20, color: "#FFF", marginBottom: 8 }}>Enterprise Security</h3>
-            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, lineHeight: 1.5 }}>
-              SSO, RBAC, and full audit logs. Compliance-ready from day one.
-            </p>
-          </div>
+          ))}
         </div>
       </div>
     </section>

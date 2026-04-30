@@ -13,6 +13,8 @@ import { CTABanner } from "./CTABanner";
 import { Footer } from "./Footer";
 import { SmoothScroll } from "./SmoothScroll";
 import { SoundToggle } from "./SoundToggle";
+import { LuminescentGlow } from "./LuminescentGlow";
+
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 
@@ -33,7 +35,7 @@ export default function LandingPage() {
       const sections = containerRef.current?.querySelectorAll(".scrolly-section");
       
       sections?.forEach((section) => {
-        const bg = section.getAttribute("data-bg") || "#0D0D0D";
+        const bg = section.getAttribute("data-bg") || "#0A0D12";
         const color = section.getAttribute("data-text") || "#FFFFFF";
         
         ScrollTrigger.create({
@@ -59,7 +61,9 @@ export default function LandingPage() {
     <>
       <SmoothScroll />
       <LandingStyles />
+      <LuminescentGlow />
       <SoundToggle />
+
       <div 
         ref={containerRef}
         style={{ minHeight: "100vh", overflowX: "hidden" }}

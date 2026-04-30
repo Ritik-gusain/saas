@@ -132,15 +132,17 @@ export function PricingSection() {
       className="scrolly-section"
       data-bg="#0A0D12"
       data-text="#FFFFFF"
-      style={{ padding: "140px 24px", position: "relative" }}
+      style={{ padding: "140px 24px", position: "relative", background: "transparent" }}
     >
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+      <div className="grid-bg" style={{ position: "absolute", inset: 0, zIndex: 0, opacity: 0.1 }} />
+      
+      <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* Header */}
         <div ref={headRef} style={{ textAlign: "center", marginBottom: 80 }}>
-          <div className="mono-label reveal-text" style={{ marginBottom: 16, display: "block" }}>
+          <div className="mono-label reveal-text" style={{ marginBottom: 16, display: "inline-block", color: "var(--landing-green)" }}>
             04 → PRICING
           </div>
-          <h2 className="display-h1 reveal-text" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24 }}>
+          <h2 className="display-h1 glow-text reveal-text" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 24, letterSpacing: "-0.03em" }}>
             Flat team pricing. <span className="shimmer-text">No surprises.</span>
           </h2>
           <p className="reveal-text" style={{ 
@@ -174,9 +176,12 @@ export function PricingSection() {
                 padding: "48px 32px",
                 display: "flex",
                 flexDirection: "column",
-                border: plan.highlight ? "1px solid rgba(0,255,170,0.2)" : "1px solid rgba(255,255,255,0.05)",
-                background: plan.highlight ? "rgba(0,255,170,0.02)" : "rgba(255,255,255,0.01)",
+                border: plan.highlight ? "1px solid rgba(0,255,170,0.2)" : "1px solid rgba(255,255,255,0.06)",
+                background: plan.highlight ? "rgba(0,255,170,0.03)" : "rgba(255,255,255,0.02)",
+                backdropFilter: "blur(12px)",
+                borderRadius: 24,
                 position: "relative",
+                transition: "all 0.4s ease",
               }}
             >
               {plan.highlight && (
@@ -199,11 +204,11 @@ export function PricingSection() {
               </div>
 
               <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
-                <span style={{ fontFamily: "var(--font-header)", fontSize: 48, fontWeight: 700, color: "#FFF" }}>{plan.price}</span>
+                <span style={{ fontFamily: "var(--font-display)", fontSize: 48, fontWeight: 700, color: "#FFF" }}>{plan.price}</span>
                 <span style={{ fontSize: 14, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-mono)" }}>{plan.period}</span>
               </div>
 
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", lineHeight: 1.6, marginBottom: 32 }}>
+              <p style={{ fontSize: 14, color: "var(--landing-muted)", lineHeight: 1.6, marginBottom: 32 }}>
                 {plan.desc}
               </p>
 
@@ -221,7 +226,14 @@ export function PricingSection() {
               <Link 
                 href="/register" 
                 className={plan.highlight ? "btn-primary" : "btn-ghost"}
-                style={{ width: "100%", justifyContent: "center" }}
+                style={{ 
+                  width: "100%", 
+                  justifyContent: "center",
+                  borderRadius: 12,
+                  padding: "14px",
+                  fontWeight: 600,
+                  fontSize: 14
+                }}
               >
                 {plan.price === "Free" ? "Start Free" : "Get Started"}
               </Link>

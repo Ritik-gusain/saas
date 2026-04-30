@@ -90,7 +90,7 @@ export function CTABanner() {
     <section
       ref={sectionRef}
       className="scrolly-section"
-      data-bg="var(--nvg-blue)"
+      data-bg="#0A0D12"
       data-text="white"
       style={{
         padding: "120px 40px",

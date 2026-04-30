@@ -27,56 +27,29 @@ const STREAM = [...MODELS, ...MODELS, ...MODELS];
 
 export function LogoTicker() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const titleRef   = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      if (titleRef.current) {
-        gsap.fromTo(titleRef.current, 
-          { y: 20, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 1,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: sectionRef.current,
-              start: "top 90%",
-            },
-          }
-        );
-      }
-    }, sectionRef);
-    return () => ctx.revert();
-  }, []);
 
   return (
     <section
       ref={sectionRef}
       className="scrolly-section"
-      data-bg="#0D0D0D"
+      data-bg="#0A0D12"
       data-text="#FFFFFF"
       style={{
         position: "relative",
         overflow: "hidden",
-        padding: "60px 0",
+        padding: "80px 0",
         borderTop: "1px solid rgba(255,255,255,0.03)",
         borderBottom: "1px solid rgba(255,255,255,0.03)",
-        background: "rgba(255,255,255,0.01)",
+        background: "transparent",
       }}
     >
-      {/* Label */}
-      <div ref={titleRef} style={{ textAlign: "center", marginBottom: 40 }}>
-
-      </div>
-
       {/* Flowing stream */}
       <div style={{ position: "relative" }}>
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 60,
+            gap: 80,
             width: "max-content",
             animation: "ticker 60s linear infinite",
             willChange: "transform",
@@ -90,49 +63,40 @@ export function LogoTicker() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 12,
-                opacity: 0.3,
-                filter: "grayscale(100%) brightness(1.5)",
+                gap: 40,
+                opacity: 0.6,
+                filter: "none",
                 transition: "all 0.4s ease",
                 cursor: "default",
                 flexShrink: 0,
               }}
               onMouseEnter={e => {
                 (e.currentTarget as HTMLElement).style.opacity = "1";
-                (e.currentTarget as HTMLElement).style.filter = "grayscale(0%) brightness(1)";
+                (e.currentTarget as HTMLElement).style.transform = "scale(1.05)";
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.opacity = "0.3";
-                (e.currentTarget as HTMLElement).style.filter = "grayscale(100%) brightness(1.5)";
+                (e.currentTarget as HTMLElement).style.opacity = "0.6";
+                (e.currentTarget as HTMLElement).style.transform = "scale(1)";
               }}
             >
               <img
                 src={m.logo}
                 alt={m.name}
                 style={{
-                  height: 20,
+                  height: 40,
                   width: "auto",
+                  maxWidth: 160,
                   objectFit: "contain",
-                  filter: m.invert ? "invert(1)" : "none",
+                  filter: m.invert ? "invert(1) brightness(1.5)" : "none",
                 }}
               />
-              <span style={{
-                fontFamily: "var(--font-display)",
-                fontWeight: 600,
-                fontSize: 15,
-                color: "#fff",
-                whiteSpace: "nowrap",
-                letterSpacing: "-0.01em",
-              }}>
-                {m.name}
-              </span>
-
+              
+              {/* Separator Dot */}
               <div style={{
                 width: 4,
                 height: 4,
                 borderRadius: "50%",
-                background: "rgba(255,255,255,0.1)",
-                marginLeft: 10,
+                background: "rgba(255,255,255,0.15)",
               }} />
             </div>
           ))}
@@ -144,7 +108,7 @@ export function LogoTicker() {
           inset: 0,
           pointerEvents: "none",
           zIndex: 2,
-          background: "linear-gradient(90deg, var(--landing-bg) 0%, transparent 15%, transparent 85%, var(--landing-bg) 100%)",
+          background: "linear-gradient(90deg, #0A0D12 0%, transparent 15%, transparent 85%, #0A0D12 100%)",
         }} />
       </div>
 

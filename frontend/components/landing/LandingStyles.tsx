@@ -36,11 +36,16 @@ export const LandingStyles = () => (
     body {
       font-family: var(--font-body);
       background: var(--landing-bg);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 255, 170, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 0% 100%, rgba(123, 97, 255, 0.05) 0%, transparent 50%);
+      background-attachment: fixed;
       color: var(--landing-white);
       margin: 0;
       overflow-x: hidden;
       transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
 
     /* ─── Typography Utils ─── */
     .display-h1 {
@@ -141,7 +146,7 @@ export const LandingStyles = () => (
     @keyframes glow { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
     @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-    /* ─── Shimmer Gradient Text ─── */
+    /* ─── Shimmer & Glow Utils ─── */
     .shimmer-text {
       background: linear-gradient(90deg, #F8F9FA 0%, #00FFAA 30%, #00D0FF 55%, #7B61FF 75%, #F8F9FA 100%);
       background-size: 250% auto;
@@ -149,6 +154,15 @@ export const LandingStyles = () => (
       -webkit-text-fill-color: transparent;
       animation: shimmer 6s linear infinite;
     }
+
+    .glow-text {
+      text-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
+    }
+
+    .sparkle-slow {
+      animation: glow 4s ease-in-out infinite;
+    }
+
 
     /* ─── Grid Background ─── */
     .grid-bg {
@@ -197,20 +211,21 @@ export const LandingStyles = () => (
       display: inline-flex;
       align-items: center;
       gap: 12px;
-      padding: 12px 24px;
-      background: var(--landing-green);
+      padding: 10px 24px;
+      background: linear-gradient(135deg, var(--landing-green) 0%, var(--landing-cyan) 100%);
       color: #000;
       font-family: var(--font-header);
       font-weight: 700;
       border-radius: 100px;
       text-decoration: none;
-      transition: all 0.3s ease;
-      font-size: 14px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      font-size: 13px;
+      box-shadow: 0 4px 15px rgba(0,255,170,0.2);
     }
 
     .btn-launch:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(0,255,170,0.4);
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 8px 25px rgba(0,255,170,0.4);
     }
 
     .btn-primary {
@@ -218,18 +233,18 @@ export const LandingStyles = () => (
       align-items: center;
       gap: 12px;
       padding: 16px 36px;
-      background: linear-gradient(135deg, #00FFAA 0%, #00D0FF 100%);
-      color: #0A0D12;
+      background: linear-gradient(135deg, var(--landing-green) 0%, var(--landing-cyan) 100%);
+      color: #000;
       font-family: var(--font-header);
       font-weight: 700;
-      border-radius: 12px;
+      border-radius: 14px;
       text-decoration: none;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 10px 30px rgba(0,255,170,0.2);
     }
 
     .btn-primary:hover {
-      transform: translateY(-3px);
+      transform: translateY(-4px);
       box-shadow: 0 20px 50px rgba(0,255,170,0.4);
     }
 

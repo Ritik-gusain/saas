@@ -6,17 +6,20 @@ import gsap from "gsap";
 
 export function SoundToggle() {
   const [isOn, setIsOn] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
-    gsap.fromTo(".sound-toggle-btn", 
-      { y: 100, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1.2, ease: "power4.out", delay: 1.5 }
+    gsap.fromTo(".sound-toggle-container", 
+      { scale: 0, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 1, ease: "back.out(1.7)", delay: 2 }
     );
   }, []);
 
   return (
     <div 
-      className="sound-toggle-btn"
+      className="sound-toggle-container"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       onClick={() => setIsOn(!isOn)}
       style={{
         position: "fixed",
@@ -25,45 +28,53 @@ export function SoundToggle() {
         zIndex: 1000,
         display: "flex",
         alignItems: "center",
-        gap: 12,
-        background: "rgba(255,255,255,0.03)",
-        backdropFilter: "blur(24px)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        padding: "6px 6px 6px 16px",
-        borderRadius: 100,
         cursor: "pointer",
-        transition: "all 0.4s ease",
+        pointerEvents: "auto",
       }}
     >
-      <span style={{
-        fontFamily: "var(--font-mono)",
-        fontSize: 10,
-        fontWeight: 600,
-        textTransform: "uppercase",
-        letterSpacing: "0.1em",
-        color: "rgba(255,255,255,0.5)",
-      }}>Sound: <span style={{ color: isOn ? "var(--landing-green)" : "#FFF" }}>{isOn ? "On" : "Off"}</span></span>
-      
+      {/* Label Tooltip */}
       <div style={{
-        width: 44,
-        height: 24,
-        background: "rgba(255,255,255,0.05)",
+        marginRight: 12,
+        padding: "8px 16px",
+        background: "rgba(10, 13, 18, 0.95)",
+        backdropFilter: "blur(12px)",
+        border: "1px solid rgba(255, 255, 255, 0.15)",
         borderRadius: 100,
-        position: "relative",
-        transition: "all 0.4s ease",
-        border: "1px solid rgba(255,255,255,0.1)",
+        opacity: hovered ? 1 : 0,
+        transform: hovered ? "translateX(0)" : "translateX(10px)",
+        transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        pointerEvents: "none",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
       }}>
-        <div style={{
-          position: "absolute",
-          top: 3,
-          left: isOn ? 23 : 3,
-          width: 16,
-          height: 16,
-          background: isOn ? "var(--landing-green)" : "rgba(255,255,255,0.4)",
-          borderRadius: "50%",
-          transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
-          boxShadow: isOn ? "0 0 10px var(--landing-green)" : "none",
-        }} />
+        <span style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 11,
+          fontWeight: 700,
+          textTransform: "uppercase",
+          letterSpacing: "0.12em",
+          color: "#FFF",
+          whiteSpace: "nowrap",
+        }}>
+          Sound: <span style={{ color: isOn ? "var(--landing-green)" : "rgba(255,255,255,0.3)" }}>{isOn ? "On" : "Off"}</span>
+        </span>
+      </div>
+
+      {/* Toggle Button Circle */}
+      <div style={{
+        width: 48,
+        height: 48,
+        background: isOn ? "var(--landing-purple)" : "rgba(255,255,255,0.03)",
+        backdropFilter: "blur(20px)",
+        border: "1px solid rgba(255,255,255,0.1)",
+        borderRadius: "50%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        boxShadow: isOn ? "0 0 20px rgba(123, 97, 255, 0.4)" : "none",
+        color: isOn ? "#FFF" : "rgba(255,255,255,0.4)",
+      }}>
+        {isOn ? <Volume2 size={20} /> : <VolumeX size={20} />}
       </div>
     </div>
   );

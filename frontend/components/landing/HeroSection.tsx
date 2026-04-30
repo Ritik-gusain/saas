@@ -154,7 +154,7 @@ export function HeroSection() {
     <section
       ref={sectionRef}
       className="scrolly-section"
-      data-bg="#0D0D0D"
+      data-bg="#0A0D12"
       data-text="#FFFFFF"
       style={{
         position: "relative",
@@ -267,7 +267,7 @@ export function HeroSection() {
           fontSize: "clamp(54px, 9vw, 104px)",
           color: "#F8F9FA",
           margin: 0,
-          textShadow: "0 20px 50px rgba(0,0,0,0.5)",
+          textShadow: "0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(0,255,170,0.1)",
         }}>
           <div className="reveal-container">
             <span className="reveal-text">Free for individuals.</span>
