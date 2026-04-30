@@ -37,10 +37,22 @@ export function LuminescentConsole() {
       }, 1500);
     };
 
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const { left, top, width, height } = containerRef.current.getBoundingClientRect();
+      const x = ((e.clientX - left) / width) * 100;
+      const y = ((e.clientY - top) / height) * 100;
+      containerRef.current.style.setProperty("--x", `${x}%`);
+      containerRef.current.style.setProperty("--y", `${y}%`);
+    };
+
     startSequence();
+    containerRef.current?.addEventListener("mousemove", handleMouseMove);
+    
     return () => {
       clearInterval(interval);
       timeoutRefs.forEach(t => clearTimeout(t));
+      containerRef.current?.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
 
@@ -48,7 +60,7 @@ export function LuminescentConsole() {
     <section className="scrolly-section" data-bg="#0D0D0D" data-text="#FFFFFF" style={{ padding: "80px 24px", position: "relative", zIndex: 10 }}>
       <div 
         ref={containerRef}
-        className="cyber-card"
+        className="cyber-card glow-card"
         style={{
           maxWidth: 800,
           margin: "0 auto",
@@ -56,8 +68,11 @@ export function LuminescentConsole() {
           background: "rgba(10,13,18,0.6)",
           border: "1px solid rgba(255,255,255,0.08)",
           boxShadow: "0 40px 100px rgba(0,0,0,0.6), 0 0 20px rgba(0,255,170,0.05)",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
+        <div className="scanline" />
         {/* Terminal Header */}
         <div style={{
           padding: "14px 24px",

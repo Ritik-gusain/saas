@@ -99,6 +99,42 @@ export const LandingStyles = () => (
       display: inline-block;
     }
 
+    /* ─── Premium Enhancements ─── */
+    .scanline {
+      width: 100%;
+      height: 100px;
+      z-index: 5;
+      background: linear-gradient(0deg, rgba(0, 255, 170, 0) 0%, rgba(0, 255, 170, 0.05) 50%, rgba(0, 255, 170, 0) 100%);
+      opacity: 0.2;
+      position: absolute;
+      top: -100px;
+      left: 0;
+      pointer-events: none;
+      animation: scanline 8s linear infinite;
+    }
+
+    @keyframes scanline {
+      0% { top: -100px; }
+      100% { top: 100%; }
+    }
+
+    .glow-card {
+      position: relative;
+      overflow: hidden;
+    }
+    .glow-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.08) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .glow-card:hover::after {
+      opacity: 1;
+    }
+
     /* ─── Animations ─── */
     @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }

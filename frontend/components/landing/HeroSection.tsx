@@ -98,6 +98,49 @@ export function HeroSection() {
             });
           });
         }
+
+        // 5. Magnetic Buttons
+        const magBtns = sectionRef.current?.querySelectorAll(".btn-magnetic");
+        magBtns?.forEach(btn => {
+          const move = (e: MouseEvent) => {
+            const { clientX, clientY } = e;
+            const { left, top, width, height } = (btn as HTMLElement).getBoundingClientRect();
+            const x = (clientX - (left + width/2)) * 0.25;
+            const y = (clientY - (top + height/2)) * 0.25;
+            gsap.to(btn, { x, y, duration: 0.3, ease: "power2.out" });
+          };
+          const reset = () => gsap.to(btn, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" });
+          btn.addEventListener("mousemove", move as any);
+          btn.addEventListener("mouseleave", reset);
+        });
+
+        // 6. Cursor Spotlight
+        const spotlight = sectionRef.current?.querySelector(".hero-spotlight") as HTMLElement;
+        const onMouseMove = (e: MouseEvent) => {
+          const { clientX, clientY } = e;
+          const { left, top } = sectionRef.current!.getBoundingClientRect();
+          gsap.to(spotlight, {
+            left: clientX - left,
+            top: clientY - top,
+            duration: 0.8,
+            ease: "power2.out"
+          });
+        };
+        sectionRef.current?.addEventListener("mousemove", onMouseMove);
+
+        // 7. Stats Glow
+        const statsBar = sectionRef.current?.querySelector(".stats-bar") as HTMLElement;
+        if (statsBar) {
+          const onStatsMove = (e: MouseEvent) => {
+            const { left, top, width, height } = statsBar.getBoundingClientRect();
+            const x = ((e.clientX - left) / width) * 100;
+            const y = ((e.clientY - top) / height) * 100;
+            statsBar.style.setProperty("--x", `${x}%`);
+            statsBar.style.setProperty("--y", `${y}%`);
+          };
+          statsBar.addEventListener("mousemove", onStatsMove);
+        }
+
       }, sectionRef);
     }, 100);
 
@@ -177,6 +220,14 @@ export function HeroSection() {
         opacity: 0.6, zIndex: 3, pointerEvents: "none",
       }} />
 
+      {/* ── Cursor Spotlight ── */}
+      <div className="hero-spotlight" style={{
+        position: "absolute", width: 800, height: 800,
+        background: "radial-gradient(circle, rgba(0,255,170,0.05) 0%, transparent 60%)",
+        borderRadius: "50%", transform: "translate(-50%, -50%)",
+        pointerEvents: "none", zIndex: 2, filter: "blur(40px)",
+      }} />
+
       {/* ── Corner HUD brackets ── */}
       {([
         { top: 40, left: 40,   borderTop: "1.5px solid", borderLeft: "1.5px solid"   },
@@ -244,26 +295,29 @@ export function HeroSection() {
         {/* CTA buttons */}
         <div className="reveal-container" style={{ marginTop: 15 }}>
           <div className="reveal-text" style={{ display: "flex", gap: 20, flexWrap: "wrap", justifyContent: "center" }}>
-            <Link href="/register" className="btn-primary">
+            <Link href="/register" className="btn-primary btn-magnetic">
               Get Started Free <ArrowRight size={20} />
             </Link>
-            <a href="#features" className="btn-ghost">
+            <a href="#features" className="btn-ghost btn-magnetic">
               <Zap size={16} /> Explore Features
             </a>
           </div>
         </div>
 
         {/* Stats strip */}
-        <div style={{
-          display: "flex",
-          background: "rgba(255,255,255,0.03)",
-          backdropFilter: "blur(30px)",
-          borderRadius: 24,
-          border: "1px solid rgba(255,255,255,0.08)",
-          overflow: "hidden",
-          marginTop: 40,
-          boxShadow: "0 30px 80px rgba(0,0,0,0.4)",
-        }}>
+        <div 
+          className="stats-bar glow-card"
+          style={{
+            display: "flex",
+            background: "rgba(255,255,255,0.03)",
+            backdropFilter: "blur(30px)",
+            borderRadius: 24,
+            border: "1px solid rgba(255,255,255,0.08)",
+            overflow: "hidden",
+            marginTop: 40,
+            boxShadow: "0 30px 80px rgba(0,0,0,0.4)",
+          }}
+        >
           {[
             { label: "Active Teams", val: "14.2k+", accent: "#00FFAA" },
             { label: "AI Models",    val: "40+",    accent: "#00D0FF" },

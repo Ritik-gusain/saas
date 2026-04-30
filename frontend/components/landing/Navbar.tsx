@@ -22,6 +22,21 @@ export function Navbar() {
         { y: -100, opacity: 0 },
         { y: 0, opacity: 1, duration: 1.2, ease: "expo.out", delay: 0.2 }
       );
+
+      // Magnetic Button
+      const magBtn = navRef.current?.querySelector(".btn-magnetic");
+      if (magBtn) {
+        const move = (e: MouseEvent) => {
+          const { clientX, clientY } = e;
+          const { left, top, width, height } = (magBtn as HTMLElement).getBoundingClientRect();
+          const x = (clientX - (left + width/2)) * 0.35;
+          const y = (clientY - (top + height/2)) * 0.35;
+          gsap.to(magBtn, { x, y, duration: 0.3, ease: "power2.out" });
+        };
+        const reset = () => gsap.to(magBtn, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" });
+        magBtn.addEventListener("mousemove", move as any);
+        magBtn.addEventListener("mouseleave", reset);
+      }
     });
 
     return () => {
@@ -104,7 +119,7 @@ export function Navbar() {
           }} onMouseEnter={e => e.currentTarget.style.color = "#FFF"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255, 255, 255, 0.5)"}>
             Login
           </Link>
-          <Link href="/register" className="btn-launch">
+          <Link href="/register" className="btn-launch btn-magnetic">
             Launch Console <ArrowRight size={14} />
           </Link>
         </div>
