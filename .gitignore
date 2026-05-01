@@ -256,3 +256,7 @@ frontend/proxy.ts
 # IDE
 .vscode/
 
+# Centralized AI Agent Skills
+/skills/
+skills-lock.json
+
