@@ -57,7 +57,7 @@ export function LuminescentConsole() {
   }, []);
 
   return (
-    <section className="scrolly-section" data-bg="#0A0D12" data-text="#FFFFFF" style={{ padding: "80px 24px", position: "relative", zIndex: 10 }}>
+    <section id="agents" className="scrolly-section" data-bg="#0A0D12" data-text="#FFFFFF" style={{ padding: "80px 24px", position: "relative", zIndex: 10 }}>
       <div 
         ref={containerRef}
         className="cyber-card glow-card"

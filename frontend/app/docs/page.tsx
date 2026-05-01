@@ -31,19 +31,19 @@ const sections = [
     content: (
       <div className="space-y-4">
         <p className="text-lg text-slate-300 leading-relaxed">
-          Luminescent.io is a next-generation AI-Powered Team Collaboration Platform designed to unify collective intelligence while drastically reducing overhead costs. 
+          Luminescent is an enterprise-grade AI orchestration platform engineered to unify fragmented intelligence workflows into a high-performance collaborative substrate.
         </p>
         <p className="text-slate-400">
-          We replace fragmented individual AI subscriptions with a centralized, collaborative hub. Teams can share conversation histories, build proprietary prompt libraries, and deploy autonomous agents that execute complex workflows.
+          Our architecture consolidates disparate AI resources into a secure, centralized hub. By implementing shared persistent context and autonomous agent clusters, we enable teams to scale their intellectual output while maintaining full sovereignty over their data and API infrastructure.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
           <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface)]">
-            <h4 className="text-[var(--cyan)] font-bold mb-2">Cost Efficiency</h4>
-            <p className="text-sm text-slate-400">Stop paying $20/month per user. Our team plans start at half the cost of individual ChatGPT seats.</p>
+            <h4 className="text-[var(--cyan)] font-bold mb-2">Resource Optimization</h4>
+            <p className="text-sm text-slate-400">Eliminate redundant seat costs through centralized node management and optimized token allocation across the organization.</p>
           </div>
           <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface)]">
-            <h4 className="text-[var(--mint)] font-bold mb-2">Unified Intelligence</h4>
-            <p className="text-sm text-slate-400">Shared project folders and team-wide system prompts ensure everyone is on the same page.</p>
+            <h4 className="text-[var(--mint)] font-bold mb-2">Sovereign Intelligence</h4>
+            <p className="text-sm text-slate-400">Deploy proprietary system prompts and project-specific knowledge bases that remain fully within your team's control.</p>
           </div>
         </div>
       </div>
@@ -56,21 +56,21 @@ const sections = [
     content: (
       <div className="space-y-6">
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white">1. Account Creation</h3>
-          <p className="text-slate-400">Register via email/password or use Google OAuth for instant access. Every new account starts as a Solo user with Bring Your Own Key (BYOK) capabilities.</p>
+          <h3 className="text-xl font-bold text-white">1. Provisioning Your Account</h3>
+          <p className="text-slate-400">Initialize your access via secure OAuth 2.0 or enterprise-grade email authentication. Upon entry, every node is configured for Solo operation with full Bring Your Own Key (BYOK) protocol support.</p>
         </div>
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white">2. Setting Up Your Team</h3>
-          <p className="text-slate-400">Upgrade to a Team plan to unlock collaborative features. You can choose from Starter (3 seats), Growth (7 seats), or Pro (12 seats).</p>
+          <h3 className="text-xl font-bold text-white">2. Orchestrating Your Team</h3>
+          <p className="text-slate-400">Transition to a multi-seat configuration to unlock collaborative intelligence. Select from our scalable architecture tiers: Starter, Growth, or Pro.</p>
           <ul className="list-disc list-inside text-slate-400 space-y-2 ml-4">
-            <li>Navigate to <span className="text-[var(--cyan)]">Settings &gt; Billing</span></li>
-            <li>Select your preferred tier</li>
-            <li>Complete the secure checkout via Razorpay</li>
+            <li>Access the <span className="text-[var(--cyan)]">Administrative Settings &gt; Infrastructure</span> dashboard.</li>
+            <li>Identify the resource tier aligned with your organizational scale.</li>
+            <li>Finalize the secure provisioning process.</li>
           </ul>
         </div>
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white">3. Inviting Members</h3>
-          <p className="text-slate-400">Once your team is active, head to the Team Management tab to invite colleagues via secure magic links.</p>
+          <h3 className="text-xl font-bold text-white">3. Deploying Collaborative Nodes</h3>
+          <p className="text-slate-400">Invite specialized team members through secure, short-lived magic links to ensure the integrity of your workspace.</p>
         </div>
       </div>
     )
@@ -81,21 +81,21 @@ const sections = [
     icon: <MessageSquare className="w-5 h-5" />,
     content: (
       <div className="space-y-6">
-        <p className="text-slate-400">The primary workspace is designed for high-performance interaction with multiple LLMs.</p>
+        <p className="text-slate-400">The primary interface is optimized for low-latency interaction with a diverse array of Large Language Models (LLMs).</p>
         <div className="space-y-4">
           <h4 className="text-white font-semibold flex items-center gap-2">
-            <Bot className="w-4 h-4 text-[var(--cyan)]" /> Real-time Streaming
+            <Bot className="w-4 h-4 text-[var(--cyan)]" /> Real-time Synthesis
           </h4>
-          <p className="text-sm text-slate-400">Experience zero-latency AI responses powered by our proprietary FastAPI orchestration layer. Watch as the AI builds thoughts in real-time.</p>
+          <p className="text-sm text-slate-400">High-concurrency streaming allows for immediate validation of AI outputs. Monitor the synthesis process as the engine constructs responses in real-time.</p>
         </div>
         <div className="space-y-4">
           <h4 className="text-white font-semibold flex items-center gap-2">
-            <Globe className="w-4 h-4 text-[var(--cyan)]" /> Model Selection
+            <Globe className="w-4 h-4 text-[var(--cyan)]" /> Model Interoperability
           </h4>
-          <p className="text-sm text-slate-400">Seamlessly switch between top-tier models (OpenAI, Anthropic, OpenRouter) mid-conversation to leverage the best tool for the specific task.</p>
+          <p className="text-sm text-slate-400">Switch between industry-leading models mid-stream to optimize for specific computational tasks, including logic-heavy reasoning or creative synthesis.</p>
         </div>
         <div className="bg-black/40 rounded-lg p-4 font-mono text-xs text-[var(--mint)] border border-[var(--border)]">
-          // Pro Tip: Use Cmd+K (Mac) or Ctrl+K (Windows) to search chat history instantly.
+          // NAVIGATION_CMD: Use Ctrl+K (Global Search) to query persistent conversation history instantly.
         </div>
       </div>
     )
@@ -107,30 +107,30 @@ const sections = [
     content: (
       <div className="space-y-6">
         <div className="p-6 rounded-2xl bg-gradient-to-br from-[var(--bg-elevated)] to-transparent border border-[var(--border)]">
-          <h3 className="text-lg font-bold text-white mb-4">Project Folders</h3>
-          <p className="text-slate-400 mb-4">Organize your team's work into contextual containers. Projects allow you to:</p>
+          <h3 className="text-lg font-bold text-white mb-4">Contextual Repositories</h3>
+          <p className="text-slate-400 mb-4">Organize your collective output into compartmentalized folders for enhanced retrieval and focus.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-300">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[var(--cyan)]" />
-              Pin key AI outputs
+              Persistent Output Pinning
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[var(--cyan)]" />
-              Shared team notes
+              Collaborative Annotations
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[var(--cyan)]" />
-              Project-specific system prompts
+              Custom Protocol Instructions
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[var(--cyan)]" />
-              Centralized file storage
+              Centralized Documentation Storage
             </div>
           </div>
         </div>
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white">Team System Prompts</h3>
-          <p className="text-slate-400">Maintain a consistent brand voice. Set global instructions that apply to every AI interaction within your team, ensuring tone and quality remain unified.</p>
+          <h3 className="text-xl font-bold text-white">Global Protocol Standards</h3>
+          <p className="text-slate-400">Define cross-organizational system prompts to maintain consistent operational standards, brand voice, and output quality across all collaborative nodes.</p>
         </div>
       </div>
     )
@@ -141,27 +141,27 @@ const sections = [
     icon: <Zap className="w-5 h-5" />,
     content: (
       <div className="space-y-6">
-        <p className="text-slate-400">Luminescent Agents go beyond simple chat—they plan, execute, and deliver results autonomously.</p>
+        <p className="text-slate-400">Autonomous Agents are specialized sub-processes capable of complex task planning and execution with minimal human oversight.</p>
         <div className="overflow-hidden rounded-xl border border-[var(--border)]">
           <table className="w-full text-left text-sm text-slate-400">
             <thead className="bg-[var(--surface)] text-white text-xs uppercase tracking-wider">
               <tr>
-                <th className="px-4 py-3">Agent</th>
-                <th className="px-4 py-3">Capabilities</th>
+                <th className="px-4 py-3">Agent Cluster</th>
+                <th className="px-4 py-3">Functional Capabilities</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
               <tr>
-                <td className="px-4 py-4 text-white font-medium">Research</td>
-                <td className="px-4 py-4">Multi-source web synthesis & competitive analysis</td>
+                <td className="px-4 py-4 text-white font-medium">Research Agent</td>
+                <td className="px-4 py-4">Deep-web synthesis, data extraction, and competitive market auditing.</td>
               </tr>
               <tr>
-                <td className="px-4 py-4 text-white font-medium">Content</td>
-                <td className="px-4 py-4">SEO articles, creative copy, and image generation</td>
+                <td className="px-4 py-4 text-white font-medium">Creative Agent</td>
+                <td className="px-4 py-4">High-fidelity copy synthesis and multimodal asset generation.</td>
               </tr>
               <tr>
-                <td className="px-4 py-4 text-white font-medium">Code</td>
-                <td className="px-4 py-4">Repository reading, debugging, and unit testing</td>
+                <td className="px-4 py-4 text-white font-medium">Engineering Agent</td>
+                <td className="px-4 py-4">Repository analysis, automated debugging, and architectural auditing.</td>
               </tr>
             </tbody>
           </table>
@@ -176,25 +176,25 @@ const sections = [
     content: (
       <div className="space-y-6">
         <div className="space-y-4">
-          <h3 className="text-xl font-bold text-white">Pricing Structure</h3>
-          <p className="text-slate-400">All plans operate on a monthly recurring basis via Razorpay Secure. We offer three primary tiers tailored for different organization sizes.</p>
+          <h3 className="text-xl font-bold text-white">Plan Architecture & Resource Allocation</h3>
+          <p className="text-slate-400">Our resource tiers are designed to scale with your organization's computational needs. All plans are managed via a secure, high-integrity payment gateway with recurring allocation.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 rounded-xl bg-black/30 border border-[var(--border)]">
             <div className="text-xs text-slate-500 mb-1 uppercase font-bold">Starter</div>
             <div className="text-lg font-bold text-white">₹2,400<span className="text-xs text-slate-400">/mo</span></div>
-            <div className="text-xs text-[var(--cyan)] mt-2">Up to 3 Seats</div>
+            <div className="text-xs text-[var(--cyan)] mt-2">3 Dedicated Seats</div>
           </div>
           <div className="p-4 rounded-xl bg-black/30 border border-[var(--border-strong)] relative overflow-hidden">
-             <div className="absolute top-0 right-0 bg-[var(--cyan)] text-black text-[10px] font-bold px-2 py-0.5">MOST POPULAR</div>
+             <div className="absolute top-0 right-0 bg-[var(--cyan)] text-black text-[10px] font-bold px-2 py-0.5">OPTIMIZED</div>
             <div className="text-xs text-slate-500 mb-1 uppercase font-bold">Growth</div>
             <div className="text-lg font-bold text-white">₹4,900<span className="text-xs text-slate-400">/mo</span></div>
-            <div className="text-xs text-[var(--cyan)] mt-2">Up to 7 Seats</div>
+            <div className="text-xs text-[var(--cyan)] mt-2">7 Dedicated Seats</div>
           </div>
           <div className="p-4 rounded-xl bg-black/30 border border-[var(--border)]">
             <div className="text-xs text-slate-500 mb-1 uppercase font-bold">Pro</div>
             <div className="text-lg font-bold text-white">₹8,200<span className="text-xs text-slate-400">/mo</span></div>
-            <div className="text-xs text-[var(--cyan)] mt-2">Up to 12 Seats</div>
+            <div className="text-xs text-[var(--cyan)] mt-2">12 Dedicated Seats</div>
           </div>
         </div>
       </div>

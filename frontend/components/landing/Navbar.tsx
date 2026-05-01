@@ -91,19 +91,36 @@ export function Navbar() {
           backdropFilter: scrolled ? "none" : "blur(12px)",
           transition: "all 0.4s ease"
         }}>
-          {["Features", "Agents", "Pricing"].map(item => (
-            <a key={item} href={`#${item.toLowerCase()}`} className="nav-link" style={{ 
-              fontFamily: "var(--font-mono)", 
-              fontSize: 11, 
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              color: "rgba(255, 255, 255, 0.5)",
-              textDecoration: "none",
-              transition: "color 0.3s ease"
-            }} onMouseEnter={e => e.currentTarget.style.color = "#FFF"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255, 255, 255, 0.5)"}>
-              {item}
-            </a>
-          ))}
+          {["Features", "Agents", "About", "Pricing", "Docs"].map(item => {
+            if (item === "Docs") {
+              return (
+                <Link key={item} href="/docs" className="nav-link" style={{ 
+                  fontFamily: "var(--font-mono)", 
+                  fontSize: 11, 
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "rgba(255, 255, 255, 0.5)",
+                  textDecoration: "none",
+                  transition: "color 0.3s ease"
+                }} onMouseEnter={e => e.currentTarget.style.color = "#FFF"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255, 255, 255, 0.5)"}>
+                  {item}
+                </Link>
+              );
+            }
+            return (
+              <Link key={item} href={`/#${item === "About" ? "about" : item.toLowerCase()}`} className="nav-link" style={{ 
+                fontFamily: "var(--font-mono)", 
+                fontSize: 11, 
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                color: "rgba(255, 255, 255, 0.5)",
+                textDecoration: "none",
+                transition: "color 0.3s ease"
+              }} onMouseEnter={e => e.currentTarget.style.color = "#FFF"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255, 255, 255, 0.5)"}>
+                {item}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Auth (Desktop) */}
@@ -153,8 +170,8 @@ export function Navbar() {
             padding: "32px", display: "flex", flexDirection: "column", gap: 24,
             animation: "fadeInDown 0.4s ease"
           }}>
-            {["Features", "Agents", "Pricing"].map(item => (
-              <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setMenuOpen(false)}
+            {["Features", "Agents", "About", "Pricing", "Docs"].map(item => (
+              <Link key={item} href={item === "Docs" ? "/docs" : `/#${item === "About" ? "about" : item.toLowerCase()}`} onClick={() => setMenuOpen(false)}
                 style={{ 
                   fontFamily: "var(--font-header)", 
                   fontSize: 18, 
@@ -164,7 +181,7 @@ export function Navbar() {
                   letterSpacing: "-0.02em"
                 }}>
                 {item}
-              </a>
+              </Link>
             ))}
             <div style={{ height: 1, background: "rgba(255, 255, 255, 0.05)" }} />
             <Link href="/login" onClick={() => setMenuOpen(false)}

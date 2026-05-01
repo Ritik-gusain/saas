@@ -118,7 +118,7 @@ export function HowItWorksSection() {
 
   return (
     <section
-      id="how-it-works"
+      id="about"
       ref={sectionRef}
       data-bg="#0A0D12"
       data-text="#FFFFFF"

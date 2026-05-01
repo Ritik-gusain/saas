@@ -164,9 +164,13 @@ export function Footer() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {links.map((link) => (
-                  <a
+                  <Link
                     key={link}
-                    href="#"
+                    href={
+                      link === "Documentation" ? "/docs" : 
+                      link === "Agents" ? "/#agents" : 
+                      link === "Pricing" ? "/#pricing" : "#"
+                    }
                     style={{
                       fontSize: 14,
                       color: "var(--landing-muted)",
@@ -177,7 +181,7 @@ export function Footer() {
                     onMouseOut={(e) => (e.currentTarget.style.color = "var(--landing-muted)")}
                   >
                     {link}
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>
