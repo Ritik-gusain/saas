@@ -16,7 +16,7 @@ export function Navbar() {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
     
-    const ctx = gsap.context(() => {
+    const ctx = gsap.context((self) => {
       // Entry Animation
       gsap.fromTo(navRef.current,
         { y: -100, opacity: 0 },
@@ -34,11 +34,18 @@ export function Navbar() {
           gsap.to(magBtn, { x, y, duration: 0.3, ease: "power2.out" });
         };
         const reset = () => gsap.to(magBtn, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" });
+        
         magBtn.addEventListener("mousemove", move as any);
         magBtn.addEventListener("mouseleave", reset);
+
+        // Scope the cleanup here
+        self.add(() => {
+          magBtn.removeEventListener("mousemove", move as any);
+          magBtn.removeEventListener("mouseleave", reset);
+        });
       }
-      // Scroll Progress
-      const updateProgress = () => {
+      
+      const onScrollUpdate = () => {
         const scrolled = window.scrollY;
         const height = document.documentElement.scrollHeight - window.innerHeight;
         const progress = (scrolled / height) * 100;
@@ -46,8 +53,13 @@ export function Navbar() {
           progressBarRef.current.style.width = `${progress}%`;
         }
       };
-      window.addEventListener("scroll", updateProgress);
-      updateProgress();
+      
+      window.addEventListener("scroll", onScrollUpdate);
+      onScrollUpdate();
+
+      return () => {
+        window.removeEventListener("scroll", onScrollUpdate);
+      };
     });
 
     return () => {

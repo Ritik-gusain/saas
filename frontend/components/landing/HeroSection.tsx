@@ -101,24 +101,33 @@ export function HeroSection() {
 
         // 5. Magnetic Buttons
         const magBtns = sectionRef.current?.querySelectorAll(".btn-magnetic");
+        const cleanupFns: (() => void)[] = [];
+
         magBtns?.forEach(btn => {
+          const b = btn as HTMLElement;
           const move = (e: MouseEvent) => {
             const { clientX, clientY } = e;
-            const { left, top, width, height } = (btn as HTMLElement).getBoundingClientRect();
+            const { left, top, width, height } = b.getBoundingClientRect();
             const x = (clientX - (left + width/2)) * 0.25;
             const y = (clientY - (top + height/2)) * 0.25;
-            gsap.to(btn, { x, y, duration: 0.3, ease: "power2.out" });
+            gsap.to(b, { x, y, duration: 0.3, ease: "power2.out" });
           };
-          const reset = () => gsap.to(btn, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" });
-          btn.addEventListener("mousemove", move as any);
-          btn.addEventListener("mouseleave", reset);
+          const reset = () => gsap.to(b, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" });
+          
+          b.addEventListener("mousemove", move);
+          b.addEventListener("mouseleave", reset);
+          cleanupFns.push(() => {
+            b.removeEventListener("mousemove", move);
+            b.removeEventListener("mouseleave", reset);
+          });
         });
 
         // 6. Cursor Spotlight
         const spotlight = sectionRef.current?.querySelector(".hero-spotlight") as HTMLElement;
         const onMouseMove = (e: MouseEvent) => {
+          if (!sectionRef.current || !spotlight) return;
           const { clientX, clientY } = e;
-          const { left, top } = sectionRef.current!.getBoundingClientRect();
+          const { left, top } = sectionRef.current.getBoundingClientRect();
           gsap.to(spotlight, {
             left: clientX - left,
             top: clientY - top,
@@ -127,6 +136,7 @@ export function HeroSection() {
           });
         };
         sectionRef.current?.addEventListener("mousemove", onMouseMove);
+        cleanupFns.push(() => sectionRef.current?.removeEventListener("mousemove", onMouseMove));
 
         // 7. Stats Glow
         const statsBar = sectionRef.current?.querySelector(".stats-bar") as HTMLElement;
@@ -139,7 +149,10 @@ export function HeroSection() {
             statsBar.style.setProperty("--y", `${y}%`);
           };
           statsBar.addEventListener("mousemove", onStatsMove);
+          cleanupFns.push(() => statsBar.removeEventListener("mousemove", onStatsMove));
         }
+
+        return () => cleanupFns.forEach(fn => fn());
 
       }, sectionRef);
     }, 100);
