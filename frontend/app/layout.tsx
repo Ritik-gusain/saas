@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Luminescent.io — Team AI Chatbot for Modern Teams",
+  title: "Luminescent — Team AI Chatbot for Modern Teams",
   description:
     "Stop paying ₹1,600/user for individual ChatGPT seats. Luminescent gives your entire team unified AI with shared history, system prompts, and autonomous agents — at half the cost.",
   keywords: [
@@ -10,20 +10,20 @@ export const metadata: Metadata = {
     "ChatGPT for teams",
     "AI team collaboration",
     "AI SaaS India",
-    "Bytez AI",
+    "Luminescent",
     "team AI subscription",
   ],
   openGraph: {
-    title: "Luminescent.io — Team AI Chatbot for Modern Teams",
+    title: "Luminescent — Team AI Chatbot for Modern Teams",
     description:
       "One AI subscription for your whole team. Shared history, brand-voice prompts, and AI agents that actually do the work.",
-    url: "https://luminescent.io",
-    siteName: "Luminescent.io",
+    url: "https://frontend-lilac-nine-28.vercel.app",
+    siteName: "Luminescent",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Luminescent.io — Team AI Chatbot",
+    title: "Luminescent — Team AI Chatbot",
     description: "Replace fragmented individual AI seats with one unified team plan.",
   },
 };

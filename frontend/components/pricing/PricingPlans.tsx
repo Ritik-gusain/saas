@@ -303,7 +303,7 @@ export default function PricingPlans() {
       {/* Footer */}
       <footer className="border-t py-8 px-6 text-center" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
         <p className="text-xs" style={{ color: 'rgba(248,249,250,0.25)' }}>
-          &copy; 2025 Luminescent.io. All rights reserved.
+          &copy; 2025 Luminescent. All rights reserved.
         </p>
       </footer>
     </div>

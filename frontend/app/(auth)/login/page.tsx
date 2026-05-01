@@ -39,7 +39,7 @@ export default function Login() {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Luminescent.io
+              Luminescent
             </span>
           </Link>
 

@@ -67,7 +67,7 @@ function RegisterForm() {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Luminescent.io
+              Luminescent
             </span>
           </Link>
 

@@ -246,7 +246,7 @@ export default function DocsPage() {
             <Bot className="w-full h-full text-black" />
           </div>
           <span className="font-['Montserrat'] font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 group-hover:to-[var(--cyan)] transition-all duration-300">
-            LUMINESCENT.IO
+            LUMINESCENT
           </span>
         </Link>
 
@@ -344,7 +344,7 @@ export default function DocsPage() {
           <footer className="border-t border-[var(--border)] pt-10 mt-10">
             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
               <div className="text-slate-500 text-sm">
-                © 2026 Luminescent.io. All rights reserved.
+                © 2026 Luminescent. All rights reserved.
               </div>
               <div className="flex gap-6">
                 <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">Twitter</a>
