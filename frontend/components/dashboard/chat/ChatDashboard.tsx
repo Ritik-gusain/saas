@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { sendMessageToModel } from '@/lib/models';
-import { ChatSidebar } from './ChatSidebar';
 import { ChatHeader } from './ChatHeader';
 import MessageBubble from '@/components/chat/MessageBubble';
 import MessageInput from '@/components/chat/MessageInput';
@@ -39,11 +38,6 @@ export default function ChatDashboard({ selectedPlan, onSignOut }: ChatDashboard
 
   return (
     <div className="h-full bg-transparent flex overflow-hidden">
-      <ChatSidebar 
-        activeConversation={activeConversation} 
-        setActiveConversation={setActiveConversation} 
-      />
-
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col bg-transparent">
         <ChatHeader 
