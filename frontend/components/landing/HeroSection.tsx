@@ -187,8 +187,8 @@ export function HeroSection() {
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            opacity: 0.65,
-            filter: "brightness(0.85) contrast(1.1)",
+            opacity: 0.8,
+            filter: "brightness(0.9) contrast(1.05)",
             transform: "scale(1.06)", // Slight over-scale to hide corner watermarks (Veo)
           }}
         >
@@ -197,7 +197,7 @@ export function HeroSection() {
       </div>
 
       {/* ── Grid bg Overlay ── */}
-      <div className="grid-bg" style={{ position: "absolute", inset: 0, zIndex: 1, opacity: 0.3 }} />
+      <div className="grid-bg" style={{ position: "absolute", inset: 0, zIndex: 1, opacity: 0.15 }} />
 
       {/* ── Ambient orbs ── */}
       <div className="hero-orb" style={{
@@ -217,7 +217,7 @@ export function HeroSection() {
       <div style={{
         position: "absolute", inset: 0,
         background: "radial-gradient(circle at center, transparent 0%, #0A0D12 100%)",
-        opacity: 0.6, zIndex: 3, pointerEvents: "none",
+        opacity: 0.45, zIndex: 3, pointerEvents: "none",
       }} />
 
       {/* ── Cursor Spotlight ── */}
