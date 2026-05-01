@@ -7,7 +7,12 @@
   <p><i>Stop paying for individual AI seats. Centralize your team's intelligence for a fraction of the cost.</i></p>
 
   <p>
-    <a href="https://frontend-lilac-nine-28.vercel.app/"><b>Try the Live App →</b></a>
+    <a href="https://luminescent.io">
+      <img src="https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel" alt="Deployed on Vercel" />
+    </a>
+  </p>
+  <p>
+    <a href="https://luminescent.io"><b>Try the Live App →</b></a>
   </p>
 
 </div>
