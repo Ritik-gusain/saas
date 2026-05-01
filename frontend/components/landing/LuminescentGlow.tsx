@@ -52,8 +52,8 @@ export const LuminescentGlow = () => {
       <div className="glow-blob absolute top-[50%] left-[40%] w-[500px] h-[500px] rounded-full opacity-[0.03] blur-[100px]" style={{ background: "var(--landing-cyan)" }} />
 
       {/* Sparkles */}
-      {[...Array(100)].map((_, i) => {
-        const size = Math.random() * 1.2 + 0.4;
+      {[...Array(150)].map((_, i) => {
+        const size = Math.random() * 1.5 + 0.5;
         const color = i % 5 === 0 ? "var(--landing-green)" : i % 7 === 0 ? "var(--landing-cyan)" : "#FFFFFF";
         return (
           <div
@@ -65,11 +65,25 @@ export const LuminescentGlow = () => {
               top: `${Math.random() * 100}%`,
               left: `${Math.random() * 100}%`,
               backgroundColor: color,
-              boxShadow: `0 0 ${size * 3}px ${size/2}px ${color === "#FFFFFF" ? "rgba(255, 255, 255, 0.3)" : color + "55"}`,
+              boxShadow: `0 0 ${size * 4}px ${size/2}px ${color === "#FFFFFF" ? "rgba(255, 255, 255, 0.4)" : color + "66"}`,
             }}
           />
         );
       })}
+
+      {/* Neural Lines Overlay */}
+      <svg className="absolute inset-0 w-full h-full opacity-[0.05]" style={{ pointerEvents: "none" }}>
+        {[...Array(8)].map((_, i) => (
+          <path
+            key={i}
+            d={`M${Math.random() * 100}% ${Math.random() * 100}% L${Math.random() * 100}% ${Math.random() * 100}%`}
+            stroke="white"
+            strokeWidth="0.5"
+            fill="none"
+            style={{ opacity: Math.random() * 0.5 + 0.2 }}
+          />
+        ))}
+      </svg>
 
       {/* Subtle Noise Texture Overlay */}
       <div 

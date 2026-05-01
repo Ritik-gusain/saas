@@ -144,7 +144,7 @@ export function CTABanner() {
           <div className="reveal-container">
             <p className="reveal-text" style={{
               fontSize: 19,
-              color: "rgba(255,255,255,0.6)",
+              color: "rgba(255,255,255,0.8)",
               maxWidth: 500,
               margin: "0 auto 48px",
               lineHeight: 1.6
@@ -176,7 +176,7 @@ export function CTABanner() {
             display: "flex",
             justifyContent: "center",
             gap: 60,
-            opacity: 0.6,
+            opacity: 0.8,
           }}>
             {[
               { val: "14.2k", label: "Active Nodes" },

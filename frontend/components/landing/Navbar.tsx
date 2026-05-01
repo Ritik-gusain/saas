@@ -10,7 +10,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navRef = useRef<HTMLElement>(null);
-  const statusBarRef = useRef<HTMLDivElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -37,6 +37,17 @@ export function Navbar() {
         magBtn.addEventListener("mousemove", move as any);
         magBtn.addEventListener("mouseleave", reset);
       }
+      // Scroll Progress
+      const updateProgress = () => {
+        const scrolled = window.scrollY;
+        const height = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrolled / height) * 100;
+        if (progressBarRef.current) {
+          progressBarRef.current.style.width = `${progress}%`;
+        }
+      };
+      window.addEventListener("scroll", updateProgress);
+      updateProgress();
     });
 
     return () => {
@@ -99,10 +110,10 @@ export function Navbar() {
                   fontSize: 11, 
                   textTransform: "uppercase",
                   letterSpacing: "0.1em",
-                  color: "rgba(255, 255, 255, 0.5)",
+                  color: "rgba(255, 255, 255, 0.7)",
                   textDecoration: "none",
                   transition: "color 0.3s ease"
-                }} onMouseEnter={e => e.currentTarget.style.color = "#FFF"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255, 255, 255, 0.5)"}>
+                }} onMouseEnter={e => e.currentTarget.style.color = "#FFF"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)"}>
                   {item}
                 </Link>
               );
@@ -113,10 +124,10 @@ export function Navbar() {
                 fontSize: 11, 
                 textTransform: "uppercase",
                 letterSpacing: "0.1em",
-                color: "rgba(255, 255, 255, 0.5)",
+                color: "rgba(255, 255, 255, 0.7)",
                 textDecoration: "none",
                 transition: "color 0.3s ease"
-              }} onMouseEnter={e => e.currentTarget.style.color = "#FFF"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255, 255, 255, 0.5)"}>
+              }} onMouseEnter={e => e.currentTarget.style.color = "#FFF"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)"}>
                 {item}
               </Link>
             );
@@ -128,12 +139,12 @@ export function Navbar() {
           <Link href="/login" style={{ 
             fontFamily: "var(--font-mono)", 
             fontSize: 11, 
-            color: "rgba(255, 255, 255, 0.5)", 
+            color: "rgba(255, 255, 255, 0.7)", 
             textDecoration: "none", 
             textTransform: "uppercase",
             letterSpacing: "0.1em",
             transition: "color 0.3s ease"
-          }} onMouseEnter={e => e.currentTarget.style.color = "#FFF"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255, 255, 255, 0.5)"}>
+          }} onMouseEnter={e => e.currentTarget.style.color = "#FFF"} onMouseLeave={e => e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)"}>
             Login
           </Link>
           <Link href="/register" className="btn-launch btn-magnetic">
@@ -185,7 +196,7 @@ export function Navbar() {
             ))}
             <div style={{ height: 1, background: "rgba(255, 255, 255, 0.05)" }} />
             <Link href="/login" onClick={() => setMenuOpen(false)}
-              style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none", textTransform: "uppercase" }}>
+              style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(255,255,255,0.7)", textDecoration: "none", textTransform: "uppercase" }}>
               Login
             </Link>
             <Link href="/register" className="btn-primary" style={{ justifyContent: "center", padding: "16px" }}>
@@ -193,6 +204,20 @@ export function Navbar() {
             </Link>
           </div>
         )}
+        {/* Scroll Progress Bar */}
+        <div 
+          ref={progressBarRef}
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            height: 2,
+            background: "linear-gradient(90deg, var(--landing-green), var(--landing-cyan))",
+            width: "0%",
+            transition: "width 0.1s ease-out",
+            opacity: scrolled ? 1 : 0
+          }}
+        />
       </nav>
     </>
   );

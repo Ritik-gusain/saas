@@ -165,7 +165,7 @@ export function PricingSection() {
               <p style={{ fontSize: 14, color: "var(--landing-muted)", marginBottom: 40, lineHeight: 1.6 }}>The baseline protocol. For individual engineers owning their own intelligence stack.</p>
               <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px", display: "flex", flexDirection: "column", gap: 16 }}>
                 {["Full BYOK Access", "Local Chat History", "All 40+ Models"].map(f => (
-                  <li key={f} style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", display: "flex", gap: 10 }}><Check size={14} color="var(--landing-green)" /> {f}</li>
+                  <li key={f} style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", display: "flex", gap: 10 }}><Check size={14} color="var(--landing-green)" /> {f}</li>
                 ))}
               </ul>
               <Link href="/register" className="btn-ghost" style={{ width: "100%", justifyContent: "center", fontSize: 13 }}>Initialize Solo</Link>
@@ -195,13 +195,13 @@ export function PricingSection() {
                   <span style={{ fontSize: 44, fontWeight: 800 }}>{plan.price}</span>
                   <span style={{ fontSize: 14, opacity: 0.3 }}>/mo</span>
                 </div>
-                <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", marginBottom: 40, minHeight: 44 }}>{plan.desc}</p>
+                <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", marginBottom: 40, minHeight: 44 }}>{plan.desc}</p>
                 
                 <div style={{ height: 1, background: "rgba(255,255,255,0.05)", marginBottom: 32 }} />
                 
                 <ul style={{ listStyle: "none", padding: 0, margin: "0 0 40px", display: "flex", flexDirection: "column", gap: 18 }}>
                   {plan.features.map(f => (
-                    <li key={f} style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", display: "flex", gap: 12 }}>
+                    <li key={f} style={{ fontSize: 14, color: "rgba(255,255,255,0.85)", display: "flex", gap: 12 }}>
                       <Check size={16} color={plan.accent} style={{ flexShrink: 0 }} /> 
                       {f}
                     </li>

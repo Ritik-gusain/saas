@@ -265,11 +265,12 @@ export function HeroSection() {
         {/* Headline */}
         <h1 className="display-h1" style={{
           fontSize: "clamp(54px, 8vw, 96px)",
-          color: "#F8F9FA",
+          color: "#FFFFFF",
           margin: 0,
           textAlign: "center",
-          textShadow: "0 10px 40px rgba(0,0,0,0.9)",
+          textShadow: "0 0 80px rgba(0,0,0,0.8), 0 10px 40px rgba(0,0,0,0.9)",
           letterSpacing: "-0.06em",
+          fontWeight: 900,
         }}>
           <div className="reveal-container">
             <span className="reveal-text">Infrastructure for the</span>
@@ -285,10 +286,11 @@ export function HeroSection() {
           <p className="reveal-text" style={{
             fontFamily: "var(--font-body)",
             fontSize: "clamp(16px, 1.6vw, 18px)",
-            color: "rgba(248,249,250,0.5)",
-            maxWidth: 580, lineHeight: 1.7,
+            color: "rgba(255,255,255,0.85)",
+            maxWidth: 620, lineHeight: 1.7,
             fontWeight: 400, margin: "20px auto 0",
             textAlign: "center",
+            textShadow: "0 2px 10px rgba(0,0,0,0.5)",
           }}>
             Luminescent is a high-performance orchestration layer for team-based AI. 
             Bring your own models, own your context, and engineer at the speed of thought.

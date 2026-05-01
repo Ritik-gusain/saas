@@ -113,7 +113,7 @@ export function LuminescentConsole() {
               <div style={{ 
                 fontFamily: "var(--font-mono)", 
                 fontSize: 14, 
-                color: activeStep === i ? "#FFF" : "rgba(255,255,255,0.4)",
+                color: activeStep === i ? "#FFF" : "rgba(255,255,255,0.6)",
                 textShadow: activeStep === i ? `0 0 10px ${step.color}44` : "none",
               }}>
                 {step.text}
@@ -150,7 +150,7 @@ export function LuminescentConsole() {
                   boxShadow: "0 0 10px #00FFAA"
                 }} />
               </div>
-              <div style={{ marginTop: 16, fontSize: 13, color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-body)" }}>
+              <div style={{ marginTop: 16, fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: "var(--font-body)" }}>
                 Agent <span style={{ color: "#FFF" }}>Nexus</span> is successfully managing <span style={{ color: "#FFF" }}>14 nodes</span> with an average latency of <span style={{ color: "#00FFAA" }}>8ms</span>.
               </div>
             </div>

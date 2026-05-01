@@ -136,7 +136,7 @@ export function Footer() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "rgba(255,255,255,0.4)",
+                    color: "rgba(255,255,255,0.6)",
                     transition: "all 0.3s ease",
                   }}
                   onMouseOver={(e) => {
@@ -145,7 +145,7 @@ export function Footer() {
                     (e.currentTarget as HTMLElement).style.background = "rgba(0, 255, 170, 0.05)";
                   }}
                   onMouseOut={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.4)";
+                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.6)";
                     (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
                     (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
                   }}
@@ -173,12 +173,12 @@ export function Footer() {
                     }
                     style={{
                       fontSize: 14,
-                      color: "var(--landing-muted)",
+                      color: "rgba(255, 255, 255, 0.7)",
                       textDecoration: "none",
                       transition: "color 0.2s ease",
                     }}
                     onMouseOver={(e) => (e.currentTarget.style.color = "#fff")}
-                    onMouseOut={(e) => (e.currentTarget.style.color = "var(--landing-muted)")}
+                    onMouseOut={(e) => (e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)")}
                   >
                     {link}
                   </Link>
@@ -198,7 +198,7 @@ export function Footer() {
           flexWrap: "wrap",
           gap: 24,
         }}>
-          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}>
+          <div style={{ marginTop: 16, fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: "var(--font-body)" }}>
             © 2026 Luminescent Protocol. Built for the future.
           </div>
 
@@ -221,7 +221,7 @@ export function Footer() {
                 alignItems: "center",
                 gap: 6,
                 fontSize: 12,
-                color: "rgba(255,255,255,0.3)",
+                color: "rgba(255,255,255,0.5)",
                 textDecoration: "none",
               }}
             >

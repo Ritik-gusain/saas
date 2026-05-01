@@ -87,6 +87,12 @@ export function FeaturesSection() {
     >
       <div className="grid-bg" style={{ position: "absolute", inset: 0, zIndex: 0, opacity: 0.1 }} />
       
+      {/* Corner Markers to fill space */}
+      <div className="corner-marker corner-tl" />
+      <div className="corner-marker corner-tr" />
+      <div className="corner-marker corner-bl" />
+      <div className="corner-marker corner-br" />
+      
       <div style={{ maxWidth: 1280, margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* Header */}
         <div style={{ marginBottom: 80, maxWidth: 640 }}>
@@ -194,7 +200,7 @@ export function FeaturesSection() {
                     {f.title}
                   </h3>
                   <p style={{ 
-                    color: "rgba(248,249,250,0.5)", 
+                    color: "rgba(255, 255, 255, 0.7)", 
                     lineHeight: 1.7,
                     fontSize: 16,
                     maxWidth: 380,

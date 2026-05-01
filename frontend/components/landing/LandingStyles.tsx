@@ -13,8 +13,8 @@ export const LandingStyles = () => (
       --landing-bg2:     #0E1218;
       --landing-surface: #12171E;
       --landing-border:  rgba(255,255,255,0.06);
-      --landing-white:   #F8F9FA;
-      --landing-muted:   rgba(248,249,250,0.5);
+      --landing-white:   #FFFFFF;
+      --landing-muted:   rgba(255,255,255,0.75);
       
       /* nvg8-inspired Palette */
       --nvg-beige: #F5F2EA;
@@ -39,7 +39,10 @@ export const LandingStyles = () => (
       background-image: 
         radial-gradient(circle at 50% 0%, rgba(0, 255, 170, 0.08) 0%, transparent 60%),
         radial-gradient(circle at 100% 100%, rgba(123, 97, 255, 0.08) 0%, transparent 60%),
-        radial-gradient(circle at 0% 50%, rgba(0, 208, 255, 0.05) 0%, transparent 40%);
+        radial-gradient(circle at 0% 50%, rgba(0, 208, 255, 0.05) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
       background-attachment: fixed;
       color: var(--landing-white);
       margin: 0;
@@ -55,13 +58,47 @@ export const LandingStyles = () => (
       left: 0;
       width: 100%;
       height: 100%;
-      opacity: 0.08;
+      opacity: 0.12;
       z-index: 9999;
       pointer-events: none;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
       filter: contrast(110%) brightness(100%);
     }
 
+    /* ─── Architectural Grid Overlay ─── */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+      background-size: 200px 200px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+
+    /* ─── HUD Corner Markers ─── */
+    .section-container {
+      position: relative;
+    }
+
+    .corner-marker {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+    }
+
+    .corner-tl { top: 40px; left: 40px; border-right: none; border-bottom: none; }
+    .corner-tr { top: 40px; right: 40px; border-left: none; border-bottom: none; }
+    .corner-bl { bottom: 40px; left: 40px; border-right: none; border-top: none; }
+    .corner-br { bottom: 40px; right: 40px; border-left: none; border-top: none; }
 
     /* ─── Typography Utils ─── */
     .display-h1 {

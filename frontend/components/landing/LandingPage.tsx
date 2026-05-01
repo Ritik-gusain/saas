@@ -7,6 +7,10 @@ import { HeroSection } from "./HeroSection";
 import { LogoTicker } from "./LogoTicker";
 import { LuminescentConsole } from "./LuminescentConsole";
 import { FeaturesSection } from "./FeaturesSection";
+import { AboutSection } from "./AboutSection";
+import { TestimonialsSection } from "./TestimonialsSection";
+import { FAQSection } from "./FAQSection";
+import { MetricsSection } from "./MetricsSection";
 import { HowItWorksSection } from "./HowItWorksSection";
 import { PricingSection } from "./PricingSection";
 import { CTABanner } from "./CTABanner";
@@ -71,10 +75,14 @@ export default function LandingPage() {
         <Navbar />
         <HeroSection />
         <LogoTicker />
+        <MetricsSection />
+        <AboutSection />
         <LuminescentConsole />
         <FeaturesSection />
+        <TestimonialsSection />
         <HowItWorksSection />
         <PricingSection />
+        <FAQSection />
         <CTABanner />
         <Footer />
       </div>
