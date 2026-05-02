@@ -4,6 +4,10 @@ import { useState } from 'react';
 import { Settings, User, Bell, Shield, CreditCard, Users, Mail, Key, Globe, ArrowLeft } from 'lucide-react';
 import ApiKeysForm from '@/components/settings/ApiKeysForm';
 import TeamSettings from '@/components/settings/TeamSettings';
+import ProfileSettings from '@/components/settings/ProfileSettings';
+import BillingSettings from '@/components/settings/BillingSettings';
+import NotificationSettings from '@/components/settings/NotificationSettings';
+import SecuritySettings from '@/components/settings/SecuritySettings';
 
 type SectionId = 'profile' | 'team' | 'billing' | 'notifications' | 'security' | 'api';
 
@@ -25,6 +29,14 @@ export default function SettingsPage() {
         return <TeamSettings />;
       case 'api':
         return <ApiKeysForm />;
+      case 'profile':
+        return <ProfileSettings />;
+      case 'billing':
+        return <BillingSettings />;
+      case 'notifications':
+        return <NotificationSettings />;
+      case 'security':
+        return <SecuritySettings />;
       default:
         return (
           <div className="flex flex-col items-center justify-center py-20 glass-panel rounded-2xl border-dashed border-2 border-[var(--border)]">

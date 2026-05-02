@@ -6,6 +6,9 @@ import { AdminHeader } from './AdminHeader';
 import { AdminTabs } from './AdminTabs';
 import { AdminOverview } from './AdminOverview';
 import { AdminMembers } from './AdminMembers';
+import { AdminUsage } from './AdminUsage';
+
+import { AdminSettings } from './AdminSettings';
 
 interface AdminPanelProps {
   teamData?: {
@@ -41,8 +44,14 @@ export default function AdminPanel({ teamData = {
         {/* Members Tab */}
         {activeTab === 'members' && <AdminMembers tokensLimit={teamData.tokensLimit} />}
 
+        {/* Usage Tab */}
+        {activeTab === 'usage' && <AdminUsage />}
+
+        {/* Settings Tab */}
+        {activeTab === 'settings' && <AdminSettings />}
+
         {/* Other tabs placeholder */}
-        {activeTab !== 'overview' && activeTab !== 'members' && (
+        {activeTab !== 'overview' && activeTab !== 'members' && activeTab !== 'usage' && activeTab !== 'settings' && (
           <div className="glass-panel rounded-2xl p-12 text-center">
             <div className="w-16 h-16 rounded-2xl bg-[var(--surface)] flex items-center justify-center mx-auto mb-4">
               <Settings className="w-8 h-8 text-[var(--muted)]" />

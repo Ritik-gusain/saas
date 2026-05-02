@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from 'react';
-import { Send, Sparkles, Zap } from 'lucide-react';
+import { Send, Sparkles, Zap, Paperclip, Mic, Image as ImageIcon, TerminalSquare } from 'lucide-react';
 
 interface MessageInputProps {
   onSend: (message: string) => Promise<void>;
@@ -58,14 +58,37 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
               placeholder="Ask your team AI anything..."
               rows={1}
               disabled={isLoading || disabled}
-              className="w-full relative glass-panel rounded-2xl pl-6 pr-14 py-4 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--cyan)] focus:ring-0 transition-all outline-none resize-none"
+              className="w-full relative glass-panel rounded-2xl pl-6 pr-32 py-4 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--cyan)] focus:ring-0 transition-all outline-none resize-none"
             />
-            <div className="absolute right-3 bottom-3 flex items-center gap-2">
+            <div className="absolute right-3 bottom-3 flex items-center gap-1">
               <button 
                 type="button"
-                className="p-2 rounded-lg hover:bg-[var(--surface)] transition-all"
+                className="p-2 rounded-lg hover:bg-[var(--surface)] transition-all group"
+                title="Attach files"
               >
-                <Sparkles className="w-4 h-4 text-[var(--muted)]" />
+                <Paperclip className="w-4 h-4 text-[var(--muted)] group-hover:text-white" />
+              </button>
+              <button 
+                type="button"
+                className="p-2 rounded-lg hover:bg-[var(--surface)] transition-all group"
+                title="Generate Image"
+              >
+                <ImageIcon className="w-4 h-4 text-[var(--muted)] group-hover:text-white" />
+              </button>
+              <button 
+                type="button"
+                className="p-2 rounded-lg hover:bg-[var(--surface)] transition-all group"
+                title="Voice Input"
+              >
+                <Mic className="w-4 h-4 text-[var(--muted)] group-hover:text-white" />
+              </button>
+              <div className="w-px h-4 bg-[var(--border)] mx-1" />
+              <button 
+                type="button"
+                className="p-2 rounded-lg hover:bg-[var(--surface)] transition-all group"
+                title="System Prompt / Prompt Templates"
+              >
+                <TerminalSquare className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--cyan)]" />
               </button>
             </div>
           </div>
@@ -81,8 +104,13 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
           <p className="text-xs text-[var(--muted)] flex items-center gap-2">
             <Zap className="w-3 h-3 text-[var(--mint)]" />
             Luminescent AI Core v1.4 • Powered by Bytez
+            <span className="ml-2 px-1.5 py-0.5 rounded-full bg-[var(--surface)] text-[9px] font-mono border border-[var(--border)]">
+              ~240 tokens
+            </span>
           </p>
-          <p className="text-xs text-[var(--muted)]">Press <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface)] text-[10px]">Enter</kbd> to send</p>
+          <p className="text-xs text-[var(--muted)] flex items-center gap-2">
+            <span>Press <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface)] text-[10px] border border-[var(--border)] font-mono">Enter</kbd> to send</span>
+          </p>
         </div>
       </form>
     </div>

@@ -26,11 +26,12 @@ A **B2B Team AI Chatbot SaaS** that provides a unified, collaborative AI workspa
 
 ### Pricing Tiers
 
-| Plan | Monthly Price | Seats | Per-User Cost |
-|------|---------------|-------|---------------|
-| Starter Team | ₹2,400 (~\$29) | Up to 3 | ₹800/user |
-| Growth Team | ₹4,900 (~\$59) | Up to 7 | ₹700/user |
-| Pro Team | ₹8,200 (~\$99) | Up to 12 | ₹683/user |
+| Plan | Monthly Price | Seats | Features |
+|------|---------------|-------|----------|
+| Free Tier | $0/month | 1 | Local storage, Basic Features |
+| Starter Team | $29/month | Up to 3 | Shared Workspace, BYOK |
+| Growth Team | $59/month | Up to 7 | Shared Workspace, Advanced Admin, BYOK |
+| Pro Team | $99/month | Up to 12 | Shared Workspace, Full Analytics, BYOK |
 
 ---
 
