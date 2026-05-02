@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, db } from '@/lib/firebase-admin';
+import { decrypt } from '@/lib/encryption';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,15 +17,70 @@ export async function POST(req: NextRequest) {
     const conversationId = formData.get('conversationId') as string;
     const message = formData.get('message') as string;
     const customModel = formData.get('model') as string;
-    // Handle attachments if they exist (skipping for brevity in MVP)
 
     if (!conversationId || !message) {
       return NextResponse.json({ error: 'Missing conversationId or message' }, { status: 400 });
     }
 
-    const timestamp = new Date().toISOString();
+    // 1. Get conversation context to find team
+    const convDoc = await db.collection('conversations').doc(conversationId).get();
+    if (!convDoc.exists) return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+    
+    const convData = convDoc.data();
+    const team_id = convData?.team_id || '';
+    const token_count = convData?.token_count || 0;
 
-    // 1. Save user message
+    let api_keys_to_use: any = {};
+    let default_model = customModel || 'gpt-4';
+    let system_prompt = '';
+
+    // 2. Fetch keys based on context (Team vs Individual)
+    if (team_id) {
+      // Check team membership
+      const teamDoc = await db.collection('teams').doc(team_id).get();
+      if (!teamDoc.exists) return NextResponse.json({ error: 'Team not found' }, { status: 404 });
+      
+      const teamData = teamDoc.data();
+      if (!teamData?.member_ids?.includes(uid)) {
+        return NextResponse.json({ error: 'You are not a member of this team' }, { status: 403 });
+      }
+
+      // Fetch team keys
+      const keysDoc = await db.collection('teams').doc(team_id).collection('secrets').doc('api_keys').get();
+      if (keysDoc.exists) {
+        const encryptedKeys = keysDoc.data() || {};
+        // Decrypt keys
+        for (const [provider, encryptedValue] of Object.entries(encryptedKeys)) {
+          if (typeof encryptedValue === 'string' && encryptedValue.includes(':')) {
+            try {
+              api_keys_to_use[provider] = decrypt(encryptedValue);
+            } catch (e) {
+              console.error(`Failed to decrypt ${provider} key for team ${team_id}`);
+            }
+          }
+        }
+      }
+      
+      default_model = customModel || teamData?.default_model || default_model;
+      system_prompt = teamData?.system_prompt || '';
+    } else {
+      // Individual context
+      const userPrefsRef = db.collection('user_preferences').doc(uid);
+      const userPrefsDoc = await userPrefsRef.get();
+      if (userPrefsDoc.exists) {
+        const userPrefs = userPrefsDoc.data();
+        api_keys_to_use = userPrefs?.api_keys || {};
+        default_model = customModel || userPrefs?.default_model || default_model;
+        system_prompt = userPrefs?.personal_system_prompt || '';
+      }
+    }
+    
+    if (Object.values(api_keys_to_use).every(key => !key)) {
+       return NextResponse.json({ error: 'No API keys configured! This is a BYOK platform. Please add your keys in settings.' }, { status: 402 });
+    }
+
+    const timestamp = new Date().toISOString();
+    // 3. Save user message
     const userMsgRef = db.collection('messages').doc();
     const userMsg = {
       id: userMsgRef.id,
@@ -35,47 +91,6 @@ export async function POST(req: NextRequest) {
       created_at: timestamp,
     };
     await userMsgRef.set(userMsg);
-
-    // 2. Get conversation context to find team
-    const convDoc = await db.collection('conversations').doc(conversationId).get();
-    let team_id = '';
-    let token_count = 0;
-    if (convDoc.exists) {
-      const convData = convDoc.data();
-      team_id = convData?.team_id || '';
-      token_count = convData?.token_count || 0;
-    }
-
-    // 3. Get user preferences for BYOK API Keys (required for EVERYONE)
-    const userPrefsRef = db.collection('user_preferences').doc(uid);
-    const userPrefsDoc = await userPrefsRef.get();
-    if (!userPrefsDoc.exists) {
-       return NextResponse.json({ error: 'User preferences not found. Please configure your API keys.' }, { status: 400 });
-    }
-    const userPrefs = userPrefsDoc.data();
-    const api_keys_to_use = userPrefs?.api_keys;
-    
-    if (!api_keys_to_use || Object.values(api_keys_to_use).every(key => !key)) {
-       return NextResponse.json({ error: 'No API keys configured! You must bring your own API key to use the platform.' }, { status: 402 });
-    }
-
-    let default_model = customModel || userPrefs?.default_model || 'gpt-4';
-    let system_prompt = userPrefs?.personal_system_prompt || '';
-    
-    // 4. Get team options if the conversation is in a team context
-    if (team_id) {
-       const teamDoc = await db.collection('teams').doc(team_id).get();
-       if (teamDoc.exists) {
-          const teamData = teamDoc.data();
-          if (teamData?.subscription_status !== 'active') {
-             return NextResponse.json({ error: 'Team subscription is not active. Please upgrade to use team collaboration features.' }, { status: 402 });
-          }
-          default_model = teamData?.default_model || default_model;
-          system_prompt = teamData?.system_prompt || system_prompt;
-       } else {
-         return NextResponse.json({ error: 'Team not found' }, { status: 404 });
-       }
-    }
 
     // 4. Retrieve historic messages
     const messagesSnapshot = await db.collection('messages')

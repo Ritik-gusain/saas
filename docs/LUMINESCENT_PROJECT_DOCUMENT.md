@@ -36,7 +36,15 @@ A **B2B Team AI Chatbot SaaS** that provides a unified, collaborative AI workspa
 
 ## 2. Technical Architecture
 
-### Stack
+### 3. Multi-Tenant Architecture & BYOK
+*   **Team Isolation:** All data (conversations, agents, members) is strictly scoped via `team_id`.
+*   **Team Switcher:** A global workspace selector in the dashboard allows seamless movement between personal and collaborative environments.
+*   **Secure BYOK (Bring Your Own Key):**
+    *   **At-Rest Encryption:** Sensitive API keys (OpenAI, Anthropic, etc.) are encrypted using `AES-256-CBC` before being stored in Firestore.
+    *   **Secure Retrieval:** Keys are decrypted only on the server-side (`frontend/app/api/chat`) and are never exposed in their raw form to the client UI.
+    *   **Masking:** The frontend only receives masked versions of keys (e.g., `sk-proj...4f2a`) for configuration verification.
+
+### 4. Technical Stack Evolution
 - **Frontend:** Next.js (React, App Router)
 - **Middleware:** Next.js API Routes (Node.js)
 - **AI Backend:** Python FastAPI + Multi-Provider Inference Engine (BYOK)

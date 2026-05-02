@@ -7,6 +7,8 @@ import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { MessageSquare, FolderKanban, Settings, Users, BarChart3, LogOut, ChevronRight, Sparkles, Zap, ChevronDown, Plus, Hash, Lock } from 'lucide-react';
 import { Logo } from '@/components/shared/Logo';
+import { useTeamStore } from '@/stores/teamStore';
+import TeamSwitcher from '@/components/dashboard/TeamSwitcher';
 
 export default function DashboardLayout({
   children,
@@ -15,12 +17,11 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { currentTeam, fetchTeams } = useTeamStore();
   const [email, setEmail] = useState<string>('Loading...');
   const [activeRoute, setActiveRoute] = useState('chat');
   const [chatExpanded, setChatExpanded] = useState(true);
   const [activeChannel, setActiveChannel] = useState('general');
-  const [isPremium, setIsPremium] = useState(false);
-  const [teamInfo, setTeamInfo] = useState<{ name: string; tier: string; members: number } | null>(null);
 
   const channels = [
     { id: 'general', name: 'General AI', icon: Hash, locked: false },
@@ -29,30 +30,13 @@ export default function DashboardLayout({
     { id: 'design', name: 'Design Sprint', icon: Lock, locked: true },
   ];
 
+  const isPremium = currentTeam?.plan_tier && currentTeam.plan_tier > 3;
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setEmail(user.email || 'User');
-        try {
-          const token = await user.getIdToken();
-          const res = await fetch('/api/teams', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (res.ok) {
-            const teams = await res.json();
-            const activeTeam = teams.find((t: any) => t.subscription_status === 'active');
-            if (activeTeam) {
-              setIsPremium(true);
-              setTeamInfo({
-                name: activeTeam.name || 'Team Workspace',
-                tier: activeTeam.plan_tier === 1 ? 'Starter' : activeTeam.plan_tier === 2 ? 'Growth' : 'Pro',
-                members: activeTeam.member_ids?.length || 1,
-              });
-            }
-          }
-        } catch (err) {
-          console.error('Failed to fetch subscription status:', err);
-        }
+        fetchTeams();
       }
     });
 
@@ -89,7 +73,7 @@ export default function DashboardLayout({
         {/* Sidebar */}
         <div className="w-72 glass-panel border-r flex flex-col z-10 relative">
           {/* Logo */}
-          <div className="p-6 border-b border-[var(--border)]">
+          <div className="p-6 border-b border-[var(--border)] mb-4">
             <div className="flex items-center gap-3 group cursor-pointer" onClick={() => router.push('/dashboard')}>
               <div className="relative">
                 <div className="absolute inset-0 bg-[var(--cyan)] blur-lg opacity-0 group-hover:opacity-30 transition-opacity" />
@@ -99,10 +83,12 @@ export default function DashboardLayout({
                 <h2 className="text-lg font-black text-white tracking-tight font-[Montserrat] bg-gradient-to-r from-[var(--cyan)] to-[var(--mint)] bg-clip-text text-transparent">
                   Luminescent
                 </h2>
-                <p className="text-[10px] text-[var(--muted)] uppercase tracking-wider">Team Workspace</p>
+                <p className="text-[10px] text-[var(--muted)] uppercase tracking-wider">Unified Workspace</p>
               </div>
             </div>
           </div>
+
+          <TeamSwitcher />
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
