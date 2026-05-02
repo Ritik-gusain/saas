@@ -39,7 +39,7 @@ const sections = [
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
           <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface)]">
             <h4 className="text-[var(--cyan)] font-bold mb-2">Resource Optimization</h4>
-            <p className="text-sm text-slate-400">Eliminate redundant seat costs through centralized node management and optimized token allocation across the organization.</p>
+            <p className="text-sm text-slate-400">Eliminate redundant seat costs through centralized node management and unified API key orchestration across the organization.</p>
           </div>
           <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface)]">
             <h4 className="text-[var(--mint)] font-bold mb-2">Sovereign Intelligence</h4>
@@ -177,7 +177,7 @@ const sections = [
       <div className="space-y-6">
         <div className="space-y-4">
           <h3 className="text-xl font-bold text-white">Plan Architecture & Resource Allocation</h3>
-          <p className="text-slate-400">Our resource tiers are designed to scale with your organization's computational needs. All plans are managed via a secure, high-integrity payment gateway with recurring allocation.</p>
+          <p className="text-slate-400">Our resource tiers are designed to scale with your organization's collaborative needs. All plans unlock team-wide features, centralized API key management, and shared project context.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 rounded-xl bg-black/30 border border-[var(--border)]">

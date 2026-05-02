@@ -95,7 +95,7 @@ const plans: Plan[] = [
 
 const faqs = [
   { q: 'Can I change plans anytime?', a: 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing cycle.' },
-  { q: 'What happens when I exceed my token limit?', a: 'We\'ll notify you at 80% usage. You can purchase additional token packs or upgrade your plan seamlessly.' },
+  { q: 'How do I manage my API usage limits?', a: 'Since Luminescent uses your own API keys, you manage usage and billing directly through your AI provider (e.g., OpenAI or Anthropic). Our platform provides advanced analytics to help you monitor team-wide consumption.' },
   { q: 'Is my data secure?', a: 'Absolutely. We use end-to-end encryption, never train on your data, and are SOC 2 Type II compliant.' },
   { q: 'Can I get a refund?', a: 'We offer a 14-day money-back guarantee on all paid plans. No questions asked.' },
 ];
