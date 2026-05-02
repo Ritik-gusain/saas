@@ -69,6 +69,16 @@ export async function POST(req: NextRequest) {
 
     await newTeamRef.set(newTeam);
 
+    // Also create a team_members record for the owner
+    const memberRef = db.collection('team_members').doc();
+    await memberRef.set({
+      id: memberRef.id,
+      team_id: newTeamRef.id,
+      user_id: uid,
+      role: 'owner',
+      joined_at: new Date().toISOString(),
+    });
+
     return NextResponse.json(newTeam, { status: 201 });
   } catch (error: any) {
     console.error('Teams POST error:', error);
