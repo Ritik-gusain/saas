@@ -181,8 +181,8 @@ export default function DashboardLayout({
                     <Users className="w-5 h-5 text-[var(--bg)]" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs font-bold text-white">{teamInfo?.name || 'Growth Team'}</div>
-                    <div className="text-[10px] text-[var(--muted)]">{teamInfo?.members || 0} members active</div>
+                    <div className="text-xs font-bold text-white">{currentTeam?.name || 'Growth Team'}</div>
+                    <div className="text-[10px] text-[var(--muted)]">{currentTeam?.member_ids?.length || 0} members active</div>
                   </div>
                 </div>
                 <div className="space-y-2 relative z-10">

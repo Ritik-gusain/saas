@@ -1,14 +1,15 @@
 import os
+import json
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from bytez import Bytez
+from litellm import completion
+import litellm
 
 # Initialize FastAPI
 app = FastAPI(title="Luminescent.io Unified Server")
 
-# Add CORS middleware just in case
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,9 +18,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Removed Bytez API key fallback logic since platform is fully BYOK
+# Optional: Disable litellm logging to console for production
+litellm.set_verbose = False
 
-# Define the /api/chat endpoint
 @app.post("/api/chat")
 async def chat(request: Request):
     try:
@@ -27,36 +28,79 @@ async def chat(request: Request):
         messages = data.get("messages", [])
         system_prompt = data.get("systemPrompt", "You are a helpful AI assistant.")
         api_keys = data.get("apiKeys", {}) # BYOK API Keys from frontend
+        model = data.get("model", "gpt-4o")
+        stream = data.get("stream", False)
         
-        # BYOK Strategy check
-        has_byok = api_keys and isinstance(api_keys, dict) and any(api_keys.values())
-        if not has_byok:
-            return JSONResponse(status_code=402, content={"error": "No API keys provided. You must bring your own API key to use the platform."})
-            
-        # MVP: Acknowledge BYOK usage
-        # In a full implementation, we would route to OpenAI/Anthropic/Google using these keys
-        provider = "openai" if "openai" in api_keys else "anthropic" if "anthropic" in api_keys else "openrouter"
-        print(f"Using BYOK strategy. Provider: {provider}")
-        model_to_use = data.get("model", "gpt-4")
+        # Validate BYOK availability
+        if not api_keys or not isinstance(api_keys, dict):
+            return JSONResponse(status_code=402, content={"error": "Missing API keys configuration."})
 
-        
-        api_messages = [{"role": "system", "content": system_prompt}] + messages
-        
-        # In a real implementation, you would use the SDK of the `provider` here.
-        # For MVP showcase, we return a simulated response if BYOK is validated.
-        response_text = f"This is a simulated response using your BYOK API Key for model {model_to_use}."
-        
-        return {"reply": response_text}
-        
+        # Determine provider and key
+        provider_key = None
+        target_model = model
+
+        # Logic to map model to provider/key
+        if model.startswith("gpt-"):
+            provider_key = api_keys.get("openai")
+            target_model = f"openai/{model}"
+        elif model.startswith("claude-"):
+            provider_key = api_keys.get("anthropic")
+            target_model = f"anthropic/{model}"
+        elif model.startswith("gemini-"):
+            provider_key = api_keys.get("google")
+            target_model = f"gemini/{model}"
+        else:
+            # Default to OpenRouter or try to infer
+            provider_key = api_keys.get("openrouter") or api_keys.get("openai")
+            if api_keys.get("openrouter"):
+                target_model = f"openrouter/{model}"
+
+        if not provider_key:
+            return JSONResponse(status_code=402, content={
+                "error": f"No API key found for model {model}. Please add your key in Settings."
+            })
+
+        # Prepare messages
+        formatted_messages = [{"role": "system", "content": system_prompt}] + messages
+
+        # Call LiteLLM
+        if stream:
+            response = completion(
+                model=target_model,
+                messages=formatted_messages,
+                api_key=provider_key,
+                stream=True
+            )
+            
+            async def event_generator():
+                for part in response:
+                    content = part.choices[0].delta.content or ""
+                    if content:
+                        yield f"data: {json.dumps({'content': content})}\n\n"
+                yield "data: [DONE]\n\n"
+
+            return StreamingResponse(event_generator(), media_type="text/event-stream")
+        else:
+            response = completion(
+                model=target_model,
+                messages=formatted_messages,
+                api_key=provider_key
+            )
+            
+            reply = response.choices[0].message.content
+            return {
+                "reply": reply,
+                "usage": response.get("usage", {}),
+                "model": target_model
+            }
+            
     except Exception as e:
         print(f"Error in /api/chat: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
-
-# Serve static files for everything else (putting this AFTER routes is important)
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
     print("\nStarting Luminescent.io Unified Server...\n")
     print("Serving on http://localhost:8000\n")
-    uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
+

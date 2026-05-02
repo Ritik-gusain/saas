@@ -16,6 +16,7 @@ export default function MessageBubble({
   role,
   content,
   timestamp = "Just now",
+  model,
   onCopy,
   onRegenerate,
 }: MessageBubbleProps) {

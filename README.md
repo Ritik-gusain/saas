@@ -66,6 +66,7 @@ Recently optimized for seamless Vercel deployment, Luminescent now features:
 *   **Lazy Initialization:** Firebase Admin and Client SDKs are lazily initialized to prevent build-time crashes when environment variables are unavailable.
 *   **Case-Sensitive Integrity:** Guaranteed compatibility across Linux/macOS environments through strict file-case auditing.
 *   **Next.js 16 Optimized:** Fully compatible with the latest Turbopack build engine.
+*   **Next.js 15+ Routing Compliance:** Advanced parameter handling where all dynamic route parameters are correctly typed as `Promise`s, fully unwrapped using `await params` in Server Components and `React.use(params)` in Client Components, ensuring a completely stable, error-free build.
 
 ---
 

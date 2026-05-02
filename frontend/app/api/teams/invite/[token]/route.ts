@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, db } from '@/lib/firebase-admin';
+import * as admin from 'firebase-admin';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const inviteDoc = await db.collection('invites').doc(params.token).get();
+    const { token } = await params;
+    const inviteDoc = await db.collection('pending_invites').doc(token).get();
 
     if (!inviteDoc.exists) {
       return NextResponse.json({ error: 'Invitation not found' }, { status: 404 });
@@ -15,18 +17,18 @@ export async function GET(
     const inviteData = inviteDoc.data();
     
     // Check expiry
-    if (new Date(inviteData?.expires_at) < new Date()) {
+    if (new Date(inviteData?.expiresAt) < new Date()) {
       return NextResponse.json({ error: 'Invitation has expired' }, { status: 400 });
     }
 
-    if (inviteData?.status !== 'pending') {
+    if (inviteData?.usedAt) {
       return NextResponse.json({ error: 'Invitation has already been used' }, { status: 400 });
     }
 
     return NextResponse.json({
       id: inviteDoc.id,
-      teamId: inviteData?.team_id,
-      teamName: inviteData?.team_name,
+      teamId: inviteData?.teamId,
+      teamName: inviteData?.teamName,
       email: inviteData?.email,
     });
   } catch (error: any) {
@@ -36,7 +38,7 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
     const authHeader = req.headers.get('Authorization');
@@ -48,9 +50,10 @@ export async function POST(
     const decodedToken = await adminAuth.verifyIdToken(bearerToken);
     const uid = decodedToken.uid;
     const userEmail = decodedToken.email;
+    const { token } = await params;
 
     // Get invite
-    const inviteRef = db.collection('invites').doc(params.token);
+    const inviteRef = db.collection('pending_invites').doc(token);
     const inviteDoc = await inviteRef.get();
 
     if (!inviteDoc.exists) {
@@ -60,56 +63,63 @@ export async function POST(
     const inviteData = inviteDoc.data();
 
     // Verify email matches (optional but recommended)
-    if (inviteData?.email && inviteData.email !== userEmail) {
+    if (inviteData?.email && inviteData.email.toLowerCase() !== userEmail?.toLowerCase()) {
       return NextResponse.json({ 
         error: `This invitation was sent to ${inviteData.email}, but you are signed in as ${userEmail}.` 
       }, { status: 403 });
     }
 
     // Check expiry/status
-    if (new Date(inviteData?.expires_at) < new Date()) {
+    if (new Date(inviteData?.expiresAt) < new Date()) {
       return NextResponse.json({ error: 'Invitation has expired' }, { status: 400 });
     }
-    if (inviteData?.status !== 'pending') {
+    if (inviteData?.usedAt) {
       return NextResponse.json({ error: 'Invitation has already been used' }, { status: 400 });
     }
 
-    const teamId = inviteData?.team_id;
+    const teamId = inviteData?.teamId;
 
-    // 1. Add user to team_members
-    const memberRef = db.collection('team_members').doc();
-    await memberRef.set({
-      id: memberRef.id,
-      team_id: teamId,
+    const teamRef = db.collection('teams').doc(teamId);
+
+    // 4. Accept the invitation
+    // Update team member_ids and mark invite as used in a batch/transaction
+    const batch = db.batch();
+
+    // Add user to team member_ids
+    batch.update(teamRef, {
+      member_ids: admin.firestore.FieldValue.arrayUnion(uid),
+      updated_at: new Date().toISOString()
+    });
+
+    // Mark invite as used
+    batch.update(inviteRef, {
+      usedAt: new Date().toISOString(),
+      usedBy: uid
+    });
+
+    // Create team_members record
+    const teamMemberRef = db.collection('team_members').doc();
+    batch.set(teamMemberRef, {
+      id: teamMemberRef.id,
+      team_id: inviteData?.teamId,
       user_id: uid,
       role: 'member',
-      joined_at: new Date().toISOString(),
+      joined_at: new Date().toISOString()
     });
 
-    // 2. Add user to team's member_ids array
-    await db.collection('teams').doc(teamId).update({
-      member_ids: adminAuth ? (await (await db.collection('teams').doc(teamId).get()).get('member_ids') || []).concat(uid) : []
-    });
-    
-    // Better way for atomic update in Firestore
-    const teamRef = db.collection('teams').doc(teamId);
-    // Use dynamic import or direct reference if possible. 
-    // In firebase-admin we use FieldValue.
-    const adminRef = require('firebase-admin');
-    await teamRef.update({
-      member_ids: adminRef.firestore.FieldValue.arrayUnion(uid)
-    });
+    await batch.commit();
 
-    // 3. Mark invite as accepted
-    await inviteRef.update({
-      status: 'accepted',
-      accepted_at: new Date().toISOString(),
-      accepted_by: uid,
-    });
 
-    return NextResponse.json({ success: true, teamId });
+    return NextResponse.json({
+      success: true,
+      teamId: inviteData.teamId,
+      message: 'Successfully joined the team'
+    });
   } catch (error: any) {
     console.error('Accept invite error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to accept invitation', details: error.message },
+      { status: 500 }
+    );
   }
 }

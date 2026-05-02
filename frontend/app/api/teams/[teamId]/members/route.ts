@@ -3,7 +3,7 @@ import { adminAuth, db } from '@/lib/firebase-admin';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { teamId: string } }
+  { params }: { params: Promise<{ teamId: string }> }
 ) {
   try {
     const authHeader = req.headers.get('Authorization');
@@ -14,9 +14,10 @@ export async function GET(
     const token = authHeader.split('Bearer ')[1];
     const decodedToken = await adminAuth.verifyIdToken(token);
     const uid = decodedToken.uid;
+    const { teamId } = await params;
 
     // Verify user is member of the team
-    const teamDoc = await db.collection('teams').doc(params.teamId).get();
+    const teamDoc = await db.collection('teams').doc(teamId).get();
     if (!teamDoc.exists) return NextResponse.json({ error: 'Team not found' }, { status: 404 });
     
     const teamData = teamDoc.data();
@@ -27,7 +28,7 @@ export async function GET(
     // Fetch members
     // Option A: If we use a separate collection
     const membersSnapshot = await db.collection('team_members')
-      .where('team_id', '==', params.teamId)
+      .where('team_id', '==', teamId)
       .get();
 
     const members = await Promise.all(membersSnapshot.docs.map(async (doc) => {

@@ -9,6 +9,7 @@ export interface Team {
   razorpay_subscription_id?: string;
   razorpay_customer_id?: string;
   subscription_status?: string;
+  member_ids?: string[];
   current_period_start?: string;
   current_period_end?: string;
   system_prompt?: string;
@@ -27,6 +28,8 @@ export interface TeamMember {
   joined_at: string;
   last_active?: string;
   daily_token_usage?: number;
+  email?: string;
+  displayName?: string;
 }
 
 export interface RazorpaySubscription {

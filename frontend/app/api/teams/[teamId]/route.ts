@@ -3,7 +3,7 @@ import { adminAuth, db } from '@/lib/firebase-admin';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { teamId: string } }
+  { params }: { params: Promise<{ teamId: string }> }
 ) {
   try {
     const authHeader = req.headers.get('Authorization');
@@ -14,8 +14,9 @@ export async function GET(
     const token = authHeader.split('Bearer ')[1];
     const decodedToken = await adminAuth.verifyIdToken(token);
     const uid = decodedToken.uid;
+    const { teamId } = await params;
 
-    const teamDoc = await db.collection('teams').doc(params.teamId).get();
+    const teamDoc = await db.collection('teams').doc(teamId).get();
 
     if (!teamDoc.exists) {
       return NextResponse.json({ error: 'Team not found' }, { status: 404 });
@@ -36,7 +37,7 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { teamId: string } }
+  { params }: { params: Promise<{ teamId: string }> }
 ) {
   try {
     const authHeader = req.headers.get('Authorization');
@@ -47,9 +48,10 @@ export async function PATCH(
     const token = authHeader.split('Bearer ')[1];
     const decodedToken = await adminAuth.verifyIdToken(token);
     const uid = decodedToken.uid;
+    const { teamId } = await params;
 
     const body = await req.json();
-    const teamRef = db.collection('teams').doc(params.teamId);
+    const teamRef = db.collection('teams').doc(teamId);
     const teamDoc = await teamRef.get();
 
     if (!teamDoc.exists) {
@@ -77,7 +79,7 @@ export async function PATCH(
 
     await teamRef.update(updates);
 
-    return NextResponse.json({ id: params.teamId, ...teamData, ...updates });
+    return NextResponse.json({ id: teamId, ...teamData, ...updates });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

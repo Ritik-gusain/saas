@@ -125,24 +125,23 @@ export const useChatStore = create<ChatState>((set) => ({
   sendMessage: async (conversationId: string, content: string, model?: string, attachments?: File[]) => {
     set({ isStreaming: true, streamingContent: '', error: null });
     try {
-      const formData = new FormData();
-      formData.append('conversationId', conversationId);
-      formData.append('message', content);
-      if (model) formData.append('model', model);
-      if (attachments) {
-        attachments.forEach((file) => formData.append('attachments', file));
-      }
-
       const res = await authFetch('/api/chat', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversationId,
+          message: content,
+          model,
+        }),
       });
 
       if (!res.ok) throw new Error('Failed to send message');
 
+      const messageId = res.headers.get('X-Message-Id') || Date.now().toString();
+
       // Add user message immediately
       const userMessage: Message = {
-        id: Date.now().toString(),
+        id: (Date.now() - 1).toString(),
         conversation_id: conversationId,
         role: 'user',
         content,
@@ -169,21 +168,18 @@ export const useChatStore = create<ChatState>((set) => ({
         }
       }
 
-      // Save AI response
-      const responseData = await res.json();
+      // Finalize AI message
       set((state) => ({
         messages: [
           ...state.messages,
           {
-            id: responseData.messageId,
+            id: messageId,
             conversation_id: conversationId,
             role: 'assistant',
             content: state.streamingContent,
-            token_count: responseData.tokenCount,
             created_at: new Date().toISOString(),
           },
         ],
-        tokenUsage: (state.tokenUsage || 0) + (responseData.tokenCount || 0),
         isStreaming: false,
         streamingContent: '',
       }));

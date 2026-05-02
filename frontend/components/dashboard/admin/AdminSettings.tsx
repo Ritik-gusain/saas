@@ -4,7 +4,7 @@ import { Key, Server, Settings as SettingsIcon, Save, TerminalSquare } from 'luc
 import { useTeamStore } from '@/stores/teamStore';
 
 export function AdminSettings() {
-  const { teamInfo } = useTeamStore();
+  const { currentTeam } = useTeamStore();
 
   return (
     <div className="space-y-6 max-w-4xl animate-fade-in-up">
@@ -74,7 +74,7 @@ export function AdminSettings() {
           </div>
           <div>
             <h2 className="text-lg font-bold text-white font-[Montserrat]">Workspace Settings</h2>
-            <p className="text-sm text-[var(--muted)]">Manage global preferences for {teamInfo?.name || 'your team'}.</p>
+            <p className="text-sm text-[var(--muted)]">Manage global preferences for {currentTeam?.name || 'your team'}.</p>
           </div>
         </div>
 
@@ -83,7 +83,7 @@ export function AdminSettings() {
             <label className="block text-sm font-semibold text-white mb-2">Workspace Name</label>
             <input 
               type="text" 
-              defaultValue={teamInfo?.name || "Growth Team"}
+              defaultValue={currentTeam?.name || "Growth Team"}
               className="w-full glass-panel rounded-xl px-4 py-3 text-sm text-white focus:border-[var(--cyan)] outline-none transition-all"
             />
           </div>

@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { teamId: string } }
+  { params }: { params: Promise<{ teamId: string }> }
 ) {
   try {
     const authHeader = req.headers.get('Authorization');
@@ -17,33 +17,80 @@ export async function POST(
     const uid = decodedToken.uid;
 
     const { email } = await req.json();
+    const { teamId } = await params;
+
+    if (!email) {
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    }
 
     // Verify requester is owner or admin
-    // For now checking owner_id on team
-    const teamDoc = await db.collection('teams').doc(params.teamId).get();
+    const teamDoc = await db.collection('teams').doc(teamId).get();
     if (!teamDoc.exists) return NextResponse.json({ error: 'Team not found' }, { status: 404 });
-    if (teamDoc.data()?.owner_id !== uid) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    
+    const teamData = teamDoc.data();
+    if (teamData?.owner_id !== uid && !teamData?.member_ids?.includes(uid)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     // Create invite
-    const inviteId = uuidv4();
+    const inviteToken = uuidv4();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
     const inviteData = {
-      id: inviteId,
-      team_id: params.teamId,
-      team_name: teamDoc.data()?.name,
-      email,
-      invited_by: uid,
-      status: 'pending',
-      created_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+      teamId: teamId,
+      teamName: teamData?.name || 'Workspace',
+      email: email.toLowerCase(),
+      invitedBy: uid,
+      expiresAt: expiresAt.toISOString(),
+      createdAt: new Date().toISOString()
     };
 
-    await db.collection('invites').doc(inviteId).set(inviteData);
+    await db.collection('pending_invites').doc(inviteToken).set(inviteData);
 
-    // In a real app, send email here.
-    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invite/${inviteId}`;
+    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/invite/${inviteToken}`;
 
-    return NextResponse.json({ success: true, inviteUrl });
+    return NextResponse.json({ 
+      success: true, 
+      inviteUrl,
+      message: 'Invitation generated successfully'
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ teamId: string }> }
+) {
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const token = authHeader.split('Bearer ')[1];
+    await adminAuth.verifyIdToken(token);
+    
+    const { teamId } = await params;
+
+    // Return pending invites list for a team
+    const invitesSnapshot = await db.collection('pending_invites')
+      .where('teamId', '==', teamId)
+      .get();
+      
+    const invites = invitesSnapshot.docs
+      .map(doc => ({
+        token: doc.id,
+        ...doc.data()
+      }))
+      // Filter out used/expired in memory if needed, or better in query
+      .filter((inv: any) => !inv.usedAt && new Date(inv.expiresAt) > new Date());
+    
+    return NextResponse.json(invites);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+

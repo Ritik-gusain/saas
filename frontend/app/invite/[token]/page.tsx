@@ -12,12 +12,16 @@ interface InviteData {
   email: string;
 }
 
+import { use } from 'react';
+
 export default function InvitePage({
   params,
 }: {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }) {
   const router = useRouter();
+  const unwrappedParams = use(params);
+  const token = unwrappedParams.token;
   const [invite, setInvite] = useState<InviteData | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -26,7 +30,7 @@ export default function InvitePage({
   useEffect(() => {
     const fetchInvite = async () => {
       try {
-        const res = await fetch(`/api/teams/invite/${params.token}`);
+        const res = await fetch(`/api/teams/invite/${token}`);
         const data = await res.json();
         
         if (!res.ok) {
@@ -43,12 +47,12 @@ export default function InvitePage({
     };
 
     fetchInvite();
-  }, [params.token]);
+  }, [token]);
 
   const handleAcceptInvite = async () => {
     setAccepting(true);
     try {
-      const res = await authFetch(`/api/teams/invite/${params.token}`, {
+      const res = await authFetch(`/api/teams/invite/${token}`, {
         method: 'POST',
       });
 

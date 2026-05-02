@@ -190,6 +190,19 @@ export default function DashboardLayout({
             {isPremium ? (
               <div className="glass-panel rounded-xl p-4 mb-4 relative overflow-hidden group hover:border-[var(--cyan)]/30 transition-all cursor-pointer">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-[var(--cyan)] opacity-5 blur-2xl group-hover:opacity-10 transition-opacity" />
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[var(--cyan)]" />
+                      <span className="text-xs font-bold text-white truncate max-w-[120px]">{teamInfo?.name || 'Workspace'}</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-[var(--bg)] bg-[var(--cyan)] px-1.5 py-0.5 rounded uppercase tracking-wider">
+                      {teamInfo?.tier || 'Pro'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-[var(--muted)]">
+                    <span>{teamInfo?.members || 1} Members</span>
+                    <span className="hover:text-white transition-colors">Manage →</span>
                   </div>
                 </div>
               </div>

@@ -4,8 +4,8 @@ import { CreditCard, Download, ExternalLink, Zap, CheckCircle2 } from 'lucide-re
 import { useTeamStore } from '@/stores/teamStore';
 
 export default function BillingSettings() {
-  const { teamInfo } = useTeamStore();
-  const isPremium = teamInfo?.plan === 'Growth' || teamInfo?.plan === 'Pro';
+  const { currentTeam } = useTeamStore();
+  const isPremium = currentTeam?.plan_tier === 7 || currentTeam?.plan_tier === 12;
   
   const invoices = [
     { id: 'INV-2026-04', date: 'Apr 01, 2026', amount: '₹4,900', status: 'Paid' },
@@ -25,7 +25,7 @@ export default function BillingSettings() {
           </div>
           <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-500/20 to-[var(--cyan)]/20 border border-purple-500/30 flex items-center gap-2">
             <Zap className="w-4 h-4 text-purple-400" />
-            <span className="text-sm font-bold text-white">{teamInfo?.plan || 'Growth'} Tier</span>
+            <span className="text-sm font-bold text-white">{currentTeam?.plan_tier === 7 ? 'Growth' : currentTeam?.plan_tier === 12 ? 'Pro' : 'Starter'} Tier</span>
           </div>
         </div>
 
@@ -37,7 +37,7 @@ export default function BillingSettings() {
           </div>
           <div className="glass-panel rounded-xl p-5">
             <div className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider mb-1">Active Seats</div>
-            <div className="text-lg font-bold text-white mb-1">{teamInfo?.members || 1} / 7 Used</div>
+            <div className="text-lg font-bold text-white mb-1">{currentTeam?.member_ids?.length || 1} / 7 Used</div>
             <div className="text-xs text-[var(--mint)] flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3" /> Within limit
             </div>
