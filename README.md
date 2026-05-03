@@ -14,7 +14,6 @@
   <p>
     <a href="https://frontend-lilac-nine-28.vercel.app/"><b>Try the Live App →</b></a>
   </p>
-
 </div>
 
 ---
