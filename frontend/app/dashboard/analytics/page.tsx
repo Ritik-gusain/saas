@@ -1,5 +1,5 @@
-import AdminPanel from '@/components/dashboard/admin/AdminPanel';
+import AnalyticsDashboard from '@/components/dashboard/admin/AnalyticsDashboard';
 
 export default function AnalyticsPage() {
-  return <AdminPanel />;
+  return <AnalyticsDashboard />;
 }
