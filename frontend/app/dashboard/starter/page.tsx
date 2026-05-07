@@ -1,10 +1,7 @@
 "use client";
+import React from 'react';
 import PremiumChatDashboard from '@/components/dashboard/chat/PremiumChatDashboard';
 
-export default function StarterChatPage() {
-  return (
-    <div className="h-screen bg-transparent">
-      <PremiumChatDashboard />
-    </div>
-  );
+export default function StarterTierChatPage() {
+  return <PremiumChatDashboard />;
 }

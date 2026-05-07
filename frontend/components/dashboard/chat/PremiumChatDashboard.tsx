@@ -1,454 +1,347 @@
 "use client";
-
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  Send, Maximize2, Image as ImageIcon, 
+  Paperclip, Globe, Command, Mic, 
+  Code, Sparkles, PenTool, LayoutTemplate,
+  Terminal, FileCode2, Blocks, Wand2,
+  StopCircle, Star, Trash2
+} from 'lucide-react';
 import { useChatStore } from '@/stores/chatStore';
 import { useTeamStore } from '@/stores/teamStore';
-import { Logo } from '@/components/shared/Logo';
-import {
-  Plus, Search, MessageSquare, Pin, Trash2, Archive,
-  ChevronDown, Zap, Share2, Download, MoreVertical,
-  Sparkles, Bot, Send, Paperclip, Loader2, Copy, Check
-} from 'lucide-react';
-
-const MODELS = [
-  { id: 'gpt-4o', label: 'GPT-4o', provider: 'OpenAI', color: 'var(--cyan)' },
-  { id: 'gpt-4-turbo', label: 'GPT-4 Turbo', provider: 'OpenAI', color: 'var(--cyan)' },
-  { id: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet', provider: 'Anthropic', color: 'var(--mint)' },
-  { id: 'claude-3-opus-20240229', label: 'Claude 3 Opus', provider: 'Anthropic', color: 'var(--mint)' },
-  { id: 'gemini/gemini-1.5-pro', label: 'Gemini 1.5 Pro', provider: 'Google', color: 'var(--purple)' },
-];
-
-interface MessageBubbleProps {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
-function MessageBubble({ role, content }: MessageBubbleProps) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(content);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  if (role === 'user') {
-    return (
-      <div className="flex justify-end gap-3 group">
-        <div className="max-w-[75%] bg-gradient-to-br from-[var(--cyan)]/20 to-[var(--mint)]/10 border border-[var(--cyan)]/25 rounded-2xl rounded-tr-sm px-5 py-3.5 text-sm text-white leading-relaxed">
-          {content}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex gap-3 group">
-      <div className="w-9 h-9 rounded-xl glass-panel flex items-center justify-center flex-shrink-0 mt-1 border border-[var(--cyan)]/20">
-        <Logo size={18} animated={false} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="glass-panel rounded-2xl rounded-tl-sm px-5 py-3.5 text-sm text-[var(--soft)] leading-relaxed whitespace-pre-wrap">
-          {content}
-        </div>
-        <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] transition-all"
-          >
-            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-            {copied ? 'Copied' : 'Copy'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+import { useUIStore } from '@/stores/uiStore';
+import { useRouter } from 'next/navigation';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function PremiumChatDashboard() {
-  const {
-    conversations, currentConversation, messages,
-    isLoading, isStreaming, streamingContent, error,
-    fetchConversations, createConversation, loadConversation, sendMessage,
-    setCurrentConversation, deleteConversation, pinConversation, unpinConversation,
+  const [inputValue, setInputValue] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  const { currentTeam } = useTeamStore();
+  const router = useRouter();
+  
+  const { 
+    currentConversation, 
+    messages, 
+    isStreaming,
+    sendMessage,
+    createConversation,
+    stopGeneration,
+    pinConversation,
+    unpinConversation,
+    deleteConversation,
+    error,
+    setError
   } = useChatStore();
 
-  const { currentTeam } = useTeamStore();
-  const [inputValue, setInputValue] = useState('');
-  const [selectedModel, setSelectedModel] = useState(MODELS[0]);
-  const [showModelPicker, setShowModelPicker] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showContextMenu, setShowContextMenu] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { isSidebarOpen, toggleSidebar } = useUIStore();
+
+  const isPremium = currentTeam?.plan_tier && currentTeam.plan_tier >= 3;
 
   useEffect(() => {
-    if (currentTeam?.id) {
-      fetchConversations(currentTeam.id);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
     }
-  }, [currentTeam?.id]);
+  }, [inputValue]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, streamingContent]);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isStreaming]);
 
-  const handleNewConversation = async () => {
-    if (!currentTeam?.id) return;
-    await createConversation(currentTeam.id, 'New Conversation');
-  };
-
-  const handleSend = async () => {
-    if (!inputValue.trim() || !currentConversation) return;
-    const content = inputValue.trim();
+  const handleSubmit = async () => {
+    if (!inputValue.trim() || !currentTeam?.id || isStreaming) return;
+    
+    const content = inputValue;
     setInputValue('');
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
-    await sendMessage(currentConversation.id, content, selectedModel.id);
+    
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+
+    if (!currentConversation) {
+      const newConv = await createConversation(currentTeam.id, content.substring(0, 30) + '...');
+      if (newConv) {
+        await sendMessage(newConv.id, content);
+      }
+    } else {
+      await sendMessage(currentConversation.id, content);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      handleSubmit();
     }
   };
 
-  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInputValue(e.target.value);
-    e.target.style.height = 'auto';
-    e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
-  };
-
-  const filteredConversations = conversations.filter(c =>
-    c.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const pinnedConversations = filteredConversations.filter(c => c.is_pinned);
-  const unpinnedConversations = filteredConversations.filter(c => !c.is_pinned);
+  const suggestions = [
+    { icon: Code, text: "Write a React hook", desc: "for intersection observer", color: "text-[var(--cyan)]" },
+    { icon: Sparkles, text: "Brainstorm ideas", desc: "for a SaaS landing page", color: "text-[var(--purple)]" },
+    { icon: PenTool, text: "Draft an email", desc: "to a potential investor", color: "text-[var(--mint)]" },
+    { icon: LayoutTemplate, text: "Design a schema", desc: "for a chat application", color: "text-[var(--cyan)]" }
+  ];
 
   return (
-    <div className="h-full flex overflow-hidden">
-      {/* Conversation Sidebar */}
-      <div className="w-72 border-r border-[var(--border)] glass-panel flex flex-col flex-shrink-0">
-        <div className="p-4 border-b border-[var(--border)]">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-bold text-[var(--muted)] uppercase tracking-wider">Conversations</h3>
-            <button
-              onClick={handleNewConversation}
-              className="p-1.5 rounded-lg glass-panel hover:bg-[var(--cyan)]/10 hover:border-[var(--cyan)]/30 transition-all group"
-              title="New conversation"
+    <div className="h-full flex flex-col bg-transparent w-full relative">
+      {/* Error Message */}
+      {error && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="glass-panel border border-red-500/50 bg-red-500/10 px-4 py-2 rounded-lg flex items-center gap-3 shadow-xl shadow-red-500/10">
+            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-sm text-red-200 font-medium">{error}</span>
+            <button 
+              onClick={() => setError(null)}
+              className="ml-2 text-red-400 hover:text-red-200 transition-colors"
             >
-              <Plus className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--cyan)]" />
+              ×
             </button>
           </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--muted)]" />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder:text-[var(--muted)] focus:border-[var(--cyan)]/50 outline-none transition-all"
-            />
-          </div>
         </div>
+      )}
 
-        <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-hide">
-          {isLoading && conversations.length === 0 && (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-5 h-5 text-[var(--cyan)] animate-spin" />
-            </div>
+      {/* Top Navigation Banner */}
+      <div className="h-14 flex items-center justify-between px-4 glass-panel border-b z-20">
+        <div className="flex items-center gap-3">
+          {!isSidebarOpen && (
+            <button 
+              onClick={toggleSidebar}
+              className="p-2 -ml-2 text-[var(--muted)] hover:text-[var(--cyan)] transition-colors rounded-md hover:bg-[var(--surface)]"
+            >
+              <LayoutTemplate className="w-5 h-5" />
+            </button>
           )}
-
-          {pinnedConversations.length > 0 && (
-            <div className="mb-2">
-              <p className="text-[9px] font-bold text-[var(--muted)] uppercase tracking-widest px-3 py-1">Pinned</p>
-              {pinnedConversations.map(conv => (
-                <ConversationItem
-                  key={conv.id}
-                  conv={conv}
-                  isActive={currentConversation?.id === conv.id}
-                  onSelect={() => loadConversation(conv.id)}
-                  showContextMenu={showContextMenu}
-                  setShowContextMenu={setShowContextMenu}
-                  onPin={() => unpinConversation(conv.id)}
-                  onDelete={() => deleteConversation(conv.id)}
-                />
-              ))}
-            </div>
+         
+          {!isPremium && (
+            <span className="px-2 py-0.5 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[11px] font-bold text-[var(--cyan)] uppercase tracking-wider cursor-pointer hover:bg-[var(--cyan)]/10 transition-colors" onClick={() => router.push('/pricing')}>
+              Free Plan
+            </span>
           )}
-
-          {unpinnedConversations.length > 0 && (
-            <div>
-              {pinnedConversations.length > 0 && (
-                <p className="text-[9px] font-bold text-[var(--muted)] uppercase tracking-widest px-3 py-1">Recent</p>
-              )}
-              {unpinnedConversations.map(conv => (
-                <ConversationItem
-                  key={conv.id}
-                  conv={conv}
-                  isActive={currentConversation?.id === conv.id}
-                  onSelect={() => loadConversation(conv.id)}
-                  showContextMenu={showContextMenu}
-                  setShowContextMenu={setShowContextMenu}
-                  onPin={() => pinConversation(conv.id)}
-                  onDelete={() => deleteConversation(conv.id)}
-                />
-              ))}
-            </div>
-          )}
-
-          {!isLoading && filteredConversations.length === 0 && (
-            <div className="text-center py-8">
-              <MessageSquare className="w-8 h-8 text-[var(--muted)]/30 mx-auto mb-2" />
-              <p className="text-xs text-[var(--muted)]">No conversations yet</p>
-              <button
-                onClick={handleNewConversation}
-                className="mt-3 text-xs font-bold text-[var(--cyan)] hover:text-[var(--mint)] transition-colors"
+        </div>
+        <div className="flex items-center gap-2">
+          {currentConversation && (
+            <>
+              <button 
+                onClick={() => currentConversation.is_pinned ? unpinConversation(currentConversation.id) : pinConversation(currentConversation.id)}
+                className={`p-2 rounded-md hover:bg-[var(--surface)] transition-colors ${currentConversation.is_pinned ? 'text-yellow-500' : 'text-[var(--muted)] hover:text-white'}`}
+                title={currentConversation.is_pinned ? "Unstar chat" : "Star chat"}
               >
-                Start one →
+                <Star className={`w-4 h-4 ${currentConversation.is_pinned ? 'fill-current' : ''}`} />
               </button>
-            </div>
+              <button 
+                onClick={() => {
+                  deleteConversation(currentConversation.id);
+                }}
+                className="p-2 text-[var(--muted)] hover:text-red-500 rounded-md hover:bg-red-500/10 transition-colors"
+                title="Delete chat"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={toggleSidebar}
+                className="p-2 text-[var(--muted)] hover:text-white rounded-md hover:bg-[var(--surface)] transition-colors"
+                title={isSidebarOpen ? "Hide sidebar" : "Show sidebar"}
+              >
+                <Maximize2 className="w-4 h-4" />
+              </button>
+            </>
           )}
         </div>
+      </div>
 
-        {/* Team usage bar */}
-        {currentTeam && (
-          <div className="p-3 border-t border-[var(--border)]">
-            <div className="glass-panel rounded-xl p-3">
-              <div className="flex items-center justify-between text-[10px] mb-1.5">
-                <span className="text-[var(--muted)]">Daily usage</span>
-                <span className="text-[var(--mint)] font-bold">89k tokens</span>
+      {/* Main Chat Area */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center" ref={scrollRef}>
+        {!currentConversation || messages.length === 0 ? (
+          <div className="flex-1 w-full flex flex-col items-center justify-center p-8 max-w-3xl mx-auto">
+            {/* Claude-style Hero */}
+            <div className="mb-8 text-center space-y-4">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--cyan)]/20 to-[var(--purple)]/20 border border-[var(--border)] flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_var(--cyan)]/20">
+                <Sparkles className="w-8 h-8 text-[var(--cyan)]" />
               </div>
-              <div className="h-1 bg-[var(--surface)] rounded-full overflow-hidden">
-                <div className="h-full w-[67%] bg-gradient-to-r from-[var(--cyan)] to-[var(--mint)] rounded-full" />
+              <h1 className="text-[32px] font-['Montserrat'] font-bold text-white tracking-tight leading-tight">
+                Good afternoon
+              </h1>
+            </div>
+
+            <div className="w-full max-w-2xl mb-8">
+              <div className={`relative glass-panel rounded-xl border p-1 transition-all duration-300 ${
+                isFocused ? 'border-[var(--cyan)]/50 shadow-[0_0_20px_var(--cyan)]/20' : 'border-[var(--border)] hover:border-[var(--cyan)]/30'
+              }`}>
+                <textarea
+                  ref={textareaRef}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="How can Luminescent help you today?"
+                  className="w-full max-h-[200px] min-h-[60px] p-4 bg-transparent resize-none outline-none text-[15px] placeholder-[var(--muted)] text-white scrollbar-hide"
+                  rows={1}
+                />
+                <div className="flex items-center justify-between p-2 pt-0">
+                  <div className="flex items-center gap-1">
+                    <button className="p-2 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-lg transition-colors tooltip-trigger" title="Add attachment">
+                      <Paperclip className="w-[18px] h-[18px]" />
+                    </button>
+                    {isPremium && (
+                      <>
+                        <button className="p-2 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-lg transition-colors tooltip-trigger" title="Web search">
+                          <Globe className="w-[18px] h-[18px]" />
+                        </button>
+                        <button className="p-2 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-lg transition-colors tooltip-trigger" title="Voice input">
+                          <Mic className="w-[18px] h-[18px]" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  <button 
+                    onClick={handleSubmit}
+                    disabled={!inputValue.trim() || isStreaming}
+                    className={`p-2.5 rounded-lg flex items-center justify-center transition-all ${
+                      inputValue.trim() && !isStreaming
+                        ? 'bg-[var(--cyan)] text-[#0f0f11] hover:brightness-110 shadow-[0_0_15px_var(--cyan)]/30' 
+                        : 'bg-[var(--surface)] text-[var(--muted)] border border-[var(--border)] cursor-not-allowed'
+                    }`}
+                  >
+                    <Send className="w-[18px] h-[18px]" />
+                  </button>
+                </div>
               </div>
-              <p className="text-[9px] text-[var(--muted)] mt-1.5">{currentTeam.plan_tier} seats • {currentTeam.name}</p>
+            </div>
+
+            {/* Suggestions Grid */}
+            <div className="w-full max-w-2xl grid grid-cols-2 gap-3">
+              {suggestions.map((suggestion, idx) => {
+                const Icon = suggestion.icon;
+                return (
+                  <button 
+                    key={idx}
+                    onClick={() => setInputValue(`${suggestion.text} ${suggestion.desc}`)}
+                    className="flex flex-col items-start p-4 glass-panel border border-[var(--border)] hover:border-[var(--cyan)]/30 hover:bg-[var(--surface)] rounded-xl transition-all text-left group"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon className={`w-[18px] h-[18px] ${suggestion.color}`} strokeWidth={2} />
+                      <span className="text-[14px] font-semibold text-white group-hover:text-[var(--cyan)] transition-colors">{suggestion.text}</span>
+                    </div>
+                    <span className="text-[13px] text-[var(--muted)]">{suggestion.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+            
+            <div className="mt-8 text-center">
+              <span className="text-[12px] text-[var(--muted)] flex items-center justify-center gap-2">
+                <Command className="w-3 h-3" /> Press Shift + Enter for new line
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 w-full max-w-3xl mx-auto py-8 px-4 flex flex-col">
+            <div className="space-y-6 pb-32">
+              {messages.map((msg, idx) => (
+                <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  {/* Avatar */}
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    msg.role === 'user' 
+                      ? 'bg-[var(--surface)] border border-[var(--border)] text-[var(--cyan)]' 
+                      : 'bg-[var(--cyan)] text-[#0f0f11] shadow-[0_0_15px_var(--cyan)]/30'
+                  }`}>
+                    {msg.role === 'user' ? <div className="font-bold text-xs">U</div> : <Sparkles className="w-5 h-5" />}
+                  </div>
+                  
+                  {/* Message Content */}
+                  <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                    <div className="flex items-center gap-2 mb-1.5 px-1">
+                      <span className="text-[13px] font-semibold text-white">
+                        {msg.role === 'user' ? 'You' : 'Luminescent'}
+                      </span>
+                      {msg.createdAt && (
+                        <span className="text-[11px] text-[var(--muted)]">
+                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className={`prose prose-invert max-w-none text-[15px] leading-relaxed ${
+                      msg.role === 'user'
+                        ? 'bg-[var(--surface)] border border-[var(--border)] px-4 py-3 rounded-2xl rounded-tr-sm text-white'
+                        : 'text-[var(--soft)] px-2'
+                    }`}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
       </div>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="h-14 border-b border-[var(--border)] flex items-center justify-between px-6 glass-panel flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-[var(--mint)] shadow-[0_0_8px_var(--mint)] animate-pulse" />
-            <div>
-              <h2 className="text-sm font-bold text-white">
-                {currentConversation?.title || 'Select a conversation'}
-              </h2>
-              <p className="text-[10px] text-[var(--muted)]">
-                {currentTeam?.name} • {messages.filter(m => m.role !== 'system').length} messages
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Model Selector */}
-            <div className="relative">
-              <button
-                onClick={() => setShowModelPicker(!showModelPicker)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--cyan)]/30 transition-all"
-              >
-                <Zap className="w-3.5 h-3.5" style={{ color: selectedModel.color }} />
-                <span className="text-xs font-bold text-white">{selectedModel.label}</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-[var(--muted)] transition-transform ${showModelPicker ? 'rotate-180' : ''}`} />
-              </button>
-
-              {showModelPicker && (
-                <div className="absolute right-0 top-full mt-2 w-56 glass-panel rounded-xl border border-[var(--border)] shadow-2xl z-50 overflow-hidden">
-                  {MODELS.map(model => (
-                    <button
-                      key={model.id}
-                      onClick={() => { setSelectedModel(model); setShowModelPicker(false); }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-xs hover:bg-[var(--surface)] transition-all ${selectedModel.id === model.id ? 'text-white bg-[var(--surface)]' : 'text-[var(--muted)]'}`}
-                    >
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: model.color }} />
-                      <div className="text-left">
-                        <p className="font-bold text-white">{model.label}</p>
-                        <p className="text-[10px] text-[var(--muted)]">{model.provider}</p>
-                      </div>
-                      {selectedModel.id === model.id && <Check className="w-3.5 h-3.5 text-[var(--cyan)] ml-auto" />}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <button className="p-1.5 rounded-lg glass-panel hover:bg-[var(--cyan)]/10 transition-all group" title="Share">
-              <Share2 className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--cyan)]" />
-            </button>
-            <button className="p-1.5 rounded-lg glass-panel hover:bg-[var(--cyan)]/10 transition-all group" title="Export">
-              <Download className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--cyan)]" />
-            </button>
-            <button className="p-1.5 rounded-lg glass-panel hover:bg-[var(--cyan)]/10 transition-all group" title="More">
-              <MoreVertical className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--cyan)]" />
-            </button>
-          </div>
-        </header>
-
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide" onClick={() => { setShowModelPicker(false); setShowContextMenu(null); }}>
-          {!currentConversation && (
-            <div className="h-full flex flex-col items-center justify-center text-center">
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[var(--cyan)]/20 to-[var(--mint)]/20 border border-[var(--cyan)]/20 flex items-center justify-center mb-6 animate-pulse-glow">
-                <Sparkles className="w-10 h-10 text-[var(--cyan)]" />
-              </div>
-              <h3 className="text-2xl font-black text-white font-[Syne] mb-2">Start a Conversation</h3>
-              <p className="text-sm text-[var(--muted)] max-w-sm mb-8">
-                Select an existing conversation or create a new one to begin chatting with your AI assistant.
-              </p>
-              <button
-                onClick={handleNewConversation}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[var(--cyan)] to-[var(--mint)] text-[var(--bg)] font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-[var(--cyan)]/20"
-              >
-                <Plus className="w-4 h-4" />
-                New Conversation
-              </button>
-            </div>
-          )}
-
-          {currentConversation && messages.filter(m => m.role !== 'system').length === 0 && !isLoading && (
-            <div className="h-full flex flex-col items-center justify-center text-center">
-              <Bot className="w-12 h-12 text-[var(--muted)]/30 mb-4" />
-              <p className="text-sm text-[var(--muted)]">Send a message to get started</p>
-            </div>
-          )}
-
-          {messages.filter(m => m.role !== 'system').map((msg) => (
-            <MessageBubble key={msg.id} role={msg.role as 'user' | 'assistant'} content={msg.content} />
-          ))}
-
-          {isStreaming && streamingContent && (
-            <div className="flex gap-3">
-              <div className="w-9 h-9 rounded-xl glass-panel flex items-center justify-center flex-shrink-0 mt-1 border border-[var(--cyan)]/20">
-                <Logo size={18} animated={false} />
-              </div>
-              <div className="flex-1 glass-panel rounded-2xl rounded-tl-sm px-5 py-3.5 text-sm text-[var(--soft)] leading-relaxed whitespace-pre-wrap">
-                {streamingContent}
-                <span className="inline-block w-2 h-4 bg-[var(--cyan)] ml-1 animate-pulse rounded-sm" />
-              </div>
-            </div>
-          )}
-
-          {isStreaming && !streamingContent && (
-            <div className="flex gap-3">
-              <div className="w-9 h-9 rounded-xl glass-panel flex items-center justify-center flex-shrink-0">
-                <Logo size={18} animated={false} />
-              </div>
-              <div className="glass-panel rounded-2xl rounded-tl-sm px-5 py-3.5 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-[var(--cyan)] rounded-full animate-bounce" />
-                <div className="w-1.5 h-1.5 bg-[var(--cyan)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-1.5 h-1.5 bg-[var(--cyan)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-              </div>
-            </div>
-          )}
-
-          {error && (
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-              <span className="font-bold">Error:</span> {error}
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Input Area */}
-        <div className="p-4 bg-gradient-to-t from-[var(--bg)] to-transparent">
-          {!currentConversation ? (
-            <div className="max-w-3xl mx-auto glass-panel rounded-2xl px-5 py-4 opacity-40 cursor-not-allowed">
-              <p className="text-sm text-[var(--muted)] text-center">Select or create a conversation first</p>
-            </div>
-          ) : (
-            <div className="max-w-3xl mx-auto">
-              <div className="glass-panel rounded-2xl border border-[var(--border)] focus-within:border-[var(--cyan)]/40 transition-all overflow-hidden">
-                <textarea
-                  ref={textareaRef}
-                  value={inputValue}
-                  onChange={handleTextareaChange}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Message your AI assistant... (Shift+Enter for new line)"
-                  rows={1}
-                  className="w-full bg-transparent px-5 pt-4 pb-2 text-sm text-white placeholder:text-[var(--muted)] outline-none resize-none scrollbar-hide"
-                  disabled={isStreaming}
-                />
-                <div className="flex items-center justify-between px-4 pb-3">
-                  <div className="flex items-center gap-2">
-                    <button className="p-1.5 rounded-lg text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] transition-all" title="Attach file">
-                      <Paperclip className="w-4 h-4" />
-                    </button>
-                    <span className="text-[10px] text-[var(--muted)]">
-                      {selectedModel.label} • {selectedModel.provider}
-                    </span>
-                  </div>
-                  <button
-                    onClick={handleSend}
-                    disabled={!inputValue.trim() || isStreaming}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--cyan)] to-[var(--mint)] text-[var(--bg)] font-bold text-xs hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[var(--cyan)]/20"
+      {/* Floating Input Area for Active Chat */}
+      {currentConversation && messages.length > 0 && (
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[var(--bg)] via-[var(--bg)] to-transparent pt-10 pb-6 px-4">
+          <div className="max-w-3xl mx-auto relative">
+             {isStreaming && (
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex justify-center">
+                  <button 
+                    onClick={stopGeneration}
+                    className="flex items-center gap-2 px-4 py-1.5 glass-panel border border-[var(--border)] hover:border-red-500/50 hover:text-red-400 rounded-full text-xs font-semibold text-white transition-all shadow-lg"
                   >
-                    {isStreaming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                    Send
+                    <StopCircle className="w-3.5 h-3.5" />
+                    Stop generating
                   </button>
                 </div>
+              )}
+            <div className={`relative glass-panel rounded-xl border p-1 transition-all duration-300 shadow-2xl ${
+              isFocused ? 'border-[var(--cyan)]/50 shadow-[0_0_30px_var(--cyan)]/20' : 'border-[var(--border)]'
+            }`}>
+              <textarea
+                ref={textareaRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                onKeyDown={handleKeyDown}
+                placeholder="Reply to Luminescent..."
+                className="w-full max-h-[200px] min-h-[50px] p-3 px-4 bg-transparent resize-none outline-none text-[15px] placeholder-[var(--muted)] text-white scrollbar-hide"
+                rows={1}
+              />
+              <div className="flex items-center justify-between p-2 pt-0">
+                <div className="flex items-center gap-1">
+                  <button className="p-1.5 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-md transition-colors tooltip-trigger" title="Add attachment">
+                    <Paperclip className="w-4 h-4" />
+                  </button>
+                  {isPremium && (
+                    <button className="p-1.5 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-md transition-colors tooltip-trigger" title="Web search">
+                      <Globe className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                <button 
+                  onClick={handleSubmit}
+                  disabled={!inputValue.trim() || isStreaming}
+                  className={`p-2 rounded-lg flex items-center justify-center transition-all ${
+                    inputValue.trim() && !isStreaming
+                      ? 'bg-[var(--cyan)] text-[#0f0f11] shadow-[0_0_15px_var(--cyan)]/30' 
+                      : 'bg-[var(--surface)] text-[var(--muted)] border border-[var(--border)] cursor-not-allowed'
+                  }`}
+                >
+                  <Send className="w-4 h-4" />
+                </button>
               </div>
             </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ConversationItem({
-  conv, isActive, onSelect, showContextMenu, setShowContextMenu, onPin, onDelete
-}: {
-  conv: any; isActive: boolean; onSelect: () => void;
-  showContextMenu: string | null; setShowContextMenu: (id: string | null) => void;
-  onPin: () => void; onDelete: () => void;
-}) {
-  return (
-    <div className="relative group">
-      <button
-        onClick={onSelect}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left ${
-          isActive
-            ? 'bg-[var(--cyan)]/10 border border-[var(--cyan)]/25 text-white'
-            : 'text-[var(--muted)] hover:bg-[var(--surface)] hover:text-white'
-        }`}
-      >
-        <MessageSquare className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-[var(--cyan)]' : ''}`} />
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold truncate">{conv.title}</p>
-          <p className="text-[9px] text-[var(--muted)] mt-0.5">
-            {new Date(conv.updated_at).toLocaleDateString()}
-          </p>
-        </div>
-        {conv.is_pinned && <Pin className="w-3 h-3 text-[var(--cyan)] flex-shrink-0" />}
-      </button>
-
-      <button
-        onClick={(e) => { e.stopPropagation(); setShowContextMenu(showContextMenu === conv.id ? null : conv.id); }}
-        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-[var(--surface)] transition-all"
-      >
-        <MoreVertical className="w-3.5 h-3.5 text-[var(--muted)]" />
-      </button>
-
-      {showContextMenu === conv.id && (
-        <div className="absolute right-0 top-full mt-1 w-40 glass-panel rounded-xl border border-[var(--border)] shadow-2xl z-50 overflow-hidden">
-          <button
-            onClick={() => { onPin(); setShowContextMenu(null); }}
-            className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] transition-all"
-          >
-            <Pin className="w-3.5 h-3.5" />
-            {conv.is_pinned ? 'Unpin' : 'Pin'}
-          </button>
-          <button
-            onClick={() => { onDelete(); setShowContextMenu(null); }}
-            className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-red-400 hover:bg-red-500/10 transition-all"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            Delete
-          </button>
+            <div className="text-center mt-2">
+               <span className="text-[10px] text-[var(--muted)]">Luminescent AI may produce inaccurate information about people, places, or facts.</span>
+            </div>
+          </div>
         </div>
       )}
     </div>

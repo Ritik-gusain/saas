@@ -248,6 +248,8 @@ export const useChatStore = create<ChatState>((set) => ({
       if (!res.ok) throw new Error('Failed to delete conversation');
       set((state) => ({
         conversations: state.conversations.filter((c) => c.id !== conversationId),
+        currentConversation: state.currentConversation?.id === conversationId ? null : state.currentConversation,
+        messages: state.currentConversation?.id === conversationId ? [] : state.messages
       }));
     } catch (error) {
       set({ error: (error as Error).message });

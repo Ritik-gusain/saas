@@ -109,10 +109,13 @@ export async function POST(
 
     await batch.commit();
 
+    if (!inviteData) {
+      return NextResponse.json({ error: 'Invite data missing after commit' }, { status: 500 });
+    }
 
     return NextResponse.json({
       success: true,
-      teamId: inviteData.teamId,
+      teamId: inviteData.teamId as string,
       message: 'Successfully joined the team'
     });
   } catch (error: any) {

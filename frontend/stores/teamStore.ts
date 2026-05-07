@@ -4,7 +4,7 @@ import { create } from 'zustand';
 export interface Team {
   id: string;
   name: string;
-  plan_tier: 3 | 7 | 12;
+  plan_tier: 1 | 3 | 7 | 12;
   owner_id: string;
   razorpay_subscription_id?: string;
   razorpay_customer_id?: string;
@@ -77,8 +77,26 @@ export const useTeamStore = create<TeamState>((set) => ({
     try {
       const res = await authFetch('/api/teams');
       if (!res.ok) throw new Error('Failed to fetch teams');
-      const teams = await res.json();
-      set({ teams, isLoading: false });
+      let teams = await res.json();
+      
+      // Auto-provision a personal workspace if no teams exist
+      if (teams.length === 0) {
+        const createRes = await authFetch('/api/teams', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: 'Personal Workspace', plan_tier: 1 })
+        });
+        if (createRes.ok) {
+          const newTeam = await createRes.json();
+          teams = [newTeam];
+        }
+      }
+
+      set((state) => ({ 
+        teams, 
+        currentTeam: state.currentTeam || (teams.length > 0 ? teams[0] : null),
+        isLoading: false 
+      }));
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }

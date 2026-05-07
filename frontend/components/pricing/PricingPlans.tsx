@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, Sparkles, Users, ArrowRight, HelpCircle } from 'lucide-react';
+import { Check, Sparkles, Users, ArrowRight, HelpCircle, Loader2 } from 'lucide-react';
 import { Logo } from '@/components/shared/Logo';
+import { useTeamStore } from '@/stores/teamStore';
 
 interface Plan {
   id: string;
@@ -102,16 +103,25 @@ const faqs = [
 
 export default function PricingPlans() {
   const router = useRouter();
+  const { currentTeam, updateTeamSettings } = useTeamStore();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
+  const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
 
-  const handleSelectPlan = (planId: string) => {
-    if (planId === 'individual') {
-      router.push('/register');
+  const handleSelectPlan = async (planId: string) => {
+    if (currentTeam) {
+      setIsUpgrading(planId);
+      // Let the loading state render, then redirect to checkout
+      setTimeout(() => {
+        router.push(`/checkout/${planId}`);
+      }, 500);
     } else {
-      // In Next.js we can pass query params
-      router.push(`/register?plan=${planId}`);
+      if (planId === 'individual') {
+        router.push('/register');
+      } else {
+        router.push(`/register?plan=${planId}`);
+      }
     }
   };
 
@@ -240,9 +250,16 @@ export default function PricingPlans() {
                   color: plan.highlighted ? '#101418' : hoveredPlan === plan.id ? '#00FFAA' : 'rgba(248,249,250,0.7)',
                   border: plan.highlighted ? 'none' : hoveredPlan === plan.id ? '1px solid rgba(0,255,170,0.3)' : '1px solid rgba(255,255,255,0.1)',
                 }}
+                disabled={isUpgrading !== null}
               >
-                {plan.cta}
-                <ArrowRight size={14} />
+                {isUpgrading === plan.id ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <>
+                    {plan.cta}
+                    <ArrowRight size={14} />
+                  </>
+                )}
               </button>
             </div>
           ))}
