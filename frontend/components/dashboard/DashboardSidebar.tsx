@@ -18,7 +18,7 @@ export default function DashboardSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const { currentTeam } = useTeamStore();
-  const { conversations, currentConversation, loadConversation, createConversation, fetchConversations, pinConversation, unpinConversation, deleteConversation, exportConversation } = useChatStore();
+  const { conversations, currentConversation, loadConversation, createConversation, fetchConversations, pinConversation: starConversation, unpinConversation: unstarConversation, deleteConversation, exportConversation } = useChatStore();
   const { toggleSidebar } = useUIStore();
   const [email, setEmail] = useState<string>('Loading...');
   const [activeRoute, setActiveRoute] = useState('chat');
@@ -38,6 +38,7 @@ export default function DashboardSidebar() {
     if (pathname.includes('projects')) setActiveRoute('projects');
     else if (pathname.includes('settings')) setActiveRoute('settings');
     else if (pathname.includes('analytics')) setActiveRoute('analytics');
+    else if (pathname.includes('starred')) setActiveRoute('starred');
     else setActiveRoute('chat');
   }, [pathname]);
 
@@ -114,13 +115,17 @@ export default function DashboardSidebar() {
             <NavItem 
               icon={Search} 
               label="Search" 
-              onClick={() => setIsSearching(true)} 
+              onClick={() => {
+                setIsSearching(true);
+                setTimeout(() => document.getElementById('sidebar-search-input')?.focus(), 10);
+              }} 
             />
           ) : (
             <div className="px-3 mb-2 flex items-center gap-2 bg-[var(--surface)] rounded-md border border-[var(--border)] py-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
               <Search className="w-4 h-4 text-[var(--cyan)]" />
               <input
                 autoFocus
+                id="sidebar-search-input"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -145,6 +150,7 @@ export default function DashboardSidebar() {
           <NavItem icon={Layers} label="Projects" onClick={() => handleNavigation('/dashboard/projects')} isActive={activeRoute === 'projects'} />
           <NavItem icon={Briefcase} label="Analytics" onClick={() => handleNavigation('/dashboard/analytics')} isActive={activeRoute === 'analytics'} />
           <NavItem icon={Settings} label="Settings" onClick={() => handleNavigation('/dashboard/settings')} isActive={activeRoute === 'settings'} />
+          <NavItem icon={Star} label="Starred" onClick={() => handleNavigation('/dashboard/starred')} isActive={activeRoute === 'starred'} />
         </div>
 
         {/* Starred */}
@@ -174,7 +180,7 @@ export default function DashboardSidebar() {
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        unpinConversation(conv.id);
+                        unstarConversation(conv.id);
                       }}
                       title="Unstar"
                       className="p-1 rounded-md hover:bg-[var(--cyan)]/20 text-[var(--cyan)] transition-colors"
@@ -227,7 +233,7 @@ export default function DashboardSidebar() {
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        pinConversation(conv.id);
+                        starConversation(conv.id);
                       }}
                       title="Star"
                       className="p-1 rounded-md hover:bg-[var(--cyan)]/20 text-[var(--muted)] hover:text-[var(--cyan)] transition-colors"

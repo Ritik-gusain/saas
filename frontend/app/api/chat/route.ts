@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const uid = decodedToken.uid;
 
     const body = await req.json();
-    const { conversationId, message, model: customModel } = body;
+    const { conversationId, message, model: customModel, agentId, webSearch } = body;
 
     if (!conversationId || !message) {
       return NextResponse.json({ error: 'Missing conversationId or message' }, { status: 400 });
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     const team_id = convData?.team_id || '';
 
     let api_keys_to_use: any = {};
-    let default_model = customModel || 'gpt-4o';
+    let default_model = customModel || 'openrouter/google/gemini-2.0-flash-001';
     let system_prompt = 'You are a helpful AI assistant on Luminescent.io.';
 
     // 2. Fetch keys and settings
@@ -90,6 +90,8 @@ export async function POST(req: NextRequest) {
         systemPrompt: system_prompt,
         model: default_model,
         apiKeys: api_keys_to_use,
+        agentId: agentId || 'general',
+        webSearch: webSearch || false,
         stream: true
       }),
     });

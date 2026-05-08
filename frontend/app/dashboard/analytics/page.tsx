@@ -96,7 +96,24 @@ export default function AnalyticsPage() {
               Last 30 Days
             </button>
             <button 
-              onClick={() => alert('Exporting analytics data as CSV...')}
+              onClick={() => {
+                if (!stats) return;
+                const rows = [
+                  ["Metric", "Value"],
+                  ["Total Messages", stats.totalMessages],
+                  ["Tokens Used", stats.totalTokens],
+                  ["Active Members", stats.activeUsers],
+                  ["Cost Saved", stats.costSaved]
+                ];
+                const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `analytics_${currentTeam?.name}_${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
               className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-xs font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2"
             >
               <Download className="w-3.5 h-3.5" />
@@ -166,39 +183,48 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          {/* Model Distribution */}
-          <div className="glass-panel rounded-2xl p-8">
-            <h3 className="text-lg font-bold text-white font-[Syne] mb-8">Model Usage</h3>
-            <div className="space-y-6">
-              {stats?.modelDistribution.map((model, idx) => (
-                <div key={idx}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-white flex items-center gap-2">
-                      <Sparkles className={`w-3 h-3 ${idx === 0 ? 'text-[var(--cyan)]' : idx === 1 ? 'text-[var(--purple)]' : 'text-[var(--mint)]'}`} />
-                      {model.name}
-                    </span>
-                    <span className="text-xs font-bold text-[var(--muted)]">{model.value}%</span>
+          {/* Distribution Column */}
+          <div className="space-y-6">
+            {/* Model Distribution */}
+            <div className="glass-panel rounded-2xl p-6">
+              <h3 className="text-base font-bold text-white font-[Syne] mb-6">Model Usage</h3>
+              <div className="space-y-4">
+                {stats?.modelDistribution.map((model, idx) => (
+                  <div key={idx}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] font-bold text-white flex items-center gap-2 uppercase tracking-wider">
+                        <Sparkles className={`w-3 h-3 ${idx === 0 ? 'text-[var(--cyan)]' : idx === 1 ? 'text-[var(--purple)]' : 'text-[var(--mint)]'}`} />
+                        {model.name}
+                      </span>
+                      <span className="text-[10px] font-black text-[var(--muted)]">{model.value}%</span>
+                    </div>
+                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-1000 ${
+                          idx === 0 ? 'bg-[var(--cyan)]' : idx === 1 ? 'bg-[var(--purple)]' : 'bg-[var(--mint)]'
+                        }`}
+                        style={{ width: `${model.value}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full h-1.5 bg-[var(--surface)] rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-1000 ${
-                        idx === 0 ? 'bg-[var(--cyan)]' : idx === 1 ? 'bg-[var(--purple)]' : 'bg-[var(--mint)]'
-                      }`}
-                      style={{ width: `${model.value}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            <div className="mt-12 p-4 bg-white/[0.03] border border-white/5 rounded-xl">
-              <div className="flex items-center gap-3 mb-2">
-                <ShieldCheck className="w-4 h-4 text-[var(--mint)]" />
-                <span className="text-xs font-bold text-white">Efficiency Guard</span>
+            {/* Agent Distribution */}
+            <div className="glass-panel rounded-2xl p-6">
+              <h3 className="text-base font-bold text-white font-[Syne] mb-6">Agent Personas</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {(stats as any)?.agentDistribution?.map((agent: any, idx: number) => (
+                  <div key={idx} className="bg-white/5 border border-white/10 p-3 rounded-xl">
+                    <p className="text-[10px] font-black text-[var(--muted)] uppercase tracking-tighter mb-1">{agent.name}</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-black text-white">{agent.value}%</p>
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: `hsl(${idx * 60}, 100%, 70%)` }} />
+                    </div>
+                  </div>
+                ))}
               </div>
-              <p className="text-[10px] text-[var(--muted)] leading-relaxed">
-                Your team is currently optimized. Using smaller models for routine tasks has saved you approximately 14k tokens today.
-              </p>
             </div>
           </div>
         </div>

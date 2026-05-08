@@ -8,6 +8,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from litellm import completion
 
+from dotenv import load_dotenv
+
+from duckduckgo_search import DDGS
+
+# Load environment variables
+load_dotenv()
+
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,21 +36,65 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     messages: List[ChatMessage]
     systemPrompt: Optional[str] = "You are a helpful AI assistant."
-    model: Optional[str] = "gpt-4o"
+    model: Optional[str] = "openrouter/google/gemini-2.0-flash-001"
+    agentId: Optional[str] = "general"
+    webSearch: bool = False
     apiKeys: Dict[str, str] = {}
     stream: bool = True
     temperature: float = 0.7
     max_tokens: int = 4000
 
+# Agent Persona Mapping
+AGENT_PERSONAS = {
+    "general": "You are Luminescent AI, a highly capable and versatile generalist assistant. Provide clear, accurate, and helpful responses to any query.",
+    "researcher": "You are a specialized Research Agent. Your goal is to provide deep insights, verify facts, and synthesize complex information from across the web. Be meticulous and cite sources where possible.",
+    "coder": "You are an expert Software Engineer and Coding Assistant. Write clean, efficient, and well-documented code. Focus on best practices, performance, and security.",
+    "analyst": "You are a Data Analyst and Logical Reasoning expert. Approach problems step-by-step, explain your reasoning, and focus on mathematical accuracy and data-driven insights.",
+    "designer": "You are a Creative Director and UI/UX expert. Focus on aesthetics, user experience, and creative writing. Be inspiring and pay attention to design details.",
+    "writer": "You are a professional Assistant and Writing Expert. Help with drafting, editing, and executive support. Maintain a professional, polished, and concise tone."
+}
+
+def perform_web_search(query: str) -> str:
+    """Performs a web search using DuckDuckGo and returns formatted results."""
+    try:
+        with DDGS() as ddgs:
+            results = list(ddgs.text(query, max_results=5))
+            if not results:
+                return "No search results found."
+            
+            context = "### WEB SEARCH RESULTS ###\n"
+            for i, r in enumerate(results, 1):
+                context += f"{i}. {r['title']}\n   Source: {r['href']}\n   Snippet: {r['body']}\n\n"
+            return context
+    except Exception as e:
+        logger.error(f"Search error: {str(e)}")
+        return f"Error performing search: {str(e)}"
+
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "version": "1.1.0"}
+    return {"status": "healthy", "version": "1.2.0"}
 
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
     try:
+        # Determine base system prompt from agent or request
+        base_system_prompt = AGENT_PERSONAS.get(request.agentId, request.systemPrompt)
+        
+        # If web search is enabled, perform search and augment prompt
+        if request.webSearch:
+            # Use the last user message as the search query
+            user_messages = [m for m in request.messages if m.role == 'user']
+            search_query = user_messages[-1].content if user_messages else ""
+            
+            if search_query:
+                logger.info(f"Performing web search for: {search_query}")
+                search_results = perform_web_search(search_query)
+                base_system_prompt += f"\n\n{search_results}\n\nYou are currently using WEB SEARCH. Use the information above to provide a grounded, up-to-date answer. If the search results are irrelevant, rely on your internal knowledge but mention the search results didn't help."
+            else:
+                base_system_prompt += "\n\nWEB SEARCH ENABLED: No specific query provided for search."
+        
         # Prepare LiteLLM compatible messages
-        litellm_messages = [{"role": "system", "content": request.systemPrompt}]
+        litellm_messages = [{"role": "system", "content": base_system_prompt}]
         for msg in request.messages:
             litellm_messages.append({"role": msg.role, "content": msg.content})
 

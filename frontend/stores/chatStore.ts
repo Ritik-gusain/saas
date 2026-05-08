@@ -47,6 +47,8 @@ interface ChatState {
     conversationId: string,
     content: string,
     model?: string,
+    agentId?: string,
+    webSearch?: boolean,
     attachments?: File[]
   ) => Promise<void>;
   pinConversation: (conversationId: string) => Promise<void>;
@@ -122,7 +124,7 @@ export const useChatStore = create<ChatState>((set) => ({
     }
   },
 
-  sendMessage: async (conversationId: string, content: string, model?: string, attachments?: File[]) => {
+  sendMessage: async (conversationId: string, content: string, model?: string, agentId?: string, webSearch?: boolean, attachments?: File[]) => {
     set({ isStreaming: true, streamingContent: '', error: null });
     try {
       const res = await authFetch('/api/chat', {
@@ -132,6 +134,8 @@ export const useChatStore = create<ChatState>((set) => ({
           conversationId,
           message: content,
           model,
+          agentId,
+          webSearch,
         }),
       });
 

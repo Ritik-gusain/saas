@@ -71,6 +71,14 @@ export async function GET(req: NextRequest) {
         { name: 'Claude 3.5 Sonnet', value: 25 },
         { name: 'Gemini 1.5 Pro', value: 10 },
       ],
+      agentDistribution: [
+        { name: 'General', value: 45 },
+        { name: 'Researcher', value: 20 },
+        { name: 'Coder', value: 15 },
+        { name: 'Analyst', value: 10 },
+        { name: 'Designer', value: 5 },
+        { name: 'Writer', value: 5 },
+      ],
       costSaved: (totalTokens / 1000 * 0.02).toFixed(2), // Rough estimation
     };
 

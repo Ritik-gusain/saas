@@ -1,19 +1,21 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   FolderPlus, Search, MoreVertical, 
   MessageSquare, Calendar, Trash2,
   ExternalLink, LayoutGrid, List,
-  FolderLock, Sparkles, Hash
+  FolderLock, Sparkles, Hash, Star
 } from 'lucide-react';
 import { useTeamStore } from '@/stores/teamStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { format } from 'date-fns';
 
 export default function ProjectsPage() {
+  const router = useRouter();
   const { currentTeam } = useTeamStore();
-  const { projects, loading, fetchProjects, createProject, deleteProject } = useProjectStore();
+  const { projects, loading, fetchProjects, createProject, deleteProject, togglePin } = useProjectStore();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProject, setNewProject] = useState({ name: '', description: '', color: '#00f2ff' });
@@ -151,13 +153,31 @@ export default function ProjectsPage() {
                     
                     <div className="flex items-center gap-2">
                        <button 
-                        onClick={() => deleteProject(project.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          togglePin(project.id);
+                        }}
+                        className={`p-2 rounded-lg transition-all ${project.isPinned ? 'text-[var(--purple)]' : 'text-[var(--muted)] hover:text-[var(--purple)]'}`}
+                        title={project.isPinned ? "Unstar Project" : "Star Project"}
+                       >
+                        <Star className={`w-4 h-4 ${project.isPinned ? 'fill-[var(--purple)]' : ''}`} />
+                       </button>
+                       <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if(confirm('Are you sure you want to delete this project?')) {
+                            deleteProject(project.id);
+                          }
+                        }}
                         className="p-2 rounded-lg hover:bg-red-500/10 text-[var(--muted)] hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
                        >
                         <Trash2 className="w-4 h-4" />
                        </button>
                        <button 
-                        onClick={() => router.push(`/dashboard/projects/${project.id}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/dashboard/projects/${project.id}`);
+                        }}
                         className="p-2 rounded-lg hover:bg-white/5 text-[var(--muted)] hover:text-white transition-all"
                         title="Open Project"
                        >

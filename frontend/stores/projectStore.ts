@@ -9,6 +9,7 @@ export interface Project {
   createdAt: any;
   conversationCount: number;
   color: string;
+  isPinned?: boolean;
 }
 
 interface ProjectState {
@@ -17,6 +18,7 @@ interface ProjectState {
   fetchProjects: (teamId: string) => Promise<void>;
   createProject: (teamId: string, name: string, description: string, color: string) => Promise<void>;
   deleteProject: (projectId: string) => Promise<void>;
+  togglePin: (projectId: string) => Promise<void>;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -63,6 +65,30 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       }
     } catch (err) {
       console.error('Failed to delete project', err);
+    }
+  },
+
+  togglePin: async (projectId) => {
+    try {
+      // Optimistic update
+      const currentProjects = get().projects;
+      const project = currentProjects.find(p => p.id === projectId);
+      if (!project) return;
+
+      const newIsPinned = !project.isPinned;
+      set({
+        projects: currentProjects.map(p => 
+          p.id === projectId ? { ...p, isPinned: newIsPinned } : p
+        )
+      });
+
+      // API call
+      await authFetch(`/api/projects/pin`, {
+        method: 'POST',
+        body: JSON.stringify({ projectId, isPinned: newIsPinned }),
+      });
+    } catch (err) {
+      console.error('Failed to toggle project pin', err);
     }
   },
 }));

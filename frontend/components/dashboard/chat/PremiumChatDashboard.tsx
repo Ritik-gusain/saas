@@ -17,8 +17,15 @@ import remarkGfm from 'remark-gfm';
 export default function PremiumChatDashboard() {
   const [inputValue, setInputValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState('general');
+  const [selectedProviderId, setSelectedProviderId] = useState('openai');
+  const [selectedModelId, setSelectedModelId] = useState('openrouter/openai/gpt-4o');
+  const [isWebSearchEnabled, setIsWebSearchEnabled] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { currentTeam } = useTeamStore();
   const router = useRouter();
@@ -67,10 +74,10 @@ export default function PremiumChatDashboard() {
     if (!currentConversation) {
       const newConv = await createConversation(currentTeam.id, content.substring(0, 30) + '...');
       if (newConv) {
-        await sendMessage(newConv.id, content);
+        await sendMessage(newConv.id, content, selectedModelId, selectedAgentId, isWebSearchEnabled);
       }
     } else {
-      await sendMessage(currentConversation.id, content);
+      await sendMessage(currentConversation.id, content, selectedModelId, selectedAgentId, isWebSearchEnabled);
     }
   };
 
@@ -81,12 +88,146 @@ export default function PremiumChatDashboard() {
     }
   };
 
-  const suggestions = [
-    { icon: Code, text: "Write a React hook", desc: "for intersection observer", color: "text-[var(--cyan)]" },
-    { icon: Sparkles, text: "Brainstorm ideas", desc: "for a SaaS landing page", color: "text-[var(--purple)]" },
-    { icon: PenTool, text: "Draft an email", desc: "to a potential investor", color: "text-[var(--mint)]" },
-    { icon: LayoutTemplate, text: "Design a schema", desc: "for a chat application", color: "text-[var(--cyan)]" }
+  const startVoiceInput = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert("Speech recognition is not supported in this browser.");
+      return;
+    }
+    
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setInputValue(prev => prev + (prev ? ' ' : '') + transcript);
+    };
+    
+    recognition.start();
+  };
+
+  const VoiceWaveform = () => (
+    <div className="flex items-center gap-1 h-4 px-2">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div 
+          key={i}
+          className="w-1 bg-[var(--cyan)] rounded-full animate-voice-bar"
+          style={{ 
+            height: '100%',
+            animationDelay: `${i * 0.1}s`,
+            animationDuration: `${0.5 + Math.random()}s`
+          }}
+        />
+      ))}
+    </div>
+  );
+
+  const agents = [
+    { id: 'general', name: 'Generalist', icon: Sparkles, color: 'var(--cyan)', desc: 'Versatile AI for any task' },
+    { id: 'researcher', name: 'Researcher', icon: Globe, color: 'var(--purple)', desc: 'Real-time web & data search' },
+    { id: 'coder', name: 'Developer', icon: Code, color: 'var(--mint)', desc: 'Code, debug & architecture' },
+    { id: 'analyst', name: 'Analyst', icon: Terminal, color: 'var(--blue)', desc: 'Data & logical reasoning' },
+    { id: 'designer', name: 'Creative', icon: Wand2, color: '#f472b6', desc: 'UI/UX & creative writing' },
+    { id: 'writer', name: 'Assistant', icon: PenTool, color: '#fb923c', desc: 'Executive & drafting support' },
   ];
+
+  const providers = [
+    { 
+      id: 'openai', 
+      name: 'ChatGPT', 
+      logo: '/ai-logos/penailogo.svg', 
+      color: '#74aa9c',
+      variants: [
+        { id: 'openrouter/openai/gpt-4o', name: 'GPT-4o' },
+        { id: 'openrouter/openai/gpt-4o-mini', name: 'GPT-4o Mini' },
+        { id: 'openrouter/openai/gpt-4-turbo', name: 'GPT-4 Turbo' },
+        { id: 'openrouter/openai/gpt-3.5-turbo', name: 'GPT-3.5 Turbo' },
+      ]
+    },
+    { 
+      id: 'anthropic', 
+      name: 'Claude', 
+      logo: '/ai-logos/Anthropic.svg', 
+      color: '#d97757',
+      variants: [
+        { id: 'openrouter/anthropic/claude-3-5-sonnet', name: '3.5 Sonnet' },
+        { id: 'openrouter/anthropic/claude-3-5-haiku', name: '3.5 Haiku' },
+        { id: 'openrouter/anthropic/claude-3-opus', name: '3 Opus' },
+        { id: 'openrouter/anthropic/claude-3-sonnet', name: '3 Sonnet' },
+      ]
+    },
+    { 
+      id: 'google', 
+      name: 'Gemini', 
+      logo: '/ai-logos/GoogleGemini.svg', 
+      color: '#4285f4',
+      variants: [
+        { id: 'openrouter/google/gemini-2.0-flash-001', name: '2.0 Flash' },
+        { id: 'openrouter/google/gemini-pro-1.5', name: '1.5 Pro' },
+        { id: 'openrouter/google/gemini-flash-1.5', name: '1.5 Flash' },
+        { id: 'openrouter/google/gemini-pro', name: 'Pro' },
+      ]
+    },
+    { 
+      id: 'meta', 
+      name: 'Llama', 
+      logo: '/ai-logos/Meta.png', 
+      color: '#0668E1',
+      variants: [
+        { id: 'openrouter/meta-llama/llama-3.1-405b', name: '3.1 405B' },
+        { id: 'openrouter/meta-llama/llama-3.1-70b', name: '3.1 70B' },
+        { id: 'openrouter/meta-llama/llama-3.1-8b', name: '3.1 8B' },
+        { id: 'openrouter/meta-llama/llama-3-70b', name: '3 70B' },
+      ]
+    },
+    { 
+      id: 'mistral', 
+      name: 'Mistral', 
+      logo: '/ai-logos/Mistral.png', 
+      color: '#f5d142',
+      variants: [
+        { id: 'openrouter/mistralai/mistral-large', name: 'Large' },
+        { id: 'openrouter/mistralai/mistral-medium', name: 'Medium' },
+        { id: 'openrouter/mistralai/mistral-small', name: 'Small' },
+        { id: 'openrouter/mistralai/pixtral-12b', name: 'Pixtral' },
+      ]
+    },
+    { 
+      id: 'deepseek', 
+      name: 'DeepSeek', 
+      logo: '/ai-logos/DeepSeek.png', 
+      color: '#007bff',
+      variants: [
+        { id: 'openrouter/deepseek/deepseek-chat', name: 'V3' },
+        { id: 'openrouter/deepseek/deepseek-coder', name: 'Coder' },
+      ]
+    },
+    { 
+      id: 'perplexity', 
+      name: 'Perplexity', 
+      logo: '/ai-logos/Perplexity.svg', 
+      color: '#20b2aa',
+      variants: [
+        { id: 'openrouter/perplexity/sonar-reasoning', name: 'Reasoning' },
+        { id: 'openrouter/perplexity/sonar', name: 'Sonar' },
+      ]
+    },
+    { 
+      id: 'xai', 
+      name: 'Grok', 
+      logo: '/ai-logos/xai.png', 
+      color: '#ffffff',
+      variants: [
+        { id: 'openrouter/xai/grok-2', name: 'Grok 2' },
+        { id: 'openrouter/xai/grok-2-mini', name: '2 Mini' },
+      ]
+    },
+  ];
+
+  const currentProvider = providers.find(p => p.id === selectedProviderId) || providers[0];
 
   return (
     <div className="h-full flex flex-col bg-transparent w-full relative">
@@ -105,6 +246,16 @@ export default function PremiumChatDashboard() {
           </div>
         </div>
       )}
+
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        className="hidden" 
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) alert(`File selected: ${file.name}`);
+        }}
+      />
 
       {/* Top Navigation Banner */}
       <div className="h-14 flex items-center justify-between px-4 glass-panel border-b z-20">
@@ -158,10 +309,10 @@ export default function PremiumChatDashboard() {
       {/* Main Chat Area */}
       <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center" ref={scrollRef}>
         {!currentConversation || messages.length === 0 ? (
-          <div className="flex-1 w-full flex flex-col items-center justify-center p-8 max-w-3xl mx-auto">
+          <div className="flex-1 w-full flex flex-col items-center justify-center p-8 max-w-4xl mx-auto">
             {/* Claude-style Hero */}
-            <div className="mb-8 text-center space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--cyan)]/20 to-[var(--purple)]/20 border border-[var(--border)] flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_var(--cyan)]/20">
+            <div className="mb-4 text-center space-y-4">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--cyan)]/20 to-[var(--purple)]/20 border border-[var(--border)] flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_var(--cyan)]/20">
                 <Sparkles className="w-8 h-8 text-[var(--cyan)]" />
               </div>
               <h1 className="text-[32px] font-['Montserrat'] font-bold text-white tracking-tight leading-tight">
@@ -169,8 +320,48 @@ export default function PremiumChatDashboard() {
               </h1>
             </div>
 
-            <div className="w-full max-w-2xl mb-8">
-              <div className={`relative glass-panel rounded-xl border p-1 transition-all duration-300 ${
+            {/* Agent Selector Chips (Top Halo) */}
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-6 max-w-2xl px-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              {agents.map((agent) => {
+                const Icon = agent.icon;
+                const isSelected = selectedAgentId === agent.id;
+                return (
+                  <button
+                    key={agent.id}
+                    onClick={() => setSelectedAgentId(agent.id)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 ${
+                      isSelected 
+                        ? 'bg-[var(--surface)] border-[var(--cyan)] shadow-[0_0_10px_var(--cyan)]/20 text-white' 
+                        : 'glass-panel border-[var(--border)] text-[var(--muted)] hover:border-[var(--cyan)]/30 hover:text-white'
+                    }`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[var(--cyan)]' : ''}`} style={{ color: isSelected ? agent.color : undefined }} />
+                    <span className="text-[13px] font-medium">{agent.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="w-full max-w-2xl relative mb-4">
+              {/* Model Selection Bar */}
+              <div className="flex items-center justify-center gap-2 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-200">
+                {currentProvider.variants.map((variant) => (
+                  <button
+                    key={variant.id}
+                    onClick={() => setSelectedModelId(variant.id)}
+                    className={`
+                      px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all duration-300
+                      ${selectedModelId === variant.id 
+                        ? 'bg-white text-black scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]' 
+                        : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60 border border-white/5'}
+                    `}
+                  >
+                    {variant.name}
+                  </button>
+                ))}
+              </div>
+
+              <div className={`relative glass-panel rounded-2xl border p-1 transition-all duration-300 ${
                 isFocused ? 'border-[var(--cyan)]/50 shadow-[0_0_20px_var(--cyan)]/20' : 'border-[var(--border)] hover:border-[var(--cyan)]/30'
               }`}>
                 <textarea
@@ -180,62 +371,65 @@ export default function PremiumChatDashboard() {
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   onKeyDown={handleKeyDown}
-                  placeholder="How can Luminescent help you today?"
-                  className="w-full max-h-[200px] min-h-[60px] p-4 bg-transparent resize-none outline-none text-[15px] placeholder-[var(--muted)] text-white scrollbar-hide"
+                  placeholder={`Ask ${agents.find(a => a.id === selectedAgentId)?.name || 'Generalist'} anything...`}
+                  className="w-full max-h-[200px] min-h-[80px] p-4 bg-transparent resize-none outline-none text-[16px] placeholder-[var(--muted)] text-white scrollbar-hide"
                   rows={1}
                 />
-                <div className="flex items-center justify-between p-2 pt-0">
-                  <div className="flex items-center gap-1">
-                    <button className="p-2 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-lg transition-colors tooltip-trigger" title="Add attachment">
-                      <Paperclip className="w-[18px] h-[18px]" />
+                <div className="flex items-center justify-between p-2 pt-0 px-3">
+                  <div className="flex items-center gap-1.5">
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-2 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-lg transition-colors tooltip-trigger" 
+                      title="Add attachment"
+                    >
+                      <Paperclip className="w-[19px] h-[19px]" />
                     </button>
                     {isPremium && (
                       <>
-                        <button className="p-2 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-lg transition-colors tooltip-trigger" title="Web search">
-                          <Globe className="w-[18px] h-[18px]" />
+                        <button 
+                          onClick={() => setIsWebSearchEnabled(!isWebSearchEnabled)}
+                          className={`p-2 rounded-lg transition-colors tooltip-trigger ${
+                            isWebSearchEnabled ? 'text-[var(--cyan)] bg-[var(--cyan)]/10 border border-[var(--cyan)]/20' : 'text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)]'
+                          }`} 
+                          title="Web search"
+                        >
+                          <Globe className="w-[19px] h-[19px]" />
                         </button>
-                        <button className="p-2 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-lg transition-colors tooltip-trigger" title="Voice input">
-                          <Mic className="w-[18px] h-[18px]" />
+                        <button 
+                          onClick={startVoiceInput}
+                          className={`p-2 rounded-lg transition-colors flex items-center gap-2 tooltip-trigger ${
+                            isListening ? 'text-red-500 bg-red-500/10 border border-red-500/20' : 'text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)]'
+                          }`} 
+                          title="Voice input"
+                        >
+                          <Mic className={`w-[19px] h-[19px] ${isListening ? 'animate-pulse' : ''}`} />
+                          {isListening && <VoiceWaveform />}
                         </button>
                       </>
+                    )}
+                    {isWebSearchEnabled && (
+                      <span className="ml-2 px-2 py-0.5 rounded-full bg-[var(--cyan)]/10 border border-[var(--cyan)]/30 text-[9px] font-bold text-[var(--cyan)] uppercase tracking-wider animate-pulse">
+                        Live Search
+                      </span>
                     )}
                   </div>
                   <button 
                     onClick={handleSubmit}
                     disabled={!inputValue.trim() || isStreaming}
-                    className={`p-2.5 rounded-lg flex items-center justify-center transition-all ${
+                    className={`p-2.5 px-4 rounded-xl flex items-center justify-center transition-all gap-2 ${
                       inputValue.trim() && !isStreaming
-                        ? 'bg-[var(--cyan)] text-[#0f0f11] hover:brightness-110 shadow-[0_0_15px_var(--cyan)]/30' 
+                        ? 'bg-[var(--cyan)] text-[#0f0f11] hover:brightness-110 shadow-[0_0_15px_var(--cyan)]/30 font-bold' 
                         : 'bg-[var(--surface)] text-[var(--muted)] border border-[var(--border)] cursor-not-allowed'
                     }`}
                   >
-                    <Send className="w-[18px] h-[18px]" />
+                    <span className="text-sm">Chat</span>
+                    <Send className="w-[16px] h-[16px]" />
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Suggestions Grid */}
-            <div className="w-full max-w-2xl grid grid-cols-2 gap-3">
-              {suggestions.map((suggestion, idx) => {
-                const Icon = suggestion.icon;
-                return (
-                  <button 
-                    key={idx}
-                    onClick={() => setInputValue(`${suggestion.text} ${suggestion.desc}`)}
-                    className="flex flex-col items-start p-4 glass-panel border border-[var(--border)] hover:border-[var(--cyan)]/30 hover:bg-[var(--surface)] rounded-xl transition-all text-left group"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon className={`w-[18px] h-[18px] ${suggestion.color}`} strokeWidth={2} />
-                      <span className="text-[14px] font-semibold text-white group-hover:text-[var(--cyan)] transition-colors">{suggestion.text}</span>
-                    </div>
-                    <span className="text-[13px] text-[var(--muted)]">{suggestion.desc}</span>
-                  </button>
-                );
-              })}
-            </div>
-            
-            <div className="mt-8 text-center">
+            <div className="mt-4 text-center">
               <span className="text-[12px] text-[var(--muted)] flex items-center justify-center gap-2">
                 <Command className="w-3 h-3" /> Press Shift + Enter for new line
               </span>
@@ -300,6 +494,24 @@ export default function PremiumChatDashboard() {
                   </button>
                 </div>
               )}
+            {/* Model Variant Selector for Floating Input */}
+            <div className="flex items-center justify-center gap-2 mb-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              {currentProvider.variants.map((variant) => (
+                <button
+                  key={variant.id}
+                  onClick={() => setSelectedModelId(variant.id)}
+                  className={`
+                    px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all duration-300
+                    ${selectedModelId === variant.id 
+                      ? 'bg-white text-black scale-105 shadow-lg shadow-white/10' 
+                      : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60'}
+                  `}
+                >
+                  {variant.name}
+                </button>
+              ))}
+            </div>
+
             <div className={`relative glass-panel rounded-xl border p-1 transition-all duration-300 shadow-2xl ${
               isFocused ? 'border-[var(--cyan)]/50 shadow-[0_0_30px_var(--cyan)]/20' : 'border-[var(--border)]'
             }`}>
@@ -316,13 +528,38 @@ export default function PremiumChatDashboard() {
               />
               <div className="flex items-center justify-between p-2 pt-0">
                 <div className="flex items-center gap-1">
-                  <button className="p-1.5 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-md transition-colors tooltip-trigger" title="Add attachment">
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-1.5 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-md transition-colors tooltip-trigger" 
+                    title="Add attachment"
+                  >
                     <Paperclip className="w-4 h-4" />
                   </button>
-                  {isPremium && (
-                    <button className="p-1.5 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-md transition-colors tooltip-trigger" title="Web search">
+                  <>
+                    <button 
+                      onClick={() => setIsWebSearchEnabled(!isWebSearchEnabled)}
+                      className={`p-1.5 rounded-md transition-colors tooltip-trigger ${
+                        isWebSearchEnabled ? 'text-[var(--cyan)] bg-[var(--cyan)]/10 border border-[var(--cyan)]/20' : 'text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)]'
+                      }`} 
+                      title="Web search"
+                    >
                       <Globe className="w-4 h-4" />
                     </button>
+                    <button 
+                      onClick={startVoiceInput}
+                      className={`p-1.5 rounded-md transition-colors flex items-center gap-1.5 tooltip-trigger ${
+                        isListening ? 'text-red-500 bg-red-500/10 border border-red-500/20' : 'text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)]'
+                      }`} 
+                      title="Voice input"
+                    >
+                      <Mic className={`w-4 h-4 ${isListening ? 'animate-pulse' : ''}`} />
+                      {isListening && <VoiceWaveform />}
+                    </button>
+                  </>
+                  {isWebSearchEnabled && (
+                    <span className="ml-2 px-2 py-0.5 rounded-full bg-[var(--cyan)]/10 border border-[var(--cyan)]/30 text-[9px] font-bold text-[var(--cyan)] uppercase tracking-wider animate-pulse">
+                      Live Search
+                    </span>
                   )}
                 </div>
                 <button 
@@ -344,6 +581,53 @@ export default function PremiumChatDashboard() {
           </div>
         </div>
       )}
+      {/* Right side model selector "Bubbles" */}
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-30">
+        {providers.map((provider) => {
+          const isSelected = selectedProviderId === provider.id;
+          return (
+            <button
+              key={provider.id}
+              onClick={() => {
+                setSelectedProviderId(provider.id);
+                setSelectedModelId(provider.variants[0].id);
+              }}
+              className={`group relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 ease-out 
+                ${isSelected 
+                  ? 'scale-110 shadow-[0_0_20px_rgba(255,255,255,0.2)] bg-white/10 border-white/30' 
+                  : 'hover:scale-105 bg-black/20 border-white/5 hover:border-white/20'
+                } border backdrop-blur-md overflow-visible`}
+              title={provider.name}
+            >
+              <div className={`absolute inset-0 rounded-full transition-opacity duration-500 
+                ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'}`} 
+                style={{ 
+                  background: `radial-gradient(circle at center, ${provider.color}33 0%, transparent 70%)` 
+                }}
+              />
+              
+              <img 
+                src={provider.logo} 
+                alt={provider.name}
+                className={`w-7 h-7 object-contain transition-all duration-500
+                  ${isSelected ? 'brightness-110 saturate-100' : 'opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100'}
+                `}
+              />
+
+              {/* Tooltip bubble */}
+              <div className="absolute right-full mr-4 px-3 py-1.5 rounded-lg bg-black/80 border border-white/10 text-white text-[11px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all pointer-events-none shadow-xl">
+                {provider.name}
+                <div className="absolute top-1/2 -right-1 -translate-y-1/2 border-4 border-transparent border-l-black/80" />
+              </div>
+
+              {/* Selection indicator bubble */}
+              {isSelected && (
+                <div className="absolute -right-1 -top-1 w-3 h-3 bg-[var(--cyan)] rounded-full border-2 border-[var(--bg)] shadow-[0_0_10px_var(--cyan)] animate-pulse" />
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

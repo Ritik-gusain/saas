@@ -93,6 +93,8 @@ export default function TeamSettings() {
     setShowKeys(prev => ({ ...prev, [provider]: !prev[provider] }));
   };
 
+  const isPremium = currentTeam?.plan_tier && currentTeam.plan_tier >= 3;
+
   if (!currentTeam) return <div className="p-8 text-white">Loading team settings...</div>;
 
   return (
@@ -129,7 +131,25 @@ export default function TeamSettings() {
       </section>
 
       {/* Member Management */}
-      <section className="glass-panel rounded-2xl p-8">
+      <section className={`glass-panel rounded-2xl p-8 relative overflow-hidden transition-all duration-500 ${!isPremium ? 'opacity-50' : ''}`}>
+        {!isPremium && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[2px] p-6 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--cyan)]/10 border border-[var(--cyan)]/30 flex items-center justify-center mb-4">
+              <Users className="w-8 h-8 text-[var(--cyan)]" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Collaboration is Premium</h3>
+            <p className="text-sm text-[var(--muted)] max-w-xs mb-6">
+              Upgrade to Starter, Growth or Pro to invite team members and collaborate in real-time.
+            </p>
+            <button 
+              onClick={() => window.location.href = '/dashboard/settings?tab=billing'}
+              className="px-6 py-2.5 rounded-xl bg-[var(--cyan)] text-black font-black text-sm shadow-[0_0_20px_var(--cyan)]/20 hover:scale-105 transition-all"
+            >
+              Unlock Team Features
+            </button>
+          </div>
+        )}
+        
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[var(--mint)]/20 border border-[var(--mint)]/30 flex items-center justify-center">
@@ -142,13 +162,15 @@ export default function TeamSettings() {
             <input
               type="email"
               placeholder="teammate@company.com"
+              disabled={!isPremium}
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
-              className="w-64 bg-[#0B0E14]/50 border border-[var(--border)] rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-[var(--mint)]"
+              className="w-64 bg-[#0B0E14]/50 border border-[var(--border)] rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-[var(--mint)] disabled:opacity-30"
             />
             <button
               type="submit"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--mint)] text-[var(--bg)] font-bold text-sm hover:opacity-90"
+              disabled={!isPremium}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--mint)] text-[var(--bg)] font-bold text-sm hover:opacity-90 disabled:opacity-30"
             >
               <UserPlus className="w-4 h-4" />
               Invite
