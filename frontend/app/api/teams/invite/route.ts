@@ -29,9 +29,37 @@ export async function POST(req: NextRequest) {
     }
 
     const teamData = teamDoc.data();
-    if (teamData?.owner_id !== uid && !teamData?.member_ids?.includes(uid)) {
+    if (!teamData) return NextResponse.json({ error: 'Team not found' }, { status: 404 });
+
+    if (teamData.owner_id !== uid && !teamData.member_ids?.includes(uid)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+
+    // --- Subscription & Seat Validation ---
+    const planTier = Number(teamData.plan_tier) || 1;
+    if (planTier <= 1) {
+      return NextResponse.json({ 
+        error: 'Team invitations are only available on paid plans. Please upgrade your plan to invite collaborators.' 
+      }, { status: 403 });
+    }
+
+    const currentMemberCount = (teamData.member_ids?.length || 0) + 1;
+    const now = new Date().toISOString();
+    const activeInvitesSnapshot = await db.collection('pending_invites')
+      .where('teamId', '==', team_id)
+      .get();
+    
+    const pendingInvitesCount = activeInvitesSnapshot.docs.filter(doc => {
+      const data = doc.data();
+      return !data.usedAt && data.expiresAt > now;
+    }).length;
+
+    if (currentMemberCount + pendingInvitesCount >= planTier) {
+      return NextResponse.json({ 
+        error: `Seat limit reached. Your plan allows up to ${planTier} members.` 
+      }, { status: 403 });
+    }
+    // --------------------------------------
 
     // Create invite token (7-day expiry)
     const inviteToken = uuidv4();
@@ -41,11 +69,12 @@ export async function POST(req: NextRequest) {
     // Store invite in Firestore
     await db.collection('pending_invites').doc(inviteToken).set({
       teamId: team_id,
-      teamName: teamData?.name || 'Workspace',
-      email,
+      teamName: teamData.name || 'Workspace',
+      email: email.toLowerCase(),
       expiresAt: expiresAt.toISOString(),
       invitedBy: uid,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      token: inviteToken
     });
 
     const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/invite/${inviteToken}`;
@@ -58,6 +87,7 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 }
     );
+
   } catch (error) {
     console.error('Invite error:', error);
     return NextResponse.json(

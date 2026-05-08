@@ -37,42 +37,49 @@ export async function POST(req: NextRequest) {
         const subscription = payload.payload.subscription?.entity;
         if (!subscription) break;
 
-        const firebaseUid = subscription.notes?.firebase_uid;
-        const planTier = subscription.notes?.plan_tier;
-        const userEmail = subscription.notes?.user_email;
+        const teamId = subscription.notes?.team_id;
+        const planTier = Number(subscription.notes?.plan_tier) || 1;
 
         console.log('[Webhook] subscription.activated', {
-          firebaseUid,
+          teamId,
           planTier,
           subscriptionId: subscription.id,
         });
 
-        // TODO: Write to Firestore
-        // await db.collection('teams').add({
-        //   owner_id: firebaseUid,
-        //   plan_tier: planTier,
-        //   razorpay_subscription_id: subscription.id,
-        //   razorpay_customer_id: subscription.customer_id,
-        //   subscription_status: 'active',
-        //   created_at: new Date().toISOString(),
-        // });
+        if (teamId) {
+          await db.collection('teams').doc(teamId).update({
+            plan_tier: planTier,
+            razorpay_subscription_id: subscription.id,
+            razorpay_customer_id: subscription.customer_id,
+            subscription_status: 'active',
+            updated_at: new Date().toISOString(),
+          });
+        }
         break;
       }
 
       case 'subscription.charged': {
         const subscription = payload.payload.subscription?.entity;
-        if (subscription) {
+        if (subscription && subscription.notes?.team_id) {
           console.log('[Webhook] subscription.charged', { subscriptionId: subscription.id });
-          // TODO: Update Firestore team subscription status
+          await db.collection('teams').doc(subscription.notes.team_id).update({
+            subscription_status: 'active',
+            updated_at: new Date().toISOString(),
+          });
         }
         break;
       }
 
       case 'subscription.cancelled': {
         const subscription = payload.payload.subscription?.entity;
-        if (subscription) {
+        if (subscription && subscription.notes?.team_id) {
           console.log('[Webhook] subscription.cancelled', { subscriptionId: subscription.id });
-          // TODO: Update Firestore team subscription_status to 'cancelled'
+          await db.collection('teams').doc(subscription.notes.team_id).update({
+            subscription_status: 'cancelled',
+            // Do NOT reset plan_tier until the period ends, or handle as needed
+            // For now, just mark status
+            updated_at: new Date().toISOString(),
+          });
         }
         break;
       }
@@ -85,11 +92,19 @@ export async function POST(req: NextRequest) {
             subscriptionId: payment.subscription_id,
             errorCode: payment.error_code,
           });
-          // TODO: Log to Firestore audit_logs collection
+          // Log failure
+          await db.collection('audit_logs').add({
+            type: 'payment_failed',
+            paymentId: payment.id,
+            subscriptionId: payment.subscription_id,
+            error: payment.error_code,
+            createdAt: new Date().toISOString()
+          });
         }
         break;
       }
     }
+
 
     return NextResponse.json({ success: true });
   } catch (error) {

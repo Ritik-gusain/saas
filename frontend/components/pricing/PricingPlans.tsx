@@ -83,7 +83,7 @@ const plans: Plan[] = [
     accent: '#00FFAA',
     features: [
       'Everything in Growth',
-      'Up to 15 team members',
+      'Up to 12 team members',
       'SSO & advanced security',
       'API access',
       'Dedicated support',

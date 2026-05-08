@@ -64,18 +64,34 @@ export default function CheckoutPage({ params }: { params: Promise<{ planId: str
     setError(null);
 
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      await updateTeamSettings(currentTeam.id, { plan_tier: plan.tier as 1 | 3 | 7 | 12 });
-      
-      const path = plan.tier === 12 ? '/dashboard/pro' : plan.tier === 7 ? '/dashboard/growth' : plan.tier === 3 ? '/dashboard/starter' : '/dashboard/free';
-      router.push(path);
+      const authHeader = `Bearer ${await auth.currentUser?.getIdToken()}`;
+      const res = await fetch('/api/razorpay/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authHeader
+        },
+        body: JSON.stringify({
+          planType: planId,
+          teamId: currentTeam.id
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to initiate checkout');
+
+      if (data.shortUrl) {
+        window.location.href = data.shortUrl;
+      } else {
+        throw new Error('No checkout URL received');
+      }
     } catch (err: any) {
       setError(err.message || 'Payment failed. Please try again.');
       setIsProcessing(false);
     }
   };
+
+
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-white font-['Plus_Jakarta_Sans'] relative">

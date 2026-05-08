@@ -78,18 +78,46 @@ export async function POST(
     }
 
     const teamId = inviteData?.teamId;
-
     const teamRef = db.collection('teams').doc(teamId);
+    const teamDoc = await teamRef.get();
+    const teamData = teamDoc.data();
 
-    // 4. Accept the invitation
-    // Update team member_ids and mark invite as used in a batch/transaction
+    if (!teamDoc.exists || !teamData) {
+      return NextResponse.json({ error: 'Team no longer exists' }, { status: 404 });
+    }
+
+    // --- Seat Limit Validation ---
+    const planTier = Number(teamData.plan_tier) || 1;
+    const currentMemberCount = (teamData.member_ids?.length || 0) + 1;
+
+    if (currentMemberCount >= planTier) {
+      return NextResponse.json({ 
+        error: `Team seat limit reached (${planTier} members). Please ask the owner to upgrade their plan.` 
+      }, { status: 403 });
+    }
+    // ----------------------------
+
+    // Accept the invitation
     const batch = db.batch();
 
-    // Add user to team member_ids
-    batch.update(teamRef, {
-      member_ids: admin.firestore.FieldValue.arrayUnion(uid),
-      updated_at: new Date().toISOString()
-    });
+    // Add user to team member_ids if not already there
+    if (teamData.owner_id !== uid && !teamData.member_ids?.includes(uid)) {
+      batch.update(teamRef, {
+        member_ids: admin.firestore.FieldValue.arrayUnion(uid),
+        updated_at: new Date().toISOString()
+      });
+
+      // Create team_members record
+      const teamMemberRef = db.collection('team_members').doc();
+      batch.set(teamMemberRef, {
+        id: teamMemberRef.id,
+        team_id: teamId,
+        user_id: uid,
+        email: userEmail,
+        role: 'member',
+        joined_at: new Date().toISOString()
+      });
+    }
 
     // Mark invite as used
     batch.update(inviteRef, {
@@ -97,28 +125,15 @@ export async function POST(
       usedBy: uid
     });
 
-    // Create team_members record
-    const teamMemberRef = db.collection('team_members').doc();
-    batch.set(teamMemberRef, {
-      id: teamMemberRef.id,
-      team_id: inviteData?.teamId,
-      user_id: uid,
-      role: 'member',
-      joined_at: new Date().toISOString()
-    });
-
     await batch.commit();
-
-    if (!inviteData) {
-      return NextResponse.json({ error: 'Invite data missing after commit' }, { status: 500 });
-    }
 
     return NextResponse.json({
       success: true,
-      teamId: inviteData.teamId as string,
+      teamId: teamId,
       message: 'Successfully joined the team'
     });
   } catch (error: any) {
+
     console.error('Accept invite error:', error);
     return NextResponse.json(
       { error: 'Failed to accept invitation', details: error.message },
