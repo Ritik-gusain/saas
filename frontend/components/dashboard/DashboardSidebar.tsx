@@ -6,7 +6,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import {
   MessageSquare, FolderKanban, Settings,
   Search, Code, Download, MoreHorizontal,
-  PanelLeftClose, FileText, Plus, Briefcase, Layers, Sparkles, Trash2
+  PanelLeftClose, FileText, Plus, Briefcase, Layers, Sparkles, Trash2,
+  Star, Pin, X
 } from 'lucide-react';
 import { Logo } from '@/components/shared/Logo';
 import { useTeamStore } from '@/stores/teamStore';
@@ -17,10 +18,12 @@ export default function DashboardSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const { currentTeam } = useTeamStore();
-  const { conversations, currentConversation, loadConversation, createConversation, fetchConversations, unpinConversation, deleteConversation } = useChatStore();
+  const { conversations, currentConversation, loadConversation, createConversation, fetchConversations, pinConversation, unpinConversation, deleteConversation, exportConversation } = useChatStore();
   const { toggleSidebar } = useUIStore();
   const [email, setEmail] = useState<string>('Loading...');
   const [activeRoute, setActiveRoute] = useState('chat');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   const isPremium = currentTeam?.plan_tier && currentTeam.plan_tier >= 3;
 
@@ -107,7 +110,37 @@ export default function DashboardSidebar() {
 
         {/* Top Nav Items */}
         <div className="space-y-1 mb-6 border-b border-[var(--border)]/50 pb-4">
-          <NavItem icon={Search} label="Search" />
+          {!isSearching ? (
+            <NavItem 
+              icon={Search} 
+              label="Search" 
+              onClick={() => setIsSearching(true)} 
+            />
+          ) : (
+            <div className="px-3 mb-2 flex items-center gap-2 bg-[var(--surface)] rounded-md border border-[var(--border)] py-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+              <Search className="w-4 h-4 text-[var(--cyan)]" />
+              <input
+                autoFocus
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search chats..."
+                className="bg-transparent border-none outline-none text-[13px] w-full text-white placeholder:text-[var(--muted)]"
+                onBlur={() => {
+                  if (searchQuery === '') setIsSearching(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setIsSearching(false);
+                    setSearchQuery('');
+                  }
+                }}
+              />
+              <button onClick={() => { setIsSearching(false); setSearchQuery(''); }}>
+                <X className="w-3.5 h-3.5 text-[var(--muted)] hover:text-white" />
+              </button>
+            </div>
+          )}
           <NavItem icon={MessageSquare} label="Chats" onClick={() => handleNavigation('/dashboard/chat')} isActive={activeRoute === 'chat'} />
           <NavItem icon={Layers} label="Projects" onClick={() => handleNavigation('/dashboard/projects')} isActive={activeRoute === 'projects'} />
           <NavItem icon={Briefcase} label="Analytics" onClick={() => handleNavigation('/dashboard/analytics')} isActive={activeRoute === 'analytics'} />
@@ -116,9 +149,14 @@ export default function DashboardSidebar() {
 
         {/* Starred */}
         <div className="mb-6">
-          <h3 className="px-3 text-[10px] font-bold text-[var(--muted)] mb-2 tracking-widest uppercase">Starred</h3>
+          <h3 className="px-3 text-[10px] font-bold text-[var(--muted)] mb-2 tracking-widest uppercase flex items-center gap-2">
+            <Star className="w-3 h-3 text-[var(--cyan)]" fill="currentColor" />
+            Starred
+          </h3>
           <div className="space-y-0.5">
-            {conversations.filter(c => c.is_pinned).map(conv => {
+            {conversations
+              .filter(c => c.is_pinned && (searchQuery === '' || c.title.toLowerCase().includes(searchQuery.toLowerCase())))
+              .map(conv => {
               const isActive = currentConversation?.id === conv.id;
               return (
                 <div
@@ -132,18 +170,28 @@ export default function DashboardSidebar() {
                   `}
                 >
                   <span className="truncate pr-2">{conv.title || 'New Conversation'}</span>
-                  <div className={`flex items-center gap-1 transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                  <div className={`flex items-center gap-0.5 transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteConversation(conv.id);
+                        unpinConversation(conv.id);
                       }}
+                      title="Unstar"
+                      className="p-1 rounded-md hover:bg-[var(--cyan)]/20 text-[var(--cyan)] transition-colors"
+                    >
+                      <Star className="w-[14px] h-[14px]" fill="currentColor" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if(confirm('Are you sure you want to delete this conversation?')) {
+                          deleteConversation(conv.id);
+                        }
+                      }}
+                      title="Delete"
                       className="p-1 rounded-md hover:bg-red-500/20 text-[var(--muted)] hover:text-red-500 transition-colors"
                     >
                       <Trash2 className="w-[14px] h-[14px]" />
-                    </button>
-                    <button className="p-1 rounded-md hover:bg-[var(--cyan)]/20 transition-colors">
-                      <MoreHorizontal className={`w-[14px] h-[14px] ${isActive ? 'text-[var(--cyan)]' : 'text-[var(--muted)] hover:text-white'}`} />
                     </button>
                   </div>
                 </div>
@@ -159,7 +207,9 @@ export default function DashboardSidebar() {
         <div className="pb-4">
           <h3 className="px-3 text-[10px] font-bold text-[var(--muted)] mb-2 tracking-widest uppercase">Recents</h3>
           <div className="space-y-0.5">
-            {conversations.filter(c => !c.is_pinned).map(conv => {
+            {conversations
+              .filter(c => !c.is_pinned && (searchQuery === '' || c.title.toLowerCase().includes(searchQuery.toLowerCase())))
+              .map(conv => {
               const isActive = currentConversation?.id === conv.id;
               return (
                 <div
@@ -173,18 +223,28 @@ export default function DashboardSidebar() {
                   `}
                 >
                   <span className="truncate pr-2">{conv.title || 'New Conversation'}</span>
-                  <div className={`flex items-center gap-1 transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                  <div className={`flex items-center gap-0.5 transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteConversation(conv.id);
+                        pinConversation(conv.id);
                       }}
+                      title="Star"
+                      className="p-1 rounded-md hover:bg-[var(--cyan)]/20 text-[var(--muted)] hover:text-[var(--cyan)] transition-colors"
+                    >
+                      <Star className="w-[14px] h-[14px]" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if(confirm('Are you sure you want to delete this conversation?')) {
+                          deleteConversation(conv.id);
+                        }
+                      }}
+                      title="Delete"
                       className="p-1 rounded-md hover:bg-red-500/20 text-[var(--muted)] hover:text-red-500 transition-colors"
                     >
                       <Trash2 className="w-[14px] h-[14px]" />
-                    </button>
-                    <button className="p-1 rounded-md hover:bg-[var(--cyan)]/20 transition-colors">
-                      <MoreHorizontal className={`w-[14px] h-[14px] ${isActive ? 'text-[var(--cyan)]' : 'text-[var(--muted)] hover:text-white'}`} />
                     </button>
                   </div>
                 </div>
@@ -212,7 +272,11 @@ export default function DashboardSidebar() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-1.5 rounded-md hover:bg-[var(--cyan)]/20 text-[var(--muted)] hover:text-[var(--cyan)] transition-colors">
+            <button 
+              onClick={() => currentConversation && exportConversation(currentConversation.id, 'json')}
+              className="p-1.5 rounded-md hover:bg-[var(--cyan)]/20 text-[var(--muted)] hover:text-[var(--cyan)] transition-colors"
+              title="Export JSON"
+            >
               <Download className="w-[14px] h-[14px]" />
             </button>
           </div>

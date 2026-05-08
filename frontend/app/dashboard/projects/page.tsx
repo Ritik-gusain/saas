@@ -156,7 +156,11 @@ export default function ProjectsPage() {
                        >
                         <Trash2 className="w-4 h-4" />
                        </button>
-                       <button className="p-2 rounded-lg hover:bg-white/5 text-[var(--muted)] hover:text-white transition-all">
+                       <button 
+                        onClick={() => router.push(`/dashboard/projects/${project.id}`)}
+                        className="p-2 rounded-lg hover:bg-white/5 text-[var(--muted)] hover:text-white transition-all"
+                        title="Open Project"
+                       >
                         <ExternalLink className="w-4 h-4" />
                        </button>
                     </div>

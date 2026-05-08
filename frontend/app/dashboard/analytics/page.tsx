@@ -95,7 +95,10 @@ export default function AnalyticsPage() {
               <Calendar className="w-3.5 h-3.5" />
               Last 30 Days
             </button>
-            <button className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-xs font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2">
+            <button 
+              onClick={() => alert('Exporting analytics data as CSV...')}
+              className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-xs font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2"
+            >
               <Download className="w-3.5 h-3.5" />
               Export CSV
             </button>
