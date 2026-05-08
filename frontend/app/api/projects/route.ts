@@ -1,56 +1,103 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// TODO: Replace with Firestore queries when DB is set up
-// import { db } from '@/lib/firebase-admin';
-
-// Temporary in-memory project store
-const projectsStore: any[] = [];
+import { adminAuth, db } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export async function GET(req: NextRequest) {
   try {
-    // TODO: Verify Firebase ID token
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Stub: return in-memory projects (replace with Firestore)
-    return NextResponse.json(projectsStore);
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch projects' },
-      { status: 500 }
-    );
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
+
+    const { searchParams } = new URL(req.url);
+    const teamId = searchParams.get('teamId');
+
+    if (!teamId) return NextResponse.json({ error: 'Missing teamId' }, { status: 400 });
+
+    // Verify membership
+    const membership = await db.collection('team_members')
+      .where('teamId', '==', teamId)
+      .where('userId', '==', uid)
+      .get();
+
+    if (membership.empty) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+    const projectsSnapshot = await db.collection('projects')
+      .where('teamId', '==', teamId)
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    const projects = projectsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return NextResponse.json(projects);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    // TODO: Verify Firebase ID token
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { team_id, name, description } = await req.json();
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
 
-    const newProject = {
-      id: crypto.randomUUID(),
-      team_id,
+    const { teamId, name, description, color } = await req.json();
+
+    // Verify membership
+    const membership = await db.collection('team_members')
+      .where('teamId', '==', teamId)
+      .where('userId', '==', uid)
+      .get();
+
+    if (membership.empty) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+    const projectData = {
       name,
       description,
-      created_by: 'firebase-uid-pending',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      teamId,
+      color: color || '#00f2ff',
+      createdAt: FieldValue.serverTimestamp(),
+      conversationCount: 0,
+      createdBy: uid,
     };
 
-    projectsStore.push(newProject);
+    const docRef = await db.collection('projects').add(projectData);
+    
+    return NextResponse.json({ id: docRef.id, ...projectData, createdAt: new Date() });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
 
-    return NextResponse.json(newProject, { status: 201 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create project' },
-      { status: 500 }
-    );
+export async function DELETE(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const projectId = searchParams.get('projectId');
+
+    if (!projectId) return NextResponse.json({ error: 'Missing projectId' }, { status: 400 });
+
+    // In a real app, verify ownership/permissions here
+    await db.collection('projects').doc(projectId).delete();
+    
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

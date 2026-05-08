@@ -42,13 +42,8 @@ export default function DashboardSidebar() {
     if (currentTeam?.id) fetchConversations(currentTeam.id);
   }, [currentTeam?.id, fetchConversations]);
 
-  const getBaseRoute = () => {
-    if (!currentTeam) return '/dashboard';
-    if (currentTeam.plan_tier === 12) return '/dashboard/pro';
-    if (currentTeam.plan_tier === 7) return '/dashboard/growth';
-    if (currentTeam.plan_tier === 3) return '/dashboard/starter';
-    return '/dashboard/free';
-  };
+  const getBaseRoute = () => '/dashboard';
+
 
   const handleNavigation = (href: string) => {
     router.push(href);
@@ -113,11 +108,10 @@ export default function DashboardSidebar() {
         {/* Top Nav Items */}
         <div className="space-y-1 mb-6 border-b border-[var(--border)]/50 pb-4">
           <NavItem icon={Search} label="Search" />
-          <NavItem icon={MessageSquare} label="Chats" onClick={() => handleNavigation(getBaseRoute())} isActive={activeRoute === 'chat'} />
-          <NavItem icon={Layers} label="Projects" onClick={() => handleNavigation(`${getBaseRoute()}/projects`)} isActive={activeRoute === 'projects'} />
-
-          {!isPremium && <NavItem icon={Code} label="Code" badge="Upgrade" onClick={() => router.push('/pricing')} />}
-          <NavItem icon={Briefcase} label="Customize" onClick={() => handleNavigation(`${getBaseRoute()}/settings`)} isActive={activeRoute === 'settings'} />
+          <NavItem icon={MessageSquare} label="Chats" onClick={() => handleNavigation('/dashboard/chat')} isActive={activeRoute === 'chat'} />
+          <NavItem icon={Layers} label="Projects" onClick={() => handleNavigation('/dashboard/projects')} isActive={activeRoute === 'projects'} />
+          <NavItem icon={Briefcase} label="Analytics" onClick={() => handleNavigation('/dashboard/analytics')} isActive={activeRoute === 'analytics'} />
+          <NavItem icon={Settings} label="Settings" onClick={() => handleNavigation('/dashboard/settings')} isActive={activeRoute === 'settings'} />
         </div>
 
         {/* Starred */}

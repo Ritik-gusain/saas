@@ -1,21 +1,48 @@
-"use client";
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { User, Mail, Briefcase, Building, Shield, CheckCircle2 } from 'lucide-react';
 import { useTeamStore } from '@/stores/teamStore';
+import { authFetch } from '@/lib/api-client';
 
 export default function ProfileSettings() {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [prefs, setPrefs] = useState({
+    default_model: 'gpt-4o',
+    personal_system_prompt: '',
+  });
 
-  const handleSave = () => {
+  useEffect(() => {
+    const fetchPrefs = async () => {
+      const res = await authFetch('/api/user/preferences');
+      if (res.ok) {
+        const data = await res.json();
+        setPrefs({
+          default_model: data.default_model || 'gpt-4o',
+          personal_system_prompt: data.personal_system_prompt || '',
+        });
+      }
+    };
+    fetchPrefs();
+  }, []);
+
+  const handleSave = async () => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await authFetch('/api/user/preferences', {
+        method: 'POST',
+        body: JSON.stringify(prefs),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
       setLoading(false);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    }, 1000);
+    }
   };
+
 
   return (
     <div className="space-y-6">
@@ -67,10 +94,15 @@ export default function ProfileSettings() {
         <div className="space-y-6">
           <div>
             <label className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Default Model</label>
-            <select className="w-full glass-panel rounded-xl px-4 py-3 text-sm text-white focus:border-[var(--cyan)] focus:ring-0 transition-all outline-none appearance-none">
+            <select 
+              value={prefs.default_model}
+              onChange={(e) => setPrefs({...prefs, default_model: e.target.value})}
+              className="w-full glass-panel rounded-xl px-4 py-3 text-sm text-white focus:border-[var(--cyan)] focus:ring-0 transition-all outline-none appearance-none"
+            >
+              <option value="gpt-4o">GPT-4o (Standard)</option>
               <option value="gpt-4-turbo">GPT-4 Turbo (Recommended)</option>
-              <option value="claude-3-opus">Claude 3 Opus</option>
-              <option value="gemini-pro">Gemini 1.5 Pro</option>
+              <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+              <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
             </select>
           </div>
 
@@ -78,6 +110,8 @@ export default function ProfileSettings() {
             <label className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Personal System Prompt</label>
             <textarea 
               rows={4}
+              value={prefs.personal_system_prompt}
+              onChange={(e) => setPrefs({...prefs, personal_system_prompt: e.target.value})}
               placeholder="E.g., 'I prefer concise answers in bullet points. I write code in TypeScript.'"
               className="w-full glass-panel rounded-xl px-4 py-3 text-sm text-white focus:border-[var(--cyan)] focus:ring-0 transition-all outline-none resize-none"
             />
