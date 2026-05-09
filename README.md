@@ -15,7 +15,6 @@
   </p>
 </div>
 ---
-
 ## 🚀 The Vision
 Luminescent.io is a next-generation **AI-as-a-Service (SaaS)** platform designed to bridge the gap between individual AI power and team-scale productivity. While most platforms lock users into expensive per-seat subscriptions, Luminescent introduces a **Hybrid Freemium + Team Workspace** model.
 
@@ -23,7 +22,6 @@ Luminescent.io is a next-generation **AI-as-a-Service (SaaS)** platform designed
 - **For Teams:** A centralized hub for shared knowledge, collaborative project folders, and team-wide AI personality management.
 
 ---
-
 ## 💎 Premium Features
 
 ### 🔐 Enterprise-Grade Workspace
