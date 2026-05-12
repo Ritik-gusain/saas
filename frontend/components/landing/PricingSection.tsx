@@ -136,18 +136,21 @@ export function PricingSection() {
 
       <div style={{ maxWidth: 1300, margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* Header */}
-        <div ref={headRef} style={{ marginBottom: 80, display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 40 }}>
-          <div style={{ maxWidth: 540 }}>
-            <div className="mono-label reveal-text" style={{ color: "var(--landing-green)", marginBottom: 20 }}>
-              04 → PROTOCOL ECONOMICS
-            </div>
-            <h2 className="display-h1 reveal-text" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 0 }}>
-              Scalable power. <span className="shimmer-text">Predictable cost.</span>
-            </h2>
+        <div ref={headRef} style={{ marginBottom: 80 }}>
+          <div className="step-number reveal-text" style={{ color: "var(--landing-green)", marginBottom: 40 }}>
+            PROTOCOL ECONOMICS
           </div>
-          <div className="reveal-text" style={{ display: "flex", background: "rgba(255,255,255,0.03)", padding: 6, borderRadius: 100, border: "1px solid rgba(255,255,255,0.06)" }}>
-            <button style={{ padding: "10px 24px", borderRadius: 100, border: "none", background: "var(--landing-green)", color: "#000", fontWeight: 600, fontSize: 13 }}>Monthly</button>
-            <button style={{ padding: "10px 24px", borderRadius: 100, border: "none", background: "transparent", color: "rgba(255,255,255,0.4)", fontWeight: 600, fontSize: 13 }}>Yearly (-20%)</button>
+          
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 40 }}>
+            <div style={{ maxWidth: 640 }}>
+              <h2 className="display-h1 reveal-text" style={{ fontSize: "clamp(32px, 5vw, 64px)", marginBottom: 0 }}>
+                Scalable power. <span className="shimmer-text">Predictable cost.</span>
+              </h2>
+            </div>
+            <div className="reveal-text" style={{ display: "flex", background: "rgba(255,255,255,0.03)", padding: 6, borderRadius: 100, border: "1px solid rgba(255,255,255,0.06)" }}>
+              <button style={{ padding: "10px 24px", borderRadius: 100, border: "none", background: "var(--landing-green)", color: "#000", fontWeight: 600, fontSize: 13 }}>Monthly</button>
+              <button style={{ padding: "10px 24px", borderRadius: 100, border: "none", background: "transparent", color: "rgba(255,255,255,0.4)", fontWeight: 600, fontSize: 13 }}>Yearly (-20%)</button>
+            </div>
           </div>
         </div>
 

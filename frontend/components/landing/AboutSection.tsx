@@ -63,8 +63,8 @@ export function AboutSection() {
       <div className="corner-marker corner-br" />
       
       <div ref={textRef} style={{ maxWidth: 800, position: "relative", zIndex: 1 }}>
-        <div className="mono-label reveal-text" style={{ color: "var(--landing-purple)", marginBottom: 32 }}>
-          THE MISSION // 02
+        <div className="step-number reveal-text" style={{ color: "var(--landing-purple)", marginBottom: 32, width: "100%" }}>
+          THE MISSION
         </div>
         
         <h2 className="display-h1 reveal-text" style={{ fontSize: "clamp(32px, 5vw, 56px)", marginBottom: 40, lineHeight: 1.1 }}>

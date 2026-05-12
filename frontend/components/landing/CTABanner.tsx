@@ -125,9 +125,9 @@ export function CTABanner() {
         }} />
 
         <div ref={contentRef} style={{ position: "relative", zIndex: 2 }}>
-          <div className="reveal-container">
-            <div className="mono-label reveal-text" style={{ marginBottom: 24, display: "block" }}>
-              05 → GET STARTED
+          <div className="reveal-container" style={{ width: "100%" }}>
+            <div className="step-number reveal-text" style={{ marginBottom: 24 }}>
+              GET STARTED
             </div>
           </div>
 

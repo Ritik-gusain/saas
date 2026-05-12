@@ -135,8 +135,8 @@ export function HowItWorksSection() {
         {/* Header */}
         <div ref={headRef} style={{ textAlign: "center", marginBottom: 100 }}>
           <div className="reveal-container">
-            <div className="step-number reveal-text" style={{ margin: "0 auto 32px", maxWidth: 400 }}>
-              03 → HOW IT WORKS
+            <div className="step-number reveal-text" style={{ margin: "0 auto 32px" }}>
+              HOW IT WORKS
             </div>
           </div>
 

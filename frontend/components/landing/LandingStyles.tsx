@@ -130,16 +130,19 @@ export const LandingStyles = () => (
       color: var(--landing-green);
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: center;
+      gap: 20px;
       margin-bottom: 24px;
+      width: 100%;
     }
 
+    .step-number::before,
     .step-number::after {
       content: '';
       flex: 1;
       height: 1px;
       background: currentColor;
-      opacity: 0.2;
+      opacity: 0.15;
     }
 
     /* ─── Scrollytelling Reveal ─── */

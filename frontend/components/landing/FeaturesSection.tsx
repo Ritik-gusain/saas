@@ -95,9 +95,9 @@ export function FeaturesSection() {
       
       <div style={{ maxWidth: 1280, margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* Header */}
-        <div style={{ marginBottom: 80, maxWidth: 640 }}>
-          <div className="mono-label" style={{ color: "var(--landing-green)", marginBottom: 16 }}>
-            02 → CORE CAPABILITIES
+        <div style={{ marginBottom: 80, maxWidth: 640, margin: "0 auto", textAlign: "center" }}>
+          <div className="step-number" style={{ color: "var(--landing-green)", marginBottom: 16 }}>
+            CORE CAPABILITIES
           </div>
           <h2 
             className="glow-text"

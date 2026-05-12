@@ -259,9 +259,9 @@ export function HeroSection() {
 
 
       {/* ── Eyebrow badge ── */}
-      <div ref={badgeRef} style={{ position: "relative", zIndex: 10, marginBottom: 12 }}>
-        <div className="step-number" style={{ width: "fit-content", minWidth: 400 }}>
-          01 → INTRODUCTION
+      <div ref={badgeRef} style={{ position: "relative", zIndex: 10, marginBottom: 12, width: "100%", maxWidth: 800 }}>
+        <div className="step-number">
+          INTRODUCTION
         </div>
       </div>
 
