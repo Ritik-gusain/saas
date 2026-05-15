@@ -125,7 +125,11 @@ export async function POST(req: NextRequest) {
                 if (dataStr === '[DONE]') continue;
                 try {
                   const data = JSON.parse(dataStr);
-                  if (data.content) {
+                  if (data.error) {
+                    const errMsg = `\n\n**Error:** ${data.error}`;
+                    fullContent += errMsg;
+                    controller.enqueue(encoder.encode(errMsg));
+                  } else if (data.content) {
                     fullContent += data.content;
                     controller.enqueue(encoder.encode(data.content));
                   }

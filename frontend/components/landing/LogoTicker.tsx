@@ -9,17 +9,17 @@ if (typeof window !== "undefined") {
 }
 
 const MODELS = [
-  { name: "OpenAI",      logo: "/ai logo/penailogo.svg",      invert: true  },
-  { name: "Claude",      logo: "/ai logo/Anthropic.svg",      invert: true  },
-  { name: "Gemini",      logo: "/ai logo/GoogleGemini.svg",   invert: false },
-  { name: "DeepSeek",    logo: "/ai logo/DeepSeek.png",       invert: false },
-  { name: "Mistral AI",  logo: "/ai logo/Mistral.png",        invert: false },
-  { name: "Meta",        logo: "/ai logo/Meta.png",           invert: false },
-  { name: "Qwen",        logo: "/ai logo/Qwen.png",           invert: false },
-  { name: "Nvidia",      logo: "/ai logo/nvidia.png",         invert: false },
-  { name: "Perplexity",  logo: "/ai logo/Perplexity.svg",     invert: true  },
-  { name: "Moonshot AI", logo: "/ai logo/moonshotai.png",     invert: true  },
-  { name: "xAI",         logo: "/ai logo/xai.png",            invert: true  },
+  { name: "OpenAI",      logo: "/ai-logos/penailogo.svg",      invert: true  },
+  { name: "Claude",      logo: "/ai-logos/Anthropic.svg",      invert: true  },
+  { name: "Gemini",      logo: "/ai-logos/GoogleGemini.svg",   invert: false },
+  { name: "DeepSeek",    logo: "/ai-logos/DeepSeek.png",       invert: false },
+  { name: "Mistral AI",  logo: "/ai-logos/Mistral.png",        invert: false },
+  { name: "Meta",        logo: "/ai-logos/Meta.png",           invert: false },
+  { name: "Qwen",        logo: "/ai-logos/Qwen.png",           invert: false },
+  { name: "Nvidia",      logo: "/ai-logos/nvidia.png",         invert: false },
+  { name: "Perplexity",  logo: "/ai-logos/Perplexity.svg",     invert: true  },
+  { name: "Moonshot AI", logo: "/ai-logos/moonshotai.png",     invert: true  },
+  { name: "xAI",         logo: "/ai-logos/xai.png",            invert: true  },
 ];
 
 // Duplicate for seamless infinite loop
@@ -68,19 +68,8 @@ export function LogoTicker() {
         background: "transparent",
       }}
     >
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", marginBottom: 40, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div className="mono-label" style={{ opacity: 0.3, fontSize: 10 }}>
-          01 // INTELLIGENCE_NETWORK_FEED
-        </div>
-        <div style={{ display: "flex", gap: 24 }}>
-          <div className="mono-label" style={{ color: "var(--landing-green)", fontSize: 10 }}>
-            ● STATUS: OPERATIONAL
-          </div>
-          <div className="mono-label" style={{ opacity: 0.3, fontSize: 10 }}>
-            CORE_STABILITY: 99.9%
-          </div>
-        </div>
-      </div>
+      <div className="step-number">INTELLIGENCE NETWORK FEED</div>
+
 
       {/* Flowing stream */}
       <div style={{ position: "relative" }}>

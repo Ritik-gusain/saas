@@ -1,27 +1,24 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Send, Maximize2, Image as ImageIcon, 
-  Paperclip, Globe, Command, Mic, 
-  Code, Sparkles, PenTool, LayoutTemplate,
-  Terminal, FileCode2, Blocks, Wand2,
-  StopCircle, Star, Trash2
-} from 'lucide-react';
+import * as Lucide from 'lucide-react';
 import { useChatStore } from '@/stores/chatStore';
 import { useTeamStore } from '@/stores/teamStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { AGENTS, getAgent } from '@/lib/agents';
+import { AI_MODELS, getModel } from '@/lib/models';
+import AgentModelSelector from '@/components/chat/AgentModelSelector';
 
 export default function PremiumChatDashboard() {
   const [inputValue, setInputValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState('general');
-  const [selectedProviderId, setSelectedProviderId] = useState('openai');
-  const [selectedModelId, setSelectedModelId] = useState('openrouter/openai/gpt-4o');
+  const [selectedModelId, setSelectedModelId] = useState('openrouter/google/gemini-2.0-flash-001');
   const [isWebSearchEnabled, setIsWebSearchEnabled] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [selectorOpen, setSelectorOpen] = useState(false);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -125,16 +122,13 @@ export default function PremiumChatDashboard() {
     </div>
   );
 
-  const agents = [
-    { id: 'general', name: 'Generalist', icon: Sparkles, color: 'var(--cyan)', desc: 'Versatile AI for any task' },
-    { id: 'researcher', name: 'Researcher', icon: Globe, color: 'var(--purple)', desc: 'Real-time web & data search' },
-    { id: 'coder', name: 'Developer', icon: Code, color: 'var(--mint)', desc: 'Code, debug & architecture' },
-    { id: 'analyst', name: 'Analyst', icon: Terminal, color: 'var(--blue)', desc: 'Data & logical reasoning' },
-    { id: 'designer', name: 'Creative', icon: Wand2, color: '#f472b6', desc: 'UI/UX & creative writing' },
-    { id: 'writer', name: 'Assistant', icon: PenTool, color: '#fb923c', desc: 'Executive & drafting support' },
-  ];
+  const activeAgent = getAgent(selectedAgentId);
+  const activeModel = getModel(selectedModelId);
 
-  const providers = [
+  // Suggest 6 quick-access agents on the home screen
+  const featuredAgents = ['general','coder','researcher','analyst','writer','designer'];
+
+  const providers_placeholder = [
     { 
       id: 'openai', 
       name: 'ChatGPT', 
@@ -227,10 +221,17 @@ export default function PremiumChatDashboard() {
     },
   ];
 
-  const currentProvider = providers.find(p => p.id === selectedProviderId) || providers[0];
-
   return (
     <div className="h-full flex flex-col bg-transparent w-full relative">
+      {selectorOpen && (
+        <AgentModelSelector
+          selectedAgentId={selectedAgentId}
+          selectedModelId={selectedModelId}
+          onAgentChange={(a) => setSelectedAgentId(a.id)}
+          onModelChange={(m) => setSelectedModelId(m.id)}
+          onClose={() => setSelectorOpen(false)}
+        />
+      )}
       {/* Error Message */}
       {error && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
@@ -265,7 +266,7 @@ export default function PremiumChatDashboard() {
               onClick={toggleSidebar}
               className="p-2 -ml-2 text-[var(--muted)] hover:text-[var(--cyan)] transition-colors rounded-md hover:bg-[var(--surface)]"
             >
-              <LayoutTemplate className="w-5 h-5" />
+              <Lucide.LayoutTemplate className="w-5 h-5" />
             </button>
           )}
          
@@ -283,7 +284,7 @@ export default function PremiumChatDashboard() {
                 className={`p-2 rounded-md hover:bg-[var(--surface)] transition-colors ${currentConversation.is_pinned ? 'text-yellow-500' : 'text-[var(--muted)] hover:text-white'}`}
                 title={currentConversation.is_pinned ? "Unstar chat" : "Star chat"}
               >
-                <Star className={`w-4 h-4 ${currentConversation.is_pinned ? 'fill-current' : ''}`} />
+                <Lucide.Star className={`w-4 h-4 ${currentConversation.is_pinned ? 'fill-current' : ''}`} />
               </button>
               <button 
                 onClick={() => {
@@ -292,14 +293,14 @@ export default function PremiumChatDashboard() {
                 className="p-2 text-[var(--muted)] hover:text-red-500 rounded-md hover:bg-red-500/10 transition-colors"
                 title="Delete chat"
               >
-                <Trash2 className="w-4 h-4" />
+                <Lucide.Trash2 className="w-4 h-4" />
               </button>
               <button 
                 onClick={toggleSidebar}
                 className="p-2 text-[var(--muted)] hover:text-white rounded-md hover:bg-[var(--surface)] transition-colors"
                 title={isSidebarOpen ? "Hide sidebar" : "Show sidebar"}
               >
-                <Maximize2 className="w-4 h-4" />
+                <Lucide.Maximize2 className="w-4 h-4" />
               </button>
             </>
           )}
@@ -308,22 +309,21 @@ export default function PremiumChatDashboard() {
 
       {/* Main Chat Area */}
       <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center" ref={scrollRef}>
-        {!currentConversation || messages.length === 0 ? (
+        {messages.length === 0 ? (
           <div className="flex-1 w-full flex flex-col items-center justify-center p-8 max-w-4xl mx-auto">
             {/* Claude-style Hero */}
             <div className="mb-4 text-center space-y-4">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--cyan)]/20 to-[var(--purple)]/20 border border-[var(--border)] flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_var(--cyan)]/20">
-                <Sparkles className="w-8 h-8 text-[var(--cyan)]" />
+                <Lucide.Sparkles className="w-8 h-8 text-[var(--cyan)]" />
               </div>
               <h1 className="text-[32px] font-['Montserrat'] font-bold text-white tracking-tight leading-tight">
                 Good afternoon
               </h1>
             </div>
 
-            {/* Agent Selector Chips (Top Halo) */}
+            {/* Agent quick-access chips */}
             <div className="flex flex-wrap items-center justify-center gap-2 mb-6 max-w-2xl px-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              {agents.map((agent) => {
-                const Icon = agent.icon;
+              {AGENTS.filter(a => featuredAgents.includes(a.id)).map((agent) => {
                 const isSelected = selectedAgentId === agent.id;
                 return (
                   <button
@@ -335,30 +335,35 @@ export default function PremiumChatDashboard() {
                         : 'glass-panel border-[var(--border)] text-[var(--muted)] hover:border-[var(--cyan)]/30 hover:text-white'
                     }`}
                   >
-                    <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[var(--cyan)]' : ''}`} style={{ color: isSelected ? agent.color : undefined }} />
+                    <span className="text-sm">{agent.emoji}</span>
                     <span className="text-[13px] font-medium">{agent.name}</span>
                   </button>
                 );
               })}
+              {/* "Browse all" button */}
+              <button
+                onClick={() => setSelectorOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-dashed border-white/20 text-white/40 hover:border-violet-500/50 hover:text-violet-400 transition-all text-[13px]"
+              >
+                +{AGENTS.length - featuredAgents.length} more <Lucide.ChevronDown className="w-3 h-3" />
+              </button>
             </div>
 
             <div className="w-full max-w-2xl relative mb-4">
-              {/* Model Selection Bar */}
+              {/* Agent + Model pill selector */}
               <div className="flex items-center justify-center gap-2 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-200">
-                {currentProvider.variants.map((variant) => (
-                  <button
-                    key={variant.id}
-                    onClick={() => setSelectedModelId(variant.id)}
-                    className={`
-                      px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all duration-300
-                      ${selectedModelId === variant.id 
-                        ? 'bg-white text-black scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]' 
-                        : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60 border border-white/5'}
-                    `}
-                  >
-                    {variant.name}
-                  </button>
-                ))}
+                <button
+                  onClick={() => setSelectorOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:border-violet-500/50 hover:bg-violet-500/10 transition-all group"
+                >
+                  <span className="text-base">{activeAgent.emoji}</span>
+                  <span className="text-white/70 text-xs font-semibold group-hover:text-white">{activeAgent.name}</span>
+                  <span className="text-white/20 text-xs">·</span>
+                  <span className="text-base">{activeModel.providerLogo}</span>
+                  <span className="text-white/50 text-xs group-hover:text-white/80 max-w-[120px] truncate">{activeModel.name}</span>
+                  {activeModel.free && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">FREE</span>}
+                  <Lucide.ChevronDown className="w-3 h-3 text-white/30" />
+                </button>
               </div>
 
               <div className={`relative glass-panel rounded-2xl border p-1 transition-all duration-300 ${
@@ -371,7 +376,7 @@ export default function PremiumChatDashboard() {
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   onKeyDown={handleKeyDown}
-                  placeholder={`Ask ${agents.find(a => a.id === selectedAgentId)?.name || 'Generalist'} anything...`}
+                  placeholder={`Ask ${activeAgent.name} anything...`}
                   className="w-full max-h-[200px] min-h-[80px] p-4 bg-transparent resize-none outline-none text-[16px] placeholder-[var(--muted)] text-white scrollbar-hide"
                   rows={1}
                 />
@@ -382,7 +387,7 @@ export default function PremiumChatDashboard() {
                       className="p-2 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-lg transition-colors tooltip-trigger" 
                       title="Add attachment"
                     >
-                      <Paperclip className="w-[19px] h-[19px]" />
+                      <Lucide.Paperclip className="w-[19px] h-[19px]" />
                     </button>
                     {isPremium && (
                       <>
@@ -393,7 +398,7 @@ export default function PremiumChatDashboard() {
                           }`} 
                           title="Web search"
                         >
-                          <Globe className="w-[19px] h-[19px]" />
+                          <Lucide.Globe className="w-[19px] h-[19px]" />
                         </button>
                         <button 
                           onClick={startVoiceInput}
@@ -402,7 +407,7 @@ export default function PremiumChatDashboard() {
                           }`} 
                           title="Voice input"
                         >
-                          <Mic className={`w-[19px] h-[19px] ${isListening ? 'animate-pulse' : ''}`} />
+                          <Lucide.Mic className={`w-[19px] h-[19px] ${isListening ? 'animate-pulse' : ''}`} />
                           {isListening && <VoiceWaveform />}
                         </button>
                       </>
@@ -423,7 +428,7 @@ export default function PremiumChatDashboard() {
                     }`}
                   >
                     <span className="text-sm">Chat</span>
-                    <Send className="w-[16px] h-[16px]" />
+                    <Lucide.Send className="w-[16px] h-[16px]" />
                   </button>
                 </div>
               </div>
@@ -431,49 +436,67 @@ export default function PremiumChatDashboard() {
 
             <div className="mt-4 text-center">
               <span className="text-[12px] text-[var(--muted)] flex items-center justify-center gap-2">
-                <Command className="w-3 h-3" /> Press Shift + Enter for new line
+                <Lucide.Command className="w-3 h-3" /> Press Shift + Enter for new line
               </span>
             </div>
           </div>
         ) : (
           <div className="flex-1 w-full max-w-3xl mx-auto py-8 px-4 flex flex-col">
             <div className="space-y-6 pb-32">
-              {messages.map((msg, idx) => (
-                <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                  {/* Avatar */}
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    msg.role === 'user' 
-                      ? 'bg-[var(--surface)] border border-[var(--border)] text-[var(--cyan)]' 
-                      : 'bg-[var(--cyan)] text-[#0f0f11] shadow-[0_0_15px_var(--cyan)]/30'
-                  }`}>
-                    {msg.role === 'user' ? <div className="font-bold text-xs">U</div> : <Sparkles className="w-5 h-5" />}
-                  </div>
-                  
-                  {/* Message Content */}
-                  <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                    <div className="flex items-center gap-2 mb-1.5 px-1">
-                      <span className="text-[13px] font-semibold text-white">
-                        {msg.role === 'user' ? 'You' : 'Luminescent'}
-                      </span>
-                      {msg.createdAt && (
-                        <span className="text-[11px] text-[var(--muted)]">
-                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      )}
+              {messages.map((msg, idx) => {
+                // Resolve agent name for assistant messages
+                const msgAgentId = msg.agentId || selectedAgentId;
+                const msgAgent = getAgent(msgAgentId);
+                const isStreamingThis = isStreaming && idx === messages.length - 1 && msg.role === 'assistant';
+
+                return (
+                  <div key={msg.id || idx} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                    {/* Avatar */}
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-base ${
+                      msg.role === 'user' 
+                        ? 'bg-[var(--surface)] border border-[var(--border)] text-[var(--cyan)]' 
+                        : 'bg-gradient-to-br from-violet-600 to-cyan-500 shadow-lg'
+                    }`}>
+                      {msg.role === 'user' ? <div className="font-bold text-xs">U</div> : msgAgent.emoji}
                     </div>
                     
-                    <div className={`prose prose-invert max-w-none text-[15px] leading-relaxed ${
-                      msg.role === 'user'
-                        ? 'bg-[var(--surface)] border border-[var(--border)] px-4 py-3 rounded-2xl rounded-tr-sm text-white'
-                        : 'text-[var(--soft)] px-2'
-                    }`}>
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {msg.content}
-                      </ReactMarkdown>
+                    {/* Message Content */}
+                    <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                      <div className="flex items-center gap-2 mb-1.5 px-1">
+                        <span className="text-[13px] font-semibold text-white">
+                          {msg.role === 'user' ? 'You' : msgAgent.name}
+                        </span>
+                        {msg.role === 'assistant' && msg.model && (
+                          <span className="text-[10px] text-white/30 bg-white/5 px-1.5 py-0.5 rounded">
+                            {msg.model.split('/').pop()}
+                          </span>
+                        )}
+                        {msg.created_at && (
+                          <span className="text-[11px] text-[var(--muted)]">
+                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className={`prose prose-invert max-w-none text-[15px] leading-relaxed ${
+                        msg.role === 'user'
+                          ? 'bg-[var(--surface)] border border-[var(--border)] px-4 py-3 rounded-2xl rounded-tr-sm text-white'
+                          : 'text-[var(--soft)] px-2'
+                      }`}>
+                        {msg.content ? (
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                        ) : isStreamingThis ? (
+                          <span className="inline-flex items-center gap-1">
+                            <span className="w-2 h-2 bg-[var(--cyan)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="w-2 h-2 bg-[var(--cyan)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="w-2 h-2 bg-[var(--cyan)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -489,27 +512,24 @@ export default function PremiumChatDashboard() {
                     onClick={stopGeneration}
                     className="flex items-center gap-2 px-4 py-1.5 glass-panel border border-[var(--border)] hover:border-red-500/50 hover:text-red-400 rounded-full text-xs font-semibold text-white transition-all shadow-lg"
                   >
-                    <StopCircle className="w-3.5 h-3.5" />
+                    <Lucide.StopCircle className="w-3.5 h-3.5" />
                     Stop generating
                   </button>
                 </div>
               )}
-            {/* Model Variant Selector for Floating Input */}
-            <div className="flex items-center justify-center gap-2 mb-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              {currentProvider.variants.map((variant) => (
-                <button
-                  key={variant.id}
-                  onClick={() => setSelectedModelId(variant.id)}
-                  className={`
-                    px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all duration-300
-                    ${selectedModelId === variant.id 
-                      ? 'bg-white text-black scale-105 shadow-lg shadow-white/10' 
-                      : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60'}
-                  `}
-                >
-                  {variant.name}
-                </button>
-              ))}
+            {/* Floating Agent+Model pill */}
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <button
+                onClick={() => setSelectorOpen(true)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-violet-500/50 hover:bg-violet-500/10 transition-all group text-xs"
+              >
+                <span>{activeAgent.emoji}</span>
+                <span className="text-white/60 font-medium group-hover:text-white">{activeAgent.name}</span>
+                <span className="text-white/20">·</span>
+                <span>{activeModel.providerLogo}</span>
+                <span className="text-white/50 group-hover:text-white/80 max-w-[100px] truncate">{activeModel.name}</span>
+                <Lucide.ChevronDown className="w-3 h-3 text-white/30" />
+              </button>
             </div>
 
             <div className={`relative glass-panel rounded-xl border p-1 transition-all duration-300 shadow-2xl ${
@@ -533,7 +553,7 @@ export default function PremiumChatDashboard() {
                     className="p-1.5 text-[var(--muted)] hover:text-[var(--cyan)] hover:bg-[var(--surface)] rounded-md transition-colors tooltip-trigger" 
                     title="Add attachment"
                   >
-                    <Paperclip className="w-4 h-4" />
+                    <Lucide.Paperclip className="w-4 h-4" />
                   </button>
                   <>
                     <button 
@@ -543,7 +563,7 @@ export default function PremiumChatDashboard() {
                       }`} 
                       title="Web search"
                     >
-                      <Globe className="w-4 h-4" />
+                      <Lucide.Globe className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={startVoiceInput}
@@ -552,7 +572,7 @@ export default function PremiumChatDashboard() {
                       }`} 
                       title="Voice input"
                     >
-                      <Mic className={`w-4 h-4 ${isListening ? 'animate-pulse' : ''}`} />
+                      <Lucide.Mic className={`w-4 h-4 ${isListening ? 'animate-pulse' : ''}`} />
                       {isListening && <VoiceWaveform />}
                     </button>
                   </>
@@ -571,7 +591,7 @@ export default function PremiumChatDashboard() {
                       : 'bg-[var(--surface)] text-[var(--muted)] border border-[var(--border)] cursor-not-allowed'
                   }`}
                 >
-                  <Send className="w-4 h-4" />
+                  <Lucide.Send className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -581,53 +601,14 @@ export default function PremiumChatDashboard() {
           </div>
         </div>
       )}
-      {/* Right side model selector "Bubbles" */}
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-30">
-        {providers.map((provider) => {
-          const isSelected = selectedProviderId === provider.id;
-          return (
-            <button
-              key={provider.id}
-              onClick={() => {
-                setSelectedProviderId(provider.id);
-                setSelectedModelId(provider.variants[0].id);
-              }}
-              className={`group relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 ease-out 
-                ${isSelected 
-                  ? 'scale-110 shadow-[0_0_20px_rgba(255,255,255,0.2)] bg-white/10 border-white/30' 
-                  : 'hover:scale-105 bg-black/20 border-white/5 hover:border-white/20'
-                } border backdrop-blur-md overflow-visible`}
-              title={provider.name}
-            >
-              <div className={`absolute inset-0 rounded-full transition-opacity duration-500 
-                ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'}`} 
-                style={{ 
-                  background: `radial-gradient(circle at center, ${provider.color}33 0%, transparent 70%)` 
-                }}
-              />
-              
-              <img 
-                src={provider.logo} 
-                alt={provider.name}
-                className={`w-7 h-7 object-contain transition-all duration-500
-                  ${isSelected ? 'brightness-110 saturate-100' : 'opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100'}
-                `}
-              />
-
-              {/* Tooltip bubble */}
-              <div className="absolute right-full mr-4 px-3 py-1.5 rounded-lg bg-black/80 border border-white/10 text-white text-[11px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all pointer-events-none shadow-xl">
-                {provider.name}
-                <div className="absolute top-1/2 -right-1 -translate-y-1/2 border-4 border-transparent border-l-black/80" />
-              </div>
-
-              {/* Selection indicator bubble */}
-              {isSelected && (
-                <div className="absolute -right-1 -top-1 w-3 h-3 bg-[var(--cyan)] rounded-full border-2 border-[var(--bg)] shadow-[0_0_10px_var(--cyan)] animate-pulse" />
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* Floating selector button (bottom-right) */}
+      <button
+        onClick={() => setSelectorOpen(true)}
+        className="absolute right-5 bottom-24 z-30 w-12 h-12 rounded-full bg-violet-600/80 hover:bg-violet-500 border border-violet-400/30 flex items-center justify-center shadow-lg shadow-violet-500/20 transition-all hover:scale-105 backdrop-blur-md"
+        title="Switch agent or model"
+      >
+        <span className="text-xl">{activeAgent.emoji}</span>
+      </button>
     </div>
   );
 }

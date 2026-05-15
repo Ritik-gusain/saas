@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-react';
 import { Logo } from '@/components/shared/Logo';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export default function Login() {
   const router = useRouter();
@@ -12,15 +14,38 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const getErrorMessage = (code: string) => {
+    switch (code) {
+      case 'auth/user-not-found':
+      case 'auth/invalid-credential':
+        return 'Invalid email or password. Please check your credentials.';
+      case 'auth/wrong-password':
+        return 'Incorrect password. Please try again.';
+      case 'auth/invalid-email':
+        return 'Please enter a valid email address.';
+      case 'auth/user-disabled':
+        return 'This account has been disabled. Contact support.';
+      case 'auth/too-many-requests':
+        return 'Too many failed attempts. Please wait a moment and try again.';
+      default:
+        return 'Sign in failed. Please check your credentials and try again.';
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setIsLoading(true);
-    // Simulate auth
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      if (!auth) throw new Error('Firebase not configured');
+      await signInWithEmailAndPassword(auth, email, password);
       router.push('/dashboard');
-    }, 1500);
+    } catch (err: any) {
+      setError(getErrorMessage(err.code || ''));
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -117,6 +142,21 @@ export default function Login() {
                 Forgot password?
               </button>
             </div>
+
+            {/* Error message */}
+            {error && (
+              <div
+                className="flex items-start gap-3 rounded-xl px-4 py-3 text-sm"
+                style={{
+                  background: 'rgba(255,70,70,0.08)',
+                  border: '1px solid rgba(255,70,70,0.25)',
+                  color: '#FF7070',
+                }}
+              >
+                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
 
             <button
               type="submit"

@@ -1,25 +1,35 @@
 import os
 import json
+import uuid
 import logging
-from typing import List, Dict, Optional, Any
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import StreamingResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from litellm import completion
+import asyncio
+from typing import List, Dict, Optional, Any, AsyncGenerator
+from datetime import datetime
 
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
+from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from litellm import completion, acompletion
 from dotenv import load_dotenv
 
-from duckduckgo_search import DDGS
+# --- Optional web search ---
+try:
+    from duckduckgo_search import DDGS
+    WEB_SEARCH_AVAILABLE = True
+except ImportError:
+    WEB_SEARCH_AVAILABLE = False
 
-# Load environment variables
 load_dotenv()
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+logger = logging.getLogger("luminescent")
 
-app = FastAPI(title="Luminescent AI Orchestrator")
+# ─── In-memory execution store (replace with Redis/DB in production) ───────────
+executions: Dict[str, Dict] = {}
+
+# ─── App Setup ────────────────────────────────────────────────────────────────
+app = FastAPI(title="Luminescent AI Orchestrator", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,6 +39,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ─── Models ───────────────────────────────────────────────────────────────────
 class ChatMessage(BaseModel):
     role: str
     content: str
@@ -44,111 +55,572 @@ class ChatRequest(BaseModel):
     temperature: float = 0.7
     max_tokens: int = 4000
 
-# Agent Persona Mapping
+class AgentPlanRequest(BaseModel):
+    goal: str
+    teamId: Optional[str] = None
+    projectId: Optional[str] = None
+    apiKeys: Dict[str, str] = {}
+    model: Optional[str] = "openrouter/google/gemini-2.0-flash-001"
+
+class AgentExecuteRequest(BaseModel):
+    executionId: str
+    plan: Dict[str, Any]
+    goal: str
+    agentType: str
+    apiKeys: Dict[str, str] = {}
+    model: Optional[str] = "openrouter/google/gemini-2.0-flash-001"
+
+class TitleRequest(BaseModel):
+    messages: List[ChatMessage]
+    apiKeys: Dict[str, str] = {}
+    model: Optional[str] = "openrouter/google/gemini-2.0-flash-001"
+
+# ─── Agent Personas (50 agents) ───────────────────────────────────────────────
 AGENT_PERSONAS = {
-    "general": "You are Luminescent AI, a highly capable and versatile generalist assistant. Provide clear, accurate, and helpful responses to any query.",
-    "researcher": "You are a specialized Research Agent. Your goal is to provide deep insights, verify facts, and synthesize complex information from across the web. Be meticulous and cite sources where possible.",
-    "coder": "You are an expert Software Engineer and Coding Assistant. Write clean, efficient, and well-documented code. Focus on best practices, performance, and security.",
-    "analyst": "You are a Data Analyst and Logical Reasoning expert. Approach problems step-by-step, explain your reasoning, and focus on mathematical accuracy and data-driven insights.",
-    "designer": "You are a Creative Director and UI/UX expert. Focus on aesthetics, user experience, and creative writing. Be inspiring and pay attention to design details.",
-    "writer": "You are a professional Assistant and Writing Expert. Help with drafting, editing, and executive support. Maintain a professional, polished, and concise tone."
+    "general":      "You are Luminescent AI — a versatile, highly capable generalist assistant. Provide clear, accurate, and thoughtful responses to any query.",
+    "researcher":   "You are a Research Agent. Find, verify, and synthesize complex information meticulously. Cite sources and present findings in structured sections.",
+    "coder":        "You are an expert Software Engineer. Write clean, efficient, secure, well-documented code. Follow best practices and explain your decisions.",
+    "analyst":      "You are a Data Analyst. Break down problems step-by-step, show reasoning clearly, and provide precise data-driven insights.",
+    "designer":     "You are a Creative Director and UI/UX expert. Think visually, focus on aesthetics and user experience. Provide inspiring design guidance.",
+    "writer":       "You are a professional Writing Expert. Help with drafting, editing, and communication. Maintain a polished, precise, and impactful tone.",
+    "strategist":   "You are a Business Strategist. Provide sharp, actionable business advice, competitive analysis, and strategic frameworks.",
+    "mathematician":"You are a Mathematics Expert. Solve problems step-by-step with precision. Show all work and verify every answer.",
+    "scientist":    "You are a multidisciplinary Scientist. Explain complex scientific concepts clearly and design experiments methodically.",
+    "lawyer":       "You are a Legal Research Assistant. Analyze legal questions, summarize laws, and review contracts. Note you are not a licensed attorney.",
+    "doctor":       "You are a Medical Information Specialist. Provide accurate health information. Always recommend consulting a licensed physician.",
+    "tutor":        "You are a Patient Personal Tutor. Adapt your teaching style. Break complex topics into digestible lessons with examples.",
+    "translator":   "You are an expert Linguist. Provide accurate, natural translations preserving tone, context, and cultural nuance across 100+ languages.",
+    "poet":         "You are a Poet and Literary Artist. Craft beautiful, evocative poetry in any style — sonnets, haiku, free verse — with emotional depth.",
+    "philosopher":  "You are a Philosopher. Engage with ideas rigorously using logic, ethics, metaphysics, and epistemology. Challenge assumptions.",
+    "historian":    "You are a Historian. Provide accurate historical context, analysis of events, and engaging narrative about the past.",
+    "economist":    "You are an Economist. Analyze economic trends, markets, and policy with data-driven insights and clear reasoning.",
+    "marketer":     "You are a Marketing Expert. Create compelling copy, campaign strategies, and brand narratives that convert.",
+    "therapist":    "You are a Mindfulness and Wellness Coach. Provide compassionate support, coping strategies, and mindfulness techniques. Not a licensed therapist.",
+    "nutritionist": "You are a Nutrition Expert. Provide science-based dietary advice, meal planning, and nutritional analysis.",
+    "fitness":      "You are a Fitness Coach. Design personalized workout plans, provide form guidance, and motivate progress.",
+    "seo":          "You are an SEO Specialist. Optimize content for search engines, research keywords, and build organic traffic strategies.",
+    "socialmedia":  "You are a Social Media Strategist. Create platform-specific viral content, growth strategies, and engagement playbooks.",
+    "product":      "You are a Product Manager. Write PRDs, define roadmaps, prioritize backlogs, and align teams around user needs.",
+    "devops":       "You are a DevOps Engineer. Design CI/CD pipelines, cloud infrastructure, Docker/K8s configs, and automation scripts.",
+    "security":     "You are a Cybersecurity Analyst. Identify vulnerabilities, review code for security flaws, and recommend hardening strategies.",
+    "dbadmin":      "You are a Database Architect. Design efficient schemas, optimize queries, and manage data at scale across SQL and NoSQL systems.",
+    "mleng":        "You are a Machine Learning Engineer. Build, tune, and deploy ML models. Explain algorithms and training strategies clearly.",
+    "prompteng":    "You are a Prompt Engineering expert. Craft, refine, and optimize prompts for maximum AI performance across different models.",
+    "gamedev":      "You are a Game Developer. Design game mechanics, write game code, and create engaging player experiences across genres.",
+    "screenwriter": "You are a Professional Screenwriter. Write compelling scripts with sharp dialogue, strong character arcs, and cinematic structure.",
+    "storyteller":  "You are a Master Storyteller. Craft immersive narratives with vivid worlds, complex characters, and compelling plots.",
+    "journalist":   "You are an Investigative Journalist. Write clear, factual, engaging news articles with proper sourcing and journalistic integrity.",
+    "teacher":      "You are a Curriculum Designer. Build structured lesson plans, educational frameworks, and assessments for any subject.",
+    "debater":      "You are a Debate Coach. Construct rigorous arguments, anticipate counterpoints, and sharpen critical thinking skills.",
+    "interviewer":  "You are an Interview Coach. Help candidates prepare answers, practice behavioral questions, and present themselves confidently.",
+    "hrexpert":     "You are an HR Specialist. Guide hiring processes, write job descriptions, develop culture strategies, and navigate HR policies.",
+    "accountant":   "You are a Financial Analyst. Analyze budgets, investments, and financial statements with precision and actionable recommendations.",
+    "travel":       "You are a Travel Expert. Create detailed itineraries, recommend hidden gems, and give practical travel tips for any destination.",
+    "chef":         "You are a Personal Chef. Suggest recipes, adapt dishes for dietary needs, and share professional culinary techniques.",
+    "interior":     "You are an Interior Designer. Recommend layouts, color schemes, furniture, and decor for beautiful living and working spaces.",
+    "investor":     "You are an Investment Advisor. Provide market analysis, portfolio strategies, and risk assessment. Not a licensed financial advisor.",
+    "scientist2":   "You are a Quantum Physicist. Explain quantum mechanics, particle physics, and theoretical models with clarity and rigor.",
+    "architect":    "You are a Software Architect. Design scalable systems, define APIs, select tech stacks, and create architectural blueprints.",
+    "ethicist":     "You are an AI Ethicist. Analyze AI systems for bias, fairness, and societal impact. Propose ethical frameworks for responsible AI.",
+    "copywriter":   "You are an Advertising Copywriter. Write punchy, persuasive copy for ads, landing pages, and email campaigns that convert.",
+    "diplomat":     "You are a Diplomat and Negotiator. Guide conflict resolution, cross-cultural communication, and negotiation strategies.",
+    "comedian":     "You are a Comedian and Satirist. Write sharp, witty, original jokes, sketches, and comedic content for any audience.",
+    "astrologer":   "You are an Astrologer. Interpret birth charts, planetary movements, and cosmic patterns to offer thoughtful perspective.",
+    "summarizer":   "You are a Summarization Expert. Condense any content into clear, concise, and comprehensive summaries without losing key information.",
+    "brainstorm":   "You are a Brainstorming Facilitator. Generate diverse, creative ideas rapidly. Think laterally, challenge conventions, spark innovation.",
+    # Aliases for agent plan system
+    "workflow":     "You are a Workflow Automation specialist. Help plan, design, and execute multi-step automated processes.",
+    "document":     "You are a Document Intelligence agent. Extract, analyze, and summarize information from documents.",
 }
 
-def perform_web_search(query: str) -> str:
-    """Performs a web search using DuckDuckGo and returns formatted results."""
+# ─── Agent Planning Prompts ───────────────────────────────────────────────────
+AGENT_PLAN_PROMPTS = {
+    "research": """You are a Research Planning Agent. Given a research goal, create a detailed execution plan.
+Return a JSON object with this exact structure:
+{
+  "title": "Short plan title",
+  "description": "What this plan will accomplish",
+  "estimated_steps": 4,
+  "steps": [
+    {"step": 1, "action": "action_name", "description": "What to do", "tool": "web_search|llm|synthesize"}
+  ]
+}""",
+    "content": """You are a Content Creation Planning Agent. Given a content goal, create a detailed execution plan.
+Return a JSON object:
+{
+  "title": "Short plan title",
+  "description": "What this plan will accomplish",
+  "estimated_steps": 3,
+  "steps": [
+    {"step": 1, "action": "action_name", "description": "What to do", "tool": "outline|draft|refine|format"}
+  ]
+}""",
+    "code": """You are a Code Generation Planning Agent. Given a coding goal, create an execution plan.
+Return a JSON object:
+{
+  "title": "Short plan title",
+  "description": "What this plan will accomplish",
+  "estimated_steps": 4,
+  "steps": [
+    {"step": 1, "action": "action_name", "description": "What to do", "tool": "design|implement|test|document"}
+  ]
+}""",
+    "data": """You are a Data Analysis Planning Agent. Given an analysis goal, create an execution plan.
+Return a JSON object:
+{
+  "title": "Short plan title",
+  "description": "What this plan will accomplish",
+  "estimated_steps": 3,
+  "steps": [
+    {"step": 1, "action": "action_name", "description": "What to do", "tool": "collect|analyze|visualize|report"}
+  ]
+}""",
+    "workflow": """You are a Workflow Design Agent. Given an automation goal, create an execution plan.
+Return a JSON object:
+{
+  "title": "Short plan title",
+  "description": "What this plan will accomplish",
+  "estimated_steps": 4,
+  "steps": [
+    {"step": 1, "action": "action_name", "description": "What to do", "tool": "map|design|connect|test"}
+  ]
+}""",
+    "document": """You are a Document Intelligence Planning Agent. Given a document task, create an execution plan.
+Return a JSON object:
+{
+  "title": "Short plan title",
+  "description": "What this plan will accomplish",
+  "estimated_steps": 3,
+  "steps": [
+    {"step": 1, "action": "action_name", "description": "What to do", "tool": "extract|analyze|summarize|structure"}
+  ]
+}""",
+}
+
+# ─── Helpers ──────────────────────────────────────────────────────────────────
+def build_litellm_kwargs(api_keys: Dict[str, str], model: str) -> Dict[str, str]:
+    """Map provider keys to LiteLLM environment variable names."""
+    kwargs = {}
+    provider = model.split("/")[0].lower() if "/" in model else model.split("-")[0].lower()
+
+    api_key = None
+    if api_keys:
+        if provider in api_keys and api_keys[provider]:
+            api_key = api_keys[provider]
+        elif "openrouter" in model.lower() and api_keys.get("openrouter"):
+            api_key = api_keys["openrouter"]
+        elif "gemini" in model.lower() or "google" in model.lower():
+            api_key = api_keys.get("gemini") or api_keys.get("google")
+        elif "claude" in model.lower() or "anthropic" in provider:
+            api_key = api_keys.get("anthropic")
+        elif "gpt" in model.lower() or "openai" in provider:
+            api_key = api_keys.get("openai")
+            
+    # Fallback to env var if no keys provided
+    if not api_key and ("openrouter" in model.lower() or provider == "openrouter"):
+        api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key and ("gemini" in model.lower() or "google" in model.lower()):
+        api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key and ("claude" in model.lower() or "anthropic" in provider):
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key and ("gpt" in model.lower() or "openai" in provider):
+        api_key = os.getenv("OPENAI_API_KEY")
+
+    if api_key:
+        kwargs["api_key"] = api_key
+
+    return kwargs
+
+
+def perform_web_search(query: str, max_results: int = 5) -> str:
+    """Performs a DuckDuckGo web search and returns formatted results."""
+    if not WEB_SEARCH_AVAILABLE:
+        return "Web search not available (duckduckgo_search not installed)."
     try:
         with DDGS() as ddgs:
-            results = list(ddgs.text(query, max_results=5))
-            if not results:
-                return "No search results found."
-            
-            context = "### WEB SEARCH RESULTS ###\n"
-            for i, r in enumerate(results, 1):
-                context += f"{i}. {r['title']}\n   Source: {r['href']}\n   Snippet: {r['body']}\n\n"
-            return context
+            results = list(ddgs.text(query, max_results=max_results))
+        if not results:
+            return "No search results found."
+        context = "### WEB SEARCH RESULTS ###\n"
+        for i, r in enumerate(results, 1):
+            context += f"{i}. **{r['title']}**\n   Source: {r['href']}\n   {r['body']}\n\n"
+        return context
     except Exception as e:
-        logger.error(f"Search error: {str(e)}")
-        return f"Error performing search: {str(e)}"
+        logger.error(f"Web search error: {e}")
+        return f"Search error: {str(e)}"
 
+
+async def stream_llm(
+    messages: list,
+    model: str,
+    temperature: float,
+    max_tokens: int,
+    llm_kwargs: dict,
+) -> AsyncGenerator[str, None]:
+    """Async generator that yields SSE-formatted chunks from LiteLLM."""
+    try:
+        response = await acompletion(
+            model=model,
+            messages=messages,
+            stream=True,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            **llm_kwargs,
+        )
+        async for chunk in response:
+            if chunk.choices and chunk.choices[0].delta.content:
+                content = chunk.choices[0].delta.content
+                yield f"data: {json.dumps({'content': content})}\n\n"
+        yield "data: [DONE]\n\n"
+    except Exception as e:
+        logger.error(f"LLM stream error: {e}")
+        yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+
+# ─── Routes ───────────────────────────────────────────────────────────────────
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "version": "1.2.0"}
+    return {
+        "status": "healthy",
+        "version": "2.0.0",
+        "web_search": WEB_SEARCH_AVAILABLE,
+        "agents": list(AGENT_PERSONAS.keys()),
+    }
+
 
 @app.post("/api/chat")
-async def chat_endpoint(request: ChatRequest):
+async def chat_endpoint(req: ChatRequest):
+    """Main streaming chat endpoint with agent personas and optional web search."""
     try:
-        # Determine base system prompt from agent or request
-        base_system_prompt = AGENT_PERSONAS.get(request.agentId, request.systemPrompt)
-        
-        # If web search is enabled, perform search and augment prompt
-        if request.webSearch:
-            # Use the last user message as the search query
-            user_messages = [m for m in request.messages if m.role == 'user']
-            search_query = user_messages[-1].content if user_messages else ""
-            
-            if search_query:
-                logger.info(f"Performing web search for: {search_query}")
-                search_results = perform_web_search(search_query)
-                base_system_prompt += f"\n\n{search_results}\n\nYou are currently using WEB SEARCH. Use the information above to provide a grounded, up-to-date answer. If the search results are irrelevant, rely on your internal knowledge but mention the search results didn't help."
-            else:
-                base_system_prompt += "\n\nWEB SEARCH ENABLED: No specific query provided for search."
-        
-        # Prepare LiteLLM compatible messages
-        litellm_messages = [{"role": "system", "content": base_system_prompt}]
-        for msg in request.messages:
-            litellm_messages.append({"role": msg.role, "content": msg.content})
+        # 1. Resolve system prompt from agent or override
+        base_system = AGENT_PERSONAS.get(req.agentId or "general", req.systemPrompt or "")
 
-        # Configure provider specific environment variables for this request
-        custom_env = {}
-        for provider, key in request.apiKeys.items():
-            if not key: continue
-            if provider.lower() == 'openai':
-                custom_env['openai_api_key'] = key
-            elif provider.lower() == 'anthropic':
-                custom_env['anthropic_api_key'] = key
-            elif provider.lower() == 'google':
-                custom_env['gemini_api_key'] = key
-            elif provider.lower() == 'openrouter':
-                custom_env['openrouter_api_key'] = key
+        # 2. Web search augmentation
+        if req.webSearch:
+            user_msgs = [m for m in req.messages if m.role == "user"]
+            query = user_msgs[-1].content if user_msgs else ""
+            if query:
+                logger.info(f"Web search: {query[:80]}...")
+                results = perform_web_search(query)
+                base_system += (
+                    f"\n\n{results}\n\n"
+                    "You have access to the above real-time web search results. "
+                    "Use them to ground your answer with current information. "
+                    "If results are not relevant, rely on your training knowledge."
+                )
 
-        # Execute LiteLLM completion
-        if request.stream:
-            def event_generator():
-                try:
-                    response = completion(
-                        model=request.model,
-                        messages=litellm_messages,
-                        stream=True,
-                        temperature=request.temperature,
-                        max_tokens=request.max_tokens,
-                        **custom_env
-                    )
-                    for chunk in response:
-                        if chunk.choices and len(chunk.choices) > 0:
-                            content = chunk.choices[0].delta.content
-                            if content:
-                                yield f"data: {json.dumps({'content': content})}\n\n"
-                    yield "data: [DONE]\n\n"
-                except Exception as e:
-                    logger.error(f"Streaming error: {str(e)}")
-                    yield f"data: {json.dumps({'error': str(e)})}\n\n"
+        # 3. Build messages list
+        litellm_msgs = [{"role": "system", "content": base_system}]
+        litellm_msgs += [{"role": m.role, "content": m.content} for m in req.messages]
 
-            return StreamingResponse(event_generator(), media_type="text/event-stream")
+        # 4. API key resolution
+        llm_kwargs = build_litellm_kwargs(req.apiKeys, req.model)
+
+        # 5. Stream or single response
+        if req.stream:
+            return StreamingResponse(
+                stream_llm(litellm_msgs, req.model, req.temperature, req.max_tokens, llm_kwargs),
+                media_type="text/event-stream",
+                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            )
         else:
             response = completion(
-                model=request.model,
-                messages=litellm_messages,
+                model=req.model,
+                messages=litellm_msgs,
                 stream=False,
-                temperature=request.temperature,
-                max_tokens=request.max_tokens,
-                **custom_env
+                temperature=req.temperature,
+                max_tokens=req.max_tokens,
+                **llm_kwargs,
             )
             return {"content": response.choices[0].message.content}
 
     except Exception as e:
-        logger.error(f"Chat endpoint error: {str(e)}")
+        logger.error(f"Chat error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.post("/api/agents/{agent_type}/plan")
+async def generate_agent_plan(agent_type: str, req: AgentPlanRequest):
+    """Generate a structured execution plan for a given agent type and goal."""
+    try:
+        plan_system = AGENT_PLAN_PROMPTS.get(agent_type, AGENT_PLAN_PROMPTS["research"])
+        llm_kwargs = build_litellm_kwargs(req.apiKeys)
+
+        messages = [
+            {"role": "system", "content": plan_system},
+            {"role": "user", "content": f"Goal: {req.goal}\n\nGenerate a JSON execution plan for this goal. Return only valid JSON, no markdown."},
+        ]
+
+        response = completion(
+            model=req.model,
+            messages=messages,
+            stream=False,
+            temperature=0.3,
+            max_tokens=1500,
+            **llm_kwargs,
+        )
+
+        raw = response.choices[0].message.content.strip()
+        # Strip markdown code fences if present
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        raw = raw.strip().rstrip("```").strip()
+
+        plan = json.loads(raw)
+
+        # Create execution record
+        execution_id = str(uuid.uuid4())
+        execution = {
+            "id": execution_id,
+            "agent_type": agent_type,
+            "goal": req.goal,
+            "plan": plan,
+            "status": "pending",
+            "execution_log": [],
+            "result": None,
+            "token_used": 0,
+            "created_at": datetime.utcnow().isoformat(),
+            "started_at": None,
+            "completed_at": None,
+        }
+        executions[execution_id] = execution
+
+        return execution
+
+    except json.JSONDecodeError as e:
+        logger.error(f"Plan JSON parse error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to parse plan JSON: {str(e)}")
+    except Exception as e:
+        logger.error(f"Plan generation error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/agents/executions/{execution_id}/approve")
+async def approve_execution(execution_id: str, background_tasks: BackgroundTasks, req: Request):
+    """Approve a pending plan and kick off background execution."""
+    body = await req.json()
+    api_keys = body.get("apiKeys", {})
+    model = body.get("model", "openrouter/google/gemini-2.0-flash-001")
+
+    execution = executions.get(execution_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    if execution["status"] != "pending":
+        raise HTTPException(status_code=400, detail=f"Cannot approve execution in '{execution['status']}' status")
+
+    executions[execution_id]["status"] = "running"
+    executions[execution_id]["started_at"] = datetime.utcnow().isoformat()
+
+    background_tasks.add_task(run_agent_execution, execution_id, api_keys, model)
+
+    return executions[execution_id]
+
+
+@app.get("/api/agents/executions/{execution_id}")
+async def get_execution(execution_id: str):
+    """Get current state of an execution."""
+    execution = executions.get(execution_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    return execution
+
+
+@app.delete("/api/agents/executions/{execution_id}")
+async def delete_execution(execution_id: str):
+    """Delete / reject an execution plan."""
+    if execution_id not in executions:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    executions.pop(execution_id)
+    return {"success": True}
+
+
+@app.post("/api/agents/executions/{execution_id}/cancel")
+async def cancel_execution(execution_id: str):
+    """Cancel a running execution."""
+    execution = executions.get(execution_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    executions[execution_id]["status"] = "cancelled"
+    return executions[execution_id]
+
+
+@app.get("/api/agents/executions/{execution_id}/stream")
+async def stream_execution_logs(execution_id: str):
+    """SSE stream of execution logs for a given execution."""
+    execution = executions.get(execution_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+
+    async def log_generator():
+        sent = 0
+        max_polls = 120  # 2 min timeout
+        for _ in range(max_polls):
+            ex = executions.get(execution_id, {})
+            logs = ex.get("execution_log", [])
+            # Send any new logs
+            for log in logs[sent:]:
+                yield f"data: {json.dumps(log)}\n\n"
+                sent = len(logs)
+            # Terminal states
+            if ex.get("status") in ("completed", "failed", "cancelled"):
+                yield f"data: {json.dumps({'type': 'completion', 'status': ex['status'], 'result': ex.get('result')})}\n\n"
+                break
+            await asyncio.sleep(1)
+
+    return StreamingResponse(log_generator(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@app.post("/api/title")
+async def generate_title(req: TitleRequest):
+    """Generate a short conversation title from initial messages."""
+    try:
+        llm_kwargs = build_litellm_kwargs(req.apiKeys)
+        messages = [
+            {"role": "system", "content": "Generate a short 4-6 word title for this conversation. Return only the title text, no quotes or punctuation."},
+        ] + [{"role": m.role, "content": m.content[:500]} for m in req.messages[:3]]
+
+        response = completion(
+            model=req.model,
+            messages=messages,
+            stream=False,
+            temperature=0.5,
+            max_tokens=20,
+            **llm_kwargs,
+        )
+        title = response.choices[0].message.content.strip()
+        return {"title": title}
+    except Exception as e:
+        logger.error(f"Title generation error: {e}")
+        return {"title": "New Conversation"}
+
+
+# ─── Background Agent Execution ───────────────────────────────────────────────
+async def run_agent_execution(execution_id: str, api_keys: Dict[str, str], model: str):
+    """Execute agent plan steps in the background, logging progress."""
+    execution = executions.get(execution_id)
+    if not execution:
+        return
+
+    def log(log_type: str, content: str, metadata: dict = None):
+        entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "type": log_type,
+            "content": content,
+            "metadata": metadata or {},
+        }
+        executions[execution_id]["execution_log"].append(entry)
+        logger.info(f"[{execution_id[:8]}] [{log_type}] {content[:100]}")
+
+    try:
+        plan = execution["plan"]
+        goal = execution["goal"]
+        agent_type = execution["agent_type"]
+        llm_kwargs = build_litellm_kwargs(api_keys)
+        persona = AGENT_PERSONAS.get(agent_type, AGENT_PERSONAS["general"])
+
+        log("plan", f"Starting execution: {plan.get('title', goal)}", {"plan": plan})
+
+        steps = plan.get("steps", [])
+        step_results = []
+
+        for step in steps:
+            step_num = step.get("step", "?")
+            action = step.get("action", "process")
+            description = step.get("description", "")
+            tool = step.get("tool", "llm")
+
+            log("action", f"Step {step_num}: {description}", {"action": action, "tool": tool})
+
+            step_result = ""
+
+            # Web search tool
+            if "search" in tool.lower() or "web" in tool.lower():
+                search_query = f"{goal} - {description}"
+                log("action", f"Searching: {search_query[:80]}")
+                search_results = perform_web_search(search_query, max_results=3)
+                step_result = search_results
+                log("result", f"Search complete: {len(search_results)} chars", {"tool": "web_search"})
+
+            # LLM tool (default)
+            else:
+                context = "\n\n".join(step_results[-2:]) if step_results else ""
+                prompt = f"""You are executing step {step_num} of a {agent_type} task.
+
+Goal: {goal}
+Current step: {description}
+Action: {action}
+
+Previous context:
+{context}
+
+Complete this step thoroughly and professionally."""
+
+                resp = completion(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": persona},
+                        {"role": "user", "content": prompt},
+                    ],
+                    stream=False,
+                    temperature=0.5,
+                    max_tokens=1500,
+                    **llm_kwargs,
+                )
+                step_result = resp.choices[0].message.content
+                log("result", f"Step {step_num} complete: {step_result[:120]}...")
+
+            step_results.append(f"Step {step_num} ({action}): {step_result}")
+
+        # Final synthesis
+        log("action", "Synthesizing final result...")
+        synthesis_prompt = f"""You completed all steps for this goal: "{goal}"
+
+Step results:
+{chr(10).join(step_results)}
+
+Now provide a comprehensive, well-structured final answer that addresses the original goal."""
+
+        final_resp = completion(
+            model=model,
+            messages=[
+                {"role": "system", "content": persona},
+                {"role": "user", "content": synthesis_prompt},
+            ],
+            stream=False,
+            temperature=0.5,
+            max_tokens=2000,
+            **llm_kwargs,
+        )
+        final_result = final_resp.choices[0].message.content
+
+        executions[execution_id].update({
+            "status": "completed",
+            "result": final_result,
+            "completed_at": datetime.utcnow().isoformat(),
+        })
+        log("completion", "Execution completed successfully.")
+
+    except Exception as e:
+        logger.error(f"Execution error [{execution_id}]: {e}")
+        executions[execution_id].update({
+            "status": "failed",
+            "result": str(e),
+            "completed_at": datetime.utcnow().isoformat(),
+        })
+        executions[execution_id]["execution_log"].append({
+            "timestamp": datetime.utcnow().isoformat(),
+            "type": "error",
+            "content": str(e),
+            "metadata": {},
+        })
+
+
+# ─── Entry Point ──────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8000))
+    host = os.getenv("HOST", "0.0.0.0")
+    uvicorn.run(app, host=host, port=port, reload=False)

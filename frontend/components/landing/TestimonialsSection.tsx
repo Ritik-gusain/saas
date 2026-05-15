@@ -73,9 +73,8 @@ export function TestimonialsSection() {
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 80 }}>
-          <div className="mono-label" style={{ color: "var(--landing-green)", marginBottom: 16 }}>
-            TRUSTED BY THE BEST // 04
-          </div>
+          <div className="step-number">TRUSTED BY THE BEST</div>
+
           <h2 className="header-h2" style={{ fontSize: "clamp(32px, 4vw, 48px)" }}>
             Voices from the <span className="shimmer-text">Network.</span>
           </h2>

@@ -40,9 +40,8 @@ export function FAQSection() {
     >
       <div style={{ maxWidth: 800, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 60 }}>
-          <div className="mono-label" style={{ color: "var(--landing-purple)", marginBottom: 16 }}>
-            QUESTIONS // 07
-          </div>
+          <div className="step-number" style={{ color: "var(--landing-purple)" }}>QUESTIONS</div>
+
           <h2 className="header-h2" style={{ fontSize: "clamp(28px, 3vw, 40px)" }}>
             Frequently Asked <span className="shimmer-text">Protocol.</span>
           </h2>

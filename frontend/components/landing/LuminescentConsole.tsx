@@ -88,7 +88,7 @@ export function LuminescentConsole() {
             <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#27C93F" }} />
           </div>
           <div className="mono-label" style={{ opacity: 0.4, fontSize: 9 }}>
-            LUMINESCENT_OS // AGENT_DEMO
+            LUMINESCENT_OS
           </div>
         </div>
 

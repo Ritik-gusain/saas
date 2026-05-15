@@ -9,7 +9,8 @@ if (typeof window !== "undefined") {
 }
 
 const metrics = [
-  { val: "140k+", label: "ACTIVE AGENTS", color: "var(--landing-green)" },
+  { val: "53+", label: "ACTIVE AGENTS", color: "var(--landing-green)" },
+
   { val: "8ms", label: "AVG LATENCY", color: "var(--landing-cyan)" },
   { val: "2.4B", label: "TOKENS / DAY", color: "var(--landing-purple)" },
   { val: "99.9%", label: "UPTIME", color: "var(--landing-orange)" }

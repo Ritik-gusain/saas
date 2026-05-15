@@ -9,6 +9,8 @@ export interface Message {
   content: string;
   token_count?: number;
   model?: string;
+  agentId?: string;
+  agentName?: string;
   attachments?: any[];
   metadata?: Record<string, any>;
   created_at: string;
@@ -126,6 +128,30 @@ export const useChatStore = create<ChatState>((set) => ({
 
   sendMessage: async (conversationId: string, content: string, model?: string, agentId?: string, webSearch?: boolean, attachments?: File[]) => {
     set({ isStreaming: true, streamingContent: '', error: null });
+
+    // 1. Optimistically add user message
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      conversation_id: conversationId,
+      role: 'user',
+      content,
+      created_at: new Date().toISOString(),
+    };
+    set((state) => ({ messages: [...state.messages, userMessage] }));
+
+    // 2. Add a placeholder assistant message that we'll stream into
+    const streamingMsgId = `streaming-${Date.now()}`;
+    const placeholderMsg: Message = {
+      id: streamingMsgId,
+      conversation_id: conversationId,
+      role: 'assistant',
+      content: '',
+      model,
+      agentId,
+      created_at: new Date().toISOString(),
+    };
+    set((state) => ({ messages: [...state.messages, placeholderMsg] }));
+
     try {
       const res = await authFetch('/api/chat', {
         method: 'POST',
@@ -139,56 +165,58 @@ export const useChatStore = create<ChatState>((set) => ({
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to send message');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errData.error || `HTTP ${res.status}`);
+      }
 
-      const messageId = res.headers.get('X-Message-Id') || Date.now().toString();
+      const aiMsgId = res.headers.get('X-Message-Id') || streamingMsgId;
 
-      // Add user message immediately
-      const userMessage: Message = {
-        id: (Date.now() - 1).toString(),
-        conversation_id: conversationId,
-        role: 'user',
-        content,
-        created_at: new Date().toISOString(),
-      };
-
-      set((state) => ({
-        messages: [...state.messages, userMessage],
-      }));
-
-      // Stream response
+      // 3. Stream into the placeholder message in real time
       if (res.body) {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
+        let accumulated = '';
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
+          accumulated += decoder.decode(value, { stream: true });
 
-          const text = decoder.decode(value);
+          // Update the placeholder message with accumulated content
           set((state) => ({
-            streamingContent: state.streamingContent + text,
+            messages: state.messages.map((m) =>
+              m.id === streamingMsgId ? { ...m, content: accumulated } : m
+            ),
+            streamingContent: accumulated,
           }));
         }
-      }
 
-      // Finalize AI message
-      set((state) => ({
-        messages: [
-          ...state.messages,
-          {
-            id: messageId,
-            conversation_id: conversationId,
-            role: 'assistant',
-            content: state.streamingContent,
-            created_at: new Date().toISOString(),
-          },
-        ],
-        isStreaming: false,
-        streamingContent: '',
-      }));
+        // 4. Finalize: replace placeholder with permanent message
+        set((state) => ({
+          messages: state.messages.map((m) =>
+            m.id === streamingMsgId
+              ? { ...m, id: aiMsgId, content: accumulated }
+              : m
+          ),
+          isStreaming: false,
+          streamingContent: '',
+        }));
+      } else {
+        // No body — remove placeholder
+        set((state) => ({
+          messages: state.messages.filter((m) => m.id !== streamingMsgId),
+          isStreaming: false,
+          streamingContent: '',
+        }));
+      }
     } catch (error) {
-      set({ error: (error as Error).message, isStreaming: false });
+      // Remove placeholder on error
+      set((state) => ({
+        messages: state.messages.filter((m) => m.id !== streamingMsgId),
+        error: (error as Error).message,
+        isStreaming: false,
+      }));
     }
   },
 
