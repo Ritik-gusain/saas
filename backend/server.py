@@ -3,6 +3,8 @@ import json
 import uuid
 import logging
 import asyncio
+import re
+import httpx
 from typing import List, Dict, Optional, Any, AsyncGenerator
 from datetime import datetime
 
@@ -54,6 +56,13 @@ class ChatRequest(BaseModel):
     stream: bool = True
     temperature: float = 0.7
     max_tokens: int = 4000
+
+class ImageGenerateRequest(BaseModel):
+    prompt: str
+    apiKeys: Dict[str, str] = {}
+    model: Optional[str] = "openai/dall-e-3"
+    size: Optional[str] = "1024x1024"
+    quality: Optional[str] = "standard"
 
 class AgentPlanRequest(BaseModel):
     goal: str
@@ -198,7 +207,22 @@ Return a JSON object:
 }
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
-def build_litellm_kwargs(api_keys: Dict[str, str], model: str) -> Dict[str, str]:
+IMAGE_TOOL_INSTRUCTION = """
+
+## Image Generation Capability
+You have the ability to generate images. When a user asks you to create, draw, generate, visualize, or show an image/picture/illustration/photo of something, you MUST include the following marker in your response (on its own line):
+
+[GENERATE_IMAGE: <detailed image generation prompt here>]
+
+IMPORTANT rules:
+- Always write a detailed, vivid image prompt (describe style, lighting, colors, composition)
+- The marker must be on its own line
+- You may include text before/after the marker to explain your choice
+- Only use this when the user explicitly wants a visual image created
+- One image per response maximum
+"""
+
+def build_litellm_kwargs(api_keys: Dict[str, str], model: str = "") -> Dict[str, str]:
     """Map provider keys to LiteLLM environment variable names."""
     kwargs = {}
     provider = model.split("/")[0].lower() if "/" in model else model.split("-")[0].lower()
@@ -232,6 +256,35 @@ def build_litellm_kwargs(api_keys: Dict[str, str], model: str) -> Dict[str, str]
     return kwargs
 
 
+async def generate_image_via_openrouter(prompt: str, api_key: str) -> Optional[str]:
+    """Call OpenRouter's image generation API (Flux / DALL-E). Returns image URL or None."""
+    try:
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://luminescent.io",
+            "X-Title": "Luminescent AI",
+        }
+        payload = {
+            "model": "black-forest-labs/flux-schnell",
+            "prompt": prompt,
+        }
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(
+                "https://openrouter.ai/api/v1/images/generations",
+                json=payload,
+                headers=headers,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            # OpenRouter returns { data: [{ url: "..." }] }
+            url = data.get("data", [{}])[0].get("url")
+            return url
+    except Exception as e:
+        logger.error(f"Image generation error: {e}")
+        return None
+
+
 def perform_web_search(query: str, max_results: int = 5) -> str:
     """Performs a DuckDuckGo web search and returns formatted results."""
     if not WEB_SEARCH_AVAILABLE:
@@ -250,14 +303,18 @@ def perform_web_search(query: str, max_results: int = 5) -> str:
         return f"Search error: {str(e)}"
 
 
+IMAGE_MARKER_PATTERN = re.compile(r'\[GENERATE_IMAGE:\s*(.+?)\]', re.IGNORECASE)
+
 async def stream_llm(
     messages: list,
     model: str,
     temperature: float,
     max_tokens: int,
     llm_kwargs: dict,
+    openrouter_key: str = "",
 ) -> AsyncGenerator[str, None]:
-    """Async generator that yields SSE-formatted chunks from LiteLLM."""
+    """Async generator that yields SSE-formatted chunks from LiteLLM.
+    Detects [GENERATE_IMAGE: prompt] markers and injects image URLs into the stream."""
     try:
         response = await acompletion(
             model=model,
@@ -267,10 +324,29 @@ async def stream_llm(
             max_tokens=max_tokens,
             **llm_kwargs,
         )
+        accumulated = ""
         async for chunk in response:
             if chunk.choices and chunk.choices[0].delta.content:
                 content = chunk.choices[0].delta.content
+                accumulated += content
                 yield f"data: {json.dumps({'content': content})}\n\n"
+
+        # After streaming, check for image generation markers
+        matches = IMAGE_MARKER_PATTERN.findall(accumulated)
+        for img_prompt in matches:
+            img_prompt = img_prompt.strip()
+            logger.info(f"Image generation requested: {img_prompt[:80]}")
+            key = openrouter_key or os.getenv("OPENROUTER_API_KEY", "")
+            if key:
+                img_url = await generate_image_via_openrouter(img_prompt, key)
+                if img_url:
+                    yield f"data: {json.dumps({'image_url': img_url, 'image_prompt': img_prompt})}\n\n"
+                    logger.info(f"Image generated: {img_url[:60]}")
+                else:
+                    yield f"data: {json.dumps({'content': '\n\n*[Image generation failed — check API key or try again.]*'})}\n\n"
+            else:
+                yield f"data: {json.dumps({'content': '\n\n*[Image generation requires an OpenRouter API key.]*'})}\n\n"
+
         yield "data: [DONE]\n\n"
     except Exception as e:
         logger.error(f"LLM stream error: {e}")
@@ -288,12 +364,32 @@ async def health_check():
     }
 
 
+@app.post("/api/image/generate")
+async def image_generate_endpoint(req: ImageGenerateRequest):
+    """Direct image generation endpoint."""
+    try:
+        key = req.apiKeys.get("openrouter") or os.getenv("OPENROUTER_API_KEY", "")
+        if not key:
+            raise HTTPException(status_code=400, detail="OpenRouter API key required for image generation")
+        img_url = await generate_image_via_openrouter(req.prompt, key)
+        if not img_url:
+            raise HTTPException(status_code=500, detail="Image generation failed")
+        return {"url": img_url, "prompt": req.prompt}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Image endpoint error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/chat")
 async def chat_endpoint(req: ChatRequest):
-    """Main streaming chat endpoint with agent personas and optional web search."""
+    """Main streaming chat endpoint with agent personas, optional web search, and image generation."""
     try:
         # 1. Resolve system prompt from agent or override
         base_system = AGENT_PERSONAS.get(req.agentId or "general", req.systemPrompt or "")
+        # Always append image generation instructions
+        base_system += IMAGE_TOOL_INSTRUCTION
 
         # 2. Web search augmentation
         if req.webSearch:
@@ -315,11 +411,12 @@ async def chat_endpoint(req: ChatRequest):
 
         # 4. API key resolution
         llm_kwargs = build_litellm_kwargs(req.apiKeys, req.model)
+        openrouter_key = req.apiKeys.get("openrouter") or os.getenv("OPENROUTER_API_KEY", "")
 
         # 5. Stream or single response
         if req.stream:
             return StreamingResponse(
-                stream_llm(litellm_msgs, req.model, req.temperature, req.max_tokens, llm_kwargs),
+                stream_llm(litellm_msgs, req.model, req.temperature, req.max_tokens, llm_kwargs, openrouter_key),
                 media_type="text/event-stream",
                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
             )

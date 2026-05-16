@@ -442,7 +442,7 @@ export default function PremiumChatDashboard() {
           </div>
         ) : (
           <div className="flex-1 w-full max-w-3xl mx-auto py-8 px-4 flex flex-col">
-            <div className="space-y-6 pb-32">
+            <div className="space-y-6 pb-64">
               {messages.map((msg, idx) => {
                 // Resolve agent name for assistant messages
                 const msgAgentId = msg.agentId || selectedAgentId;

@@ -105,6 +105,8 @@ export async function POST(req: NextRequest) {
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
     let fullContent = '';
+    let generatedImageUrl = '';
+    let generatedImagePrompt = '';
     const aiMsgId = db.collection('messages').doc().id;
 
     const stream = new ReadableStream({
@@ -113,50 +115,68 @@ export async function POST(req: NextRequest) {
         if (!reader) return controller.close();
 
         try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+            let buffer = '';
 
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const dataStr = line.slice(6).trim();
-                if (dataStr === '[DONE]') continue;
-                try {
-                  const data = JSON.parse(dataStr);
-                  if (data.error) {
-                    const errMsg = `\n\n**Error:** ${data.error}`;
-                    fullContent += errMsg;
-                    controller.enqueue(encoder.encode(errMsg));
-                  } else if (data.content) {
-                    fullContent += data.content;
-                    controller.enqueue(encoder.encode(data.content));
-                  }
-                } catch (e) {}
+            const processLine = (line: string) => {
+              if (!line.startsWith('data: ')) return;
+              const dataStr = line.slice(6).trim();
+              if (!dataStr || dataStr === '[DONE]') return;
+              try {
+                const data = JSON.parse(dataStr);
+                if (data.error) {
+                  const errMsg = `\n\n**Error:** ${data.error}`;
+                  fullContent += errMsg;
+                  controller.enqueue(encoder.encode(errMsg));
+                } else if (data.image_url) {
+                  // Image generated — forward as a special SSE token
+                  generatedImageUrl = data.image_url;
+                  generatedImagePrompt = data.image_prompt || '';
+                  const imgToken = `\n\n[IMG:${data.image_url}]`;
+                  fullContent += imgToken;
+                  controller.enqueue(encoder.encode(imgToken));
+                } else if (data.content) {
+                  fullContent += data.content;
+                  controller.enqueue(encoder.encode(data.content));
+                }
+              } catch (e) {}
+            };
+
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) {
+                if (buffer) {
+                  buffer.split('\n').forEach(processLine);
+                }
+                break;
               }
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
+              lines.forEach(processLine);
             }
+
+            // 7. Save AI message to Firestore
+            await db.collection('messages').doc(aiMsgId).set({
+              id: aiMsgId,
+              conversation_id: conversationId,
+              role: 'assistant',
+              content: fullContent,
+              model: default_model,
+              image_url: generatedImageUrl || null,
+              image_prompt: generatedImagePrompt || null,
+              created_at: new Date().toISOString(),
+            });
+
+            await db.collection('conversations').doc(conversationId).update({
+              updated_at: new Date().toISOString(),
+            });
+
+          } catch (err) {
+            console.error("Stream reader error:", err);
+            try { controller.error(err); } catch(e) {}
+          } finally {
+            try { controller.close(); } catch(e) {}
           }
-
-          // 7. Save AI message to Firestore using the pre-generated ID
-          await db.collection('messages').doc(aiMsgId).set({
-            id: aiMsgId,
-            conversation_id: conversationId,
-            role: 'assistant',
-            content: fullContent,
-            model: default_model,
-            created_at: new Date().toISOString(),
-          });
-
-          await db.collection('conversations').doc(conversationId).update({
-            updated_at: new Date().toISOString(),
-          });
-
-        } catch (err) {
-          controller.error(err);
-        } finally {
-          controller.close();
-        }
       }
     });
 
