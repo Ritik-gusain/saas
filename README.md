@@ -88,9 +88,7 @@ Recently optimized for seamless Vercel deployment, Luminescent now features:
 *   **Visual Agents:** Integrated DALL-E & Stable Diffusion workflows.
 
 ---
-
 ## 🔒 Commercial & Licensing
-
 **Luminescent.io is a proprietary SaaS application.**
 
 While the repository provides a showcase of the engineering excellence and architecture behind the platform, the full production setup, orchestration secrets, and commercial deployment configurations are **restricted**.
@@ -100,7 +98,6 @@ While the repository provides a showcase of the engineering excellence and archi
 *   **Consulting:** Need help building a similar AI-driven SaaS? Let's talk.
 
 ---
-
 <div align="center">
   <p>Built for the future of work. Powered by curiosity.</p>
   <b>Made with ❤️ by Ritik</b>
