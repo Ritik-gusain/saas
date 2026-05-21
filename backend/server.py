@@ -305,6 +305,70 @@ def perform_web_search(query: str, max_results: int = 5) -> str:
 
 IMAGE_MARKER_PATTERN = re.compile(r'\[GENERATE_IMAGE:\s*(.+?)\]', re.IGNORECASE)
 
+
+def get_fallback_models(failed_model: str) -> List[str]:
+    """Return a list of robust free fallback models to try if the target model fails."""
+    candidates = [
+        "openrouter/meta-llama/llama-3.3-70b-instruct:free",
+        "openrouter/deepseek/deepseek-v4-flash:free",
+        "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
+        "openrouter/google/gemma-4-31b-it:free",
+        "openrouter/google/gemma-4-26b-a4b-it:free",
+    ]
+    # Filter out the model that just failed
+    return [c for c in candidates if c != failed_model]
+
+
+def completion_with_fallback(model: str, messages: list, api_keys: Dict[str, str] = None, **kwargs) -> Any:
+    """Synchronous completion with fallback to robust free models if the target model fails."""
+    models_to_try = [model] + get_fallback_models(model)
+    
+    for attempt_model in models_to_try:
+        try:
+            logger.info(f"Attempting completion with model: {attempt_model}")
+            attempt_kwargs = kwargs.copy()
+            if api_keys is not None:
+                resolved_keys = build_litellm_kwargs(api_keys, attempt_model)
+                attempt_kwargs.update(resolved_keys)
+            
+            response = completion(
+                model=attempt_model,
+                messages=messages,
+                **attempt_kwargs,
+            )
+            logger.info(f"Completion succeeded with model: {attempt_model}")
+            return response
+        except Exception as e:
+            logger.warning(f"Failed completion with model {attempt_model}: {e}")
+            if attempt_model == models_to_try[-1]:
+                raise e
+
+
+async def acompletion_with_fallback(model: str, messages: list, api_keys: Dict[str, str] = None, **kwargs) -> Any:
+    """Asynchronous completion with fallback to robust free models if the target model fails."""
+    models_to_try = [model] + get_fallback_models(model)
+    
+    for attempt_model in models_to_try:
+        try:
+            logger.info(f"Attempting async completion with model: {attempt_model}")
+            attempt_kwargs = kwargs.copy()
+            if api_keys is not None:
+                resolved_keys = build_litellm_kwargs(api_keys, attempt_model)
+                attempt_kwargs.update(resolved_keys)
+            
+            response = await acompletion(
+                model=attempt_model,
+                messages=messages,
+                **attempt_kwargs,
+            )
+            logger.info(f"Async completion succeeded with model: {attempt_model}")
+            return response
+        except Exception as e:
+            logger.warning(f"Failed async completion with model {attempt_model}: {e}")
+            if attempt_model == models_to_try[-1]:
+                raise e
+
+
 async def stream_llm(
     messages: list,
     model: str,
@@ -312,17 +376,20 @@ async def stream_llm(
     max_tokens: int,
     llm_kwargs: dict,
     openrouter_key: str = "",
+    api_keys: dict = None,
 ) -> AsyncGenerator[str, None]:
     """Async generator that yields SSE-formatted chunks from LiteLLM.
-    Detects [GENERATE_IMAGE: prompt] markers and injects image URLs into the stream."""
+    Detects [GENERATE_IMAGE: prompt] markers and injects image URLs into the stream.
+    Falls back to alternative free models if the selected model is rate-limited or fails."""
     try:
-        response = await acompletion(
+        response = await acompletion_with_fallback(
             model=model,
             messages=messages,
             stream=True,
             temperature=temperature,
             max_tokens=max_tokens,
-            **llm_kwargs,
+            api_keys=api_keys,
+            **{k: v for k, v in llm_kwargs.items() if k != "api_key"},
         )
         accumulated = ""
         async for chunk in response:
@@ -416,18 +483,19 @@ async def chat_endpoint(req: ChatRequest):
         # 5. Stream or single response
         if req.stream:
             return StreamingResponse(
-                stream_llm(litellm_msgs, req.model, req.temperature, req.max_tokens, llm_kwargs, openrouter_key),
+                stream_llm(litellm_msgs, req.model, req.temperature, req.max_tokens, llm_kwargs, openrouter_key, req.apiKeys),
                 media_type="text/event-stream",
                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
             )
         else:
-            response = completion(
+            response = completion_with_fallback(
                 model=req.model,
                 messages=litellm_msgs,
+                api_keys=req.apiKeys,
                 stream=False,
                 temperature=req.temperature,
                 max_tokens=req.max_tokens,
-                **llm_kwargs,
+                **{k: v for k, v in llm_kwargs.items() if k != "api_key"},
             )
             return {"content": response.choices[0].message.content}
 
@@ -448,13 +516,14 @@ async def generate_agent_plan(agent_type: str, req: AgentPlanRequest):
             {"role": "user", "content": f"Goal: {req.goal}\n\nGenerate a JSON execution plan for this goal. Return only valid JSON, no markdown."},
         ]
 
-        response = completion(
+        response = completion_with_fallback(
             model=req.model,
             messages=messages,
+            api_keys=req.apiKeys,
             stream=False,
             temperature=0.3,
             max_tokens=1500,
-            **llm_kwargs,
+            **{k: v for k, v in llm_kwargs.items() if k != "api_key"},
         )
 
         raw = response.choices[0].message.content.strip()
@@ -579,13 +648,14 @@ async def generate_title(req: TitleRequest):
             {"role": "system", "content": "Generate a short 4-6 word title for this conversation. Return only the title text, no quotes or punctuation."},
         ] + [{"role": m.role, "content": m.content[:500]} for m in req.messages[:3]]
 
-        response = completion(
+        response = completion_with_fallback(
             model=req.model,
             messages=messages,
+            api_keys=req.apiKeys,
             stream=False,
             temperature=0.5,
             max_tokens=20,
-            **llm_kwargs,
+            **{k: v for k, v in llm_kwargs.items() if k != "api_key"},
         )
         title = response.choices[0].message.content.strip()
         return {"title": title}
@@ -655,16 +725,17 @@ Previous context:
 
 Complete this step thoroughly and professionally."""
 
-                resp = completion(
+                resp = completion_with_fallback(
                     model=model,
                     messages=[
                         {"role": "system", "content": persona},
                         {"role": "user", "content": prompt},
                     ],
+                    api_keys=api_keys,
                     stream=False,
                     temperature=0.5,
                     max_tokens=1500,
-                    **llm_kwargs,
+                    **{k: v for k, v in llm_kwargs.items() if k != "api_key"},
                 )
                 step_result = resp.choices[0].message.content
                 log("result", f"Step {step_num} complete: {step_result[:120]}...")
@@ -680,16 +751,17 @@ Step results:
 
 Now provide a comprehensive, well-structured final answer that addresses the original goal."""
 
-        final_resp = completion(
+        final_resp = completion_with_fallback(
             model=model,
             messages=[
                 {"role": "system", "content": persona},
                 {"role": "user", "content": synthesis_prompt},
             ],
+            api_keys=api_keys,
             stream=False,
             temperature=0.5,
             max_tokens=2000,
-            **llm_kwargs,
+            **{k: v for k, v in llm_kwargs.items() if k != "api_key"},
         )
         final_result = final_resp.choices[0].message.content
 

@@ -97,10 +97,35 @@ export const AI_MODELS: AIModel[] = [
   { id: "openrouter/arcee-ai/trinity-large-thinking:free", name: "Trinity Large Thinking (Free)", provider: "Arcee AI", providerLogo: "🟤", description: "Free large thinking model", tags: ["free", "reasoning"], free: true },
 ];
 
-export const MODEL_PROVIDERS = [...new Set(AI_MODELS.map(m => m.provider))];
+export const MODEL_PROVIDERS = Array.from(new Set(AI_MODELS.map(m => m.provider)));
 
 export function getModel(id: string): AIModel {
   return AI_MODELS.find(m => m.id === id) || AI_MODELS[0];
 }
 
 export const FREE_MODELS = AI_MODELS.filter(m => m.free);
+
+export async function sendMessageToModel(messages: { role: string; content: string }[]): Promise<string> {
+  const systemMessage = messages.find(m => m.role === 'system');
+  const userAndAssistantMessages = messages.filter(m => m.role !== 'system');
+  
+  const response = await fetch('http://127.0.0.1:8000/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      messages: userAndAssistantMessages,
+      systemPrompt: systemMessage?.content || 'You are a helpful AI assistant.',
+      model: 'openrouter/google/gemini-2.0-flash-001',
+      stream: false,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to send message to model');
+  }
+
+  const data = await response.json();
+  return data.content;
+}

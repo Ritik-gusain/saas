@@ -53,6 +53,7 @@ interface ChatState {
     webSearch?: boolean,
     attachments?: File[]
   ) => Promise<void>;
+  stopGeneration: () => void;
   pinConversation: (conversationId: string) => Promise<void>;
   unpinConversation: (conversationId: string) => Promise<void>;
   archiveConversation: (conversationId: string) => Promise<void>;
@@ -61,6 +62,8 @@ interface ChatState {
   exportConversation: (conversationId: string, format: 'pdf' | 'md' | 'json') => Promise<void>;
   setError: (error: string | null) => void;
 }
+
+let activeAbortController: AbortController | null = null;
 
 export const useChatStore = create<ChatState>((set) => ({
   conversations: [],
@@ -152,10 +155,13 @@ export const useChatStore = create<ChatState>((set) => ({
     };
     set((state) => ({ messages: [...state.messages, placeholderMsg] }));
 
+    activeAbortController = new AbortController();
+
     try {
       const res = await authFetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: activeAbortController.signal,
         body: JSON.stringify({
           conversationId,
           message: content,
@@ -218,6 +224,14 @@ export const useChatStore = create<ChatState>((set) => ({
         isStreaming: false,
       }));
     }
+  },
+
+  stopGeneration: () => {
+    if (activeAbortController) {
+      activeAbortController.abort();
+      activeAbortController = null;
+    }
+    set({ isStreaming: false, streamingContent: '' });
   },
 
   pinConversation: async (conversationId: string) => {

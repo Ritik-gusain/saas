@@ -1,18 +1,14 @@
 import { POST } from '@/app/api/teams/invite/route';
 
-// Mocking @supabase/supabase-js
-jest.mock('@supabase/supabase-js', () => {
+// Mocking @/lib/firebase-admin
+jest.mock('@/lib/firebase-admin', () => {
   return {
-    createClient: jest.fn(() => ({
-      auth: {
-        getUser: jest.fn(),
-        admin: {
-          inviteUserByEmail: jest.fn(),
-          listUsers: jest.fn(),
-        }
-      },
-      from: jest.fn()
-    }))
+    adminAuth: {
+      verifyIdToken: jest.fn(),
+    },
+    db: {
+      collection: jest.fn(),
+    },
   };
 });
 

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyWebhookSignature, RazorpayWebhookPayload } from '@/lib/razorpay';
 
-// TODO: Replace console logs with Firestore writes when DB is set up
-// import { db } from '@/lib/firebase-admin';
+import { db } from '@/lib/firebase-admin';
 
 export async function POST(req: NextRequest) {
   try {

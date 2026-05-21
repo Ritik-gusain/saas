@@ -26,16 +26,16 @@ if (typeof Headers === 'undefined') {
 // Polyfill Request and Response for API Route Testing
 if (typeof Request === 'undefined') {
   global.Request = class Request {
-    headers: Headers;
-    url: string;
-    method: string;
+    headers!: Headers;
+    url!: string;
+    method!: string;
     body: any;
     
     constructor(input: string, init?: any) {
-      this.url = input;
-      this.method = init?.method || 'GET';
-      this.body = init?.body || null;
-      this.headers = new global.Headers(init?.headers);
+      Object.defineProperty(this, 'url', { value: input, writable: true, configurable: true });
+      Object.defineProperty(this, 'method', { value: init?.method || 'GET', writable: true, configurable: true });
+      Object.defineProperty(this, 'body', { value: init?.body || null, writable: true, configurable: true });
+      Object.defineProperty(this, 'headers', { value: new global.Headers(init?.headers), writable: true, configurable: true });
     }
     async json() {
       return JSON.parse(this.body);

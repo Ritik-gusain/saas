@@ -63,7 +63,7 @@ export const AGENTS: Agent[] = [
   { id: "brainstorm", name: "Brainstormer", description: "Idea generation & creative thinking", emoji: "⚡", color: "from-fuchsia-400 to-pink-500", category: "Productivity", defaultModel: "openrouter/google/gemini-2.0-flash-001", systemPrompt: "You are a Brainstorming Facilitator. Generate diverse, creative ideas rapidly. Think laterally, challenge conventions, and spark innovation." },
 ];
 
-export const AGENT_CATEGORIES = [...new Set(AGENTS.map(a => a.category))];
+export const AGENT_CATEGORIES = Array.from(new Set(AGENTS.map(a => a.category)));
 
 export function getAgent(id: string): Agent {
   return AGENTS.find(a => a.id === id) || AGENTS[0];
