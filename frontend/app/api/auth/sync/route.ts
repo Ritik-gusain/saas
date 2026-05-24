@@ -28,8 +28,10 @@ export async function POST(req: NextRequest) {
     console.log(`[Auth Sync] Checking if user ${uid} exists in Firestore...`);
     const userRef = db.collection('users').doc(uid);
     const userDoc = await userRef.get();
+    let is_new_user = false;
 
     if (!userDoc.exists) {
+      is_new_user = true;
       console.log(`[Auth Sync] User ${uid} does not exist. Creating user and default team...`);
       // 2. Create User document
       await userRef.set({
@@ -60,7 +62,7 @@ export async function POST(req: NextRequest) {
       console.log(`[Firebase Sync] User ${uid} already exists in Firestore.`);
     }
 
-    return NextResponse.json({ success: true, uid });
+    return NextResponse.json({ success: true, uid, is_new_user });
   } catch (error: any) {
     console.error('[Auth Sync] Fatal error:', error);
     return NextResponse.json({ error: 'Authentication sync failed', details: error.message }, { status: 500 });

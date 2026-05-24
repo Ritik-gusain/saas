@@ -119,14 +119,15 @@ export async function POST(
         member_ids: FieldValue.arrayUnion(uid)
       });
 
-      // Create Team Member record
+      // Create Team Member record (using snake_case to match members GET query)
       const memberRef = db.collection('team_members').doc();
       transaction.set(memberRef, {
-        teamId: invite.teamId,
-        userId: uid,
+        id: memberRef.id,
+        team_id: invite.teamId,
+        user_id: uid,
         email: userEmail,
         role: 'member',
-        joinedAt: new Date().toISOString()
+        joined_at: new Date().toISOString()
       });
 
       // Mark invite as used

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, UserPlus, Trash2, Shield, Mail, Key, Save, AlertCircle } from 'lucide-react';
+import { Users, UserPlus, Trash2, Shield, Mail, Key, Save, AlertCircle, Copy, RefreshCw, Hash } from 'lucide-react';
 import { useTeamStore } from '@/stores/teamStore';
 import { authFetch } from '@/lib/api-client';
 
@@ -19,6 +19,11 @@ export default function TeamSettings() {
 
   const [inviteEmail, setInviteEmail] = useState('');
   const [teamName, setTeamName] = useState(currentTeam?.name || '');
+  const [joinCode, setJoinCode] = useState(currentTeam?.join_code || '');
+  const [joinCodeInput, setJoinCodeInput] = useState('');
+  const [joinCodeStatus, setJoinCodeStatus] = useState<'idle' | 'loading' | 'copied' | 'error'>('idle');
+  const [joinGroupStatus, setJoinGroupStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [joinGroupMsg, setJoinGroupMsg] = useState('');
   const [teamKeys, setTeamKeys] = useState({
     openai: '',
     anthropic: '',
@@ -31,6 +36,7 @@ export default function TeamSettings() {
   useEffect(() => {
     if (currentTeam) {
       setTeamName(currentTeam.name);
+      setJoinCode((currentTeam as any).join_code || '');
       fetchMembers(currentTeam.id);
       fetchTeamKeys();
     }
@@ -67,6 +73,49 @@ export default function TeamSettings() {
     } catch (err: any) {
       alert(err.message);
     }
+  };
+
+  const handleGenerateJoinCode = async () => {
+    if (!currentTeam) return;
+    setJoinCodeStatus('loading');
+    try {
+      const res = await authFetch('/api/teams/join', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId: currentTeam.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error); setJoinCodeStatus('idle'); return; }
+      setJoinCode(data.join_code);
+      setJoinCodeStatus('idle');
+    } catch { setJoinCodeStatus('error'); }
+  };
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(joinCode);
+    setJoinCodeStatus('copied');
+    setTimeout(() => setJoinCodeStatus('idle'), 2000);
+  };
+
+  const handleJoinByCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!joinCodeInput.trim()) return;
+    setJoinGroupStatus('loading');
+    try {
+      const res = await authFetch('/api/teams/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ join_code: joinCodeInput.trim().toUpperCase() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setJoinGroupMsg(data.error); setJoinGroupStatus('error'); return; }
+      setJoinGroupMsg(data.message || 'Joined successfully!');
+      setJoinGroupStatus('success');
+      setJoinCodeInput('');
+      // Refresh teams list
+      const { fetchTeams } = useTeamStore.getState();
+      await fetchTeams();
+    } catch { setJoinGroupMsg('Failed to join team.'); setJoinGroupStatus('error'); }
   };
 
   const handleSaveKeys = async () => {
@@ -228,6 +277,84 @@ export default function TeamSettings() {
           </table>
         </div>
       </section>
+
+      {/* Join by Code */}
+      <section className="glass-panel rounded-2xl p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-[var(--mint)]/20 border border-[var(--mint)]/30 flex items-center justify-center">
+            <Hash className="w-5 h-5 text-[var(--mint)]" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white font-[Syne]">Join a Group</h2>
+            <p className="text-sm text-[var(--muted)]">Enter a 6-character code to join an existing team workspace.</p>
+          </div>
+        </div>
+        <form onSubmit={handleJoinByCode} className="flex gap-2 max-w-sm">
+          <input
+            type="text"
+            placeholder="ABC123"
+            maxLength={6}
+            value={joinCodeInput}
+            onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
+            className="flex-1 bg-[#0B0E14]/50 border border-[var(--border)] rounded-lg px-4 py-2 text-white uppercase tracking-widest font-mono focus:outline-none focus:border-[var(--mint)]"
+          />
+          <button
+            type="submit"
+            disabled={joinGroupStatus === 'loading' || joinCodeInput.length < 6}
+            className="px-4 py-2 rounded-lg bg-[var(--mint)] text-[var(--bg)] font-bold hover:opacity-90 disabled:opacity-40"
+          >
+            {joinGroupStatus === 'loading' ? 'Joining...' : 'Join'}
+          </button>
+        </form>
+        {joinGroupMsg && (
+          <p className={`mt-3 text-sm font-bold ${ joinGroupStatus === 'success' ? 'text-[var(--mint)]' : 'text-red-400'}`}>
+            {joinGroupMsg}
+          </p>
+        )}
+      </section>
+
+      {/* Join Code (owner only) */}
+      {isPremium && currentTeam?.owner_id && (
+        <section className="glass-panel rounded-2xl p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-yellow-500/20 border border-yellow-500/30 flex items-center justify-center">
+              <Key className="w-5 h-5 text-yellow-400" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white font-[Syne]">Team Join Code</h2>
+              <p className="text-sm text-[var(--muted)]">Share this code with teammates so they can join instantly — no email needed.</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex-1 bg-[#0B0E14]/50 border border-[var(--border)] rounded-xl px-6 py-4">
+              {joinCode ? (
+                <span className="text-3xl font-black text-white font-mono tracking-[0.5em]">{joinCode}</span>
+              ) : (
+                <span className="text-[var(--muted)] text-sm">No code generated yet</span>
+              )}
+            </div>
+            {joinCode && (
+              <button
+                onClick={handleCopyCode}
+                className="p-3 rounded-xl bg-white/5 border border-[var(--border)] text-[var(--muted)] hover:text-white hover:bg-white/10 transition-colors"
+                title="Copy code"
+              >
+                <Copy className="w-5 h-5" />
+              </button>
+            )}
+            <button
+              onClick={handleGenerateJoinCode}
+              disabled={joinCodeStatus === 'loading'}
+              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 font-bold text-sm hover:bg-yellow-500/20 disabled:opacity-50 transition-colors"
+            >
+              <RefreshCw className={`w-4 h-4 ${joinCodeStatus === 'loading' ? 'animate-spin' : ''}`} />
+              {joinCode ? 'Regenerate' : 'Generate Code'}
+            </button>
+          </div>
+          {joinCodeStatus === 'copied' && <p className="mt-2 text-xs text-[var(--mint)] font-bold">✓ Copied to clipboard!</p>}
+        </section>
+      )}
 
       {/* Team API Keys (Group BYOK) */}
       <section className="glass-panel rounded-2xl p-8">

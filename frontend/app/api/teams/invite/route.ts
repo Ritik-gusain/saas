@@ -113,16 +113,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'teamId is required' }, { status: 400 });
     }
 
-    // Return pending invites list for a team
+    // Return pending invites list for a team (filter in memory since Firestore can't query null fields)
     const invitesSnapshot = await db.collection('pending_invites')
       .where('teamId', '==', teamId)
-      .where('usedAt', '==', null)
       .get();
       
-    const invites = invitesSnapshot.docs.map(doc => ({
-      token: doc.id,
-      ...doc.data()
-    }));
+    const now = new Date().toISOString();
+    const invites = invitesSnapshot.docs
+      .map(doc => ({ token: doc.id, ...doc.data() }))
+      .filter((inv: any) => !inv.usedAt && inv.expiresAt > now);
     
     return NextResponse.json(invites);
   } catch (error) {
