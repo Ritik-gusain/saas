@@ -45,7 +45,6 @@ Luminescent.io is a next-generation **AI-as-a-Service (SaaS)** platform designed
 *   **Self-Service Portal:** Manage invoices, upgrade plans, and handle team seats without ever leaving the app.
 
 ---
-
 ## 🛠 Proprietary Tech Stack
 
 | Layer | Technology |
